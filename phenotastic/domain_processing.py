@@ -165,6 +165,54 @@ def merge_boas_engulfing(A, pdata, threshold=.9):
     pdata.loc[:, 'domain'] = pd.Categorical(pdata.domain).codes
     return pdata
 
+def merge_boas_disconnected(A, pdata, meristem, threshold=.9):
+    """ Merge boas that are 1) not connected to the meristem, and 2) has a
+    neighbour which borders at least a fraction of _threshold_ of the domain's
+    border vertices.
+
+    Parameters
+    ----------
+    A : Meristem_Phenotyper_3D.AutoPhenotype
+
+    pdata : pandas.DataFrame
+
+    threshold : float
+        Minimum fraction enclosure needed in order to merge. (Default value = .9)
+
+    Returns
+    -------
+    pdata : pandas.DataFrame
+
+    """
+    changed = True
+    while changed:
+        changed = False  # new round
+        domains = pdata.domain.unique()
+        domains = domains[domains != meristem]
+
+        # For every domain, find points facing other domains and domains facing
+        # NaN
+        for ii in domains:
+            in_domain = np.where(pdata.domain == ii)[0]
+            in_domain_boundary = np.intersect1d(in_domain,
+                                                get_boundary_points(A.mesh))
+
+            boundary_neighbours = np.unique(
+                [x for y in pdata.loc[in_domain, 'neighs'].values for x in y])
+            neighbouring_domains = pdata.loc[boundary_neighbours].loc[pdata.loc[boundary_neighbours,
+                                                                 'domain'] != ii, 'domain']
+            counts = neighbouring_domains.value_counts()
+
+            if meristem not in counts.index.values:
+                frac = float(counts.max()) / (counts.sum() + len(in_domain_boundary))
+
+                if frac > threshold:
+                    new_domain = neighbouring_domains.value_counts().idxmax()
+                    pdata.loc[pdata.domain == ii, 'domain'] = new_domain
+                    changed = True
+
+    pdata.loc[:, 'domain'] = pd.Categorical(pdata.domain).codes
+    return pdata
 
 def merge_boas_depth(A, pdata, threshold=0.0, exclude_boundary=False, min_points=0):
     """ Merge domains based on their respective depths.
@@ -601,7 +649,7 @@ def extract_domaindata(pdata, mesh, apex, meristem):
     domains = np.unique(pdata.domain)
     domains = domains[~np.isnan(domains)]
     ddata = pd.DataFrame(columns=['domain', 'dist_boundary', 'dist_com', 'angle',
-                                  'area', 'com', 'ismeristem'], dtype=np.object)
+                                  'area', 'maxdiam', 'maxdiam_xy',  'com', 'ismeristem'], dtype=np.object)
 
     for ii in domains:
         # Get distance for closest boundary point to apex
@@ -615,6 +663,11 @@ def extract_domaindata(pdata, mesh, apex, meristem):
         # Get distance for center of mass from apex
         center = dom.CenterOfMass()
         d2com = np.sqrt(np.sum((center - apex)**2))
+
+        # Get domain size in terms of bounding boxes
+        bounds = dom.GetBounds()
+        maxdiam = np.sqrt(np.sum(np.diff(bounds)**2))
+        maxdiam_xy = np.sqrt(np.sum(np.diff(bounds[1:])**2))
 
         # Get domain angle in relation to apex
         rel_pos = center - apex
@@ -632,7 +685,8 @@ def extract_domaindata(pdata, mesh, apex, meristem):
             angle = np.nan
 
         # Set data
-        ddata.loc[int(ii)] = [int(ii), d2boundary, d2com, angle, area, tuple(center), ismeristem]
+        ddata.loc[int(ii)] = [int(ii), d2boundary, d2com, angle, area, maxdiam,
+                  maxdiam_xy, tuple(center), ismeristem]
     ddata = ddata.infer_objects()
     ddata = ddata.sort_values(['ismeristem', 'area'], ascending=False)
     return ddata

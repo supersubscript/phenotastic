@@ -50,7 +50,7 @@ def correct_bad_mesh(mesh):
     mesh.ExtractLargest()
     mesh.TriFilter()
     new_poly = mesh
-    nm = get_non_manifold(mesh)
+    nm = get_non_manifold_edges(mesh)
 
     while nm.points.shape[0] > 0:
         print 'Trying to remove %d points' % nm.GetNumberOfPoints()
@@ -69,7 +69,7 @@ def correct_bad_mesh(mesh):
         new_poly.ExtractLargest()
 
         # Try with forced point-removal
-        nm = get_non_manifold(new_poly)
+        nm = get_non_manifold_edges(new_poly)
 
         nmpts = nm.points
         mpts = new_poly.points
@@ -84,7 +84,7 @@ def correct_bad_mesh(mesh):
         new_poly.ExtractLargest()
         new_poly.TriFilter()
 
-        nm = get_non_manifold(new_poly)
+        nm = get_non_manifold_edges(new_poly)
 
     new_poly.Clean()
     new_poly.ExtractLargest()
@@ -134,6 +134,155 @@ def remove_normals(A, threshold_angle=0, flip=False):
     A.mesh.RemovePoints(to_remove, keepscalars=False)[0]
     return A.mesh.RemovePoints(to_remove, keepscalars=False)[0]
 
+def geodesic(mesh, ii, jj):
+    dijkstra = vtk.vtkDijkstraGraphGeodesicPath()
+    dijkstra.SetInputData(mesh)
+    dijkstra.SetStartVertex(ii)
+    dijkstra.SetEndVertex(jj)
+    dijkstra.Update()
+
+    arc = dijkstra.GetOutput()
+    arc = vi.PolyData(arc)
+    return arc
+
+def remove_tongues_naive(A, radius, threshold, holefill=100):
+    from scipy.spatial import KDTree
+    mesh = A.mesh
+
+    # Preprocessing
+    mesh = remove_bridges(A)
+    mesh.ExtractLargest()
+    mesh.Clean()
+    mesh.FillHoles(holefill)
+
+    boundary = mesh.ExtractEdges(boundary_edges=True, non_manifold_edges=False,
+                                 feature_edges=False, manifold_edges=False)
+
+    # Get points and corresponding indices
+    bdpts = boundary.points
+    pts = A.mesh.points
+    mesh_idxs = np.array([mesh.FindPoint(ii) for ii in bdpts])
+
+    # Get the neighbours and then the number of adjacent boundary indices
+    tree = KDTree(bdpts)
+    neighs = tree.query_ball_point(pts, radius)
+    nneighs = np.array([len([jj for jj in ii if jj in mesh_idxs]) for ii in neighs])
+
+    to_remove = nneighs > threshold
+    A.mesh = A.mesh.RemovePoints(to_remove, keepscalars=False)[0]
+
+    # Postprocessing
+    mesh = remove_bridges(A)
+    mesh = correct_bad_mesh(A.mesh)
+    mesh.ExtractLargest()
+    mesh.Clean()
+    mesh.FillHoles(holefill)
+    return mesh
+
+def remove_tongues(A, radius=30, threshold=6, threshold2=0.8, holefill=100):
+    import networkx as nx
+    from scipy.spatial import KDTree
+
+    mesh = A.mesh
+
+    while True:
+        # Preprocessing
+        mesh = remove_bridges(A)
+        mesh.ExtractLargest()
+        mesh.Clean()
+        mesh.FillHoles(holefill)
+
+        # Get boundary information and index correspondences
+        boundary = mesh.ExtractEdges(boundary_edges=True, non_manifold_edges=False,
+                                     feature_edges=False, manifold_edges=False)
+        bdpts = boundary.points
+        from_ = np.array([mesh.FindPoint(ii) for ii in bdpts])
+        npts = boundary.points.shape[0]
+
+        # Find the cycles, i.e. the different boundaries we have
+        neighs = []
+        ids = vtk.vtkIdList()
+        for ii in xrange(npts):
+            boundary.GetCellPoints(ii, ids)
+            neighs.append([ids.GetId(0), ids.GetId(1)])
+
+        net = nx.DiGraph(neighs)
+        cycles = list(nx.simple_cycles(net))
+        cycles.sort(key=lambda x: len(x), reverse=True)
+        cycles = np.array([np.array(ii) for ii in cycles])
+
+        # Loop over the cycles and find boundary points within radius
+        to_remove = []
+        for ii in xrange(len(cycles)):
+            cpts = bdpts[cycles[ii]]
+
+            # Get the boundary points (in same loop) within a certain radius
+            tree = KDTree(cpts)
+            neighs = tree.query_ball_point(cpts, radius)
+            neighs = np.array([np.array(neighs[jj]) for jj in xrange(len(neighs))])
+            neighs = np.array([neighs[jj][neighs[jj] != jj] for jj in xrange(len(neighs))])
+
+            # Get and compare the euclidean and geodesic distance
+            eucdists = np.array([np.sqrt(np.sum((cpts[jj] - cpts[neighs[jj]])**2, axis=1)) for jj in xrange(len(neighs))])
+
+            geodists = []
+            for jj in xrange(len(cpts)):
+                geodists.append(np.array([geodesic(boundary, cycles[ii][jj], cycles[ii][neighs[jj][kk]]).GetLength() for kk in xrange(len(neighs[jj]))]))
+            geodists = np.array(geodists)
+
+            frac = np.array([geodists[jj] / eucdists[jj] for jj in xrange(len(neighs))])
+
+            # Find which ones to (possibly remove)
+            removal_anchors = []
+            removal_geodists = []
+            for kk in xrange(len(frac)):
+                for jj in xrange(len(frac[kk])):
+                    if frac[kk][jj] > threshold:
+                        removal_anchors.append((kk, neighs[kk][jj]))
+                        removal_geodists.append(geodists[kk][jj])
+            removal_anchors = np.array(removal_anchors)
+            removal_geodists = np.array(removal_geodists)
+
+            for jj in xrange(len(removal_anchors)):
+                gd = geodesic(mesh, from_[cycles[ii][removal_anchors[jj][0]]], from_[cycles[ii][removal_anchors[jj][1]]])
+                shortest_geo = gd.GetLength()
+                if shortest_geo / removal_geodists[jj] < threshold2:
+                    gdpts = gd.points
+                    to_remove.extend([mesh.FindPoint(kk) for kk in gdpts])
+        to_remove = np.array(to_remove)
+
+        if len(to_remove) == 0:
+            break
+
+        rmbool = np.zeros(mesh.points.shape[0], dtype=np.bool)
+        rmbool[to_remove] = True
+
+        A.mesh = mesh.RemovePoints(rmbool, keepscalars=False)[0]
+        mesh = A.mesh
+        mesh = remove_bridges(A)
+        mesh = correct_bad_mesh(mesh)
+        mesh.ExtractLargest()
+        mesh.Clean()
+        mesh.FillHoles(holefill)
+
+    return mesh
+
+def adjust_skirt(mesh, maxdist):
+    boundary = mesh.ExtractEdges(non_manifold_edges=False, feature_edges=False,
+                                 manifold_edges=False)
+    lowest = mesh.GetBounds()[0]
+
+    mpts = mesh.points
+    bdpts = boundary.points
+    idx_in_parent = np.array([mesh.FindPoint(ii) for ii in bdpts])
+
+    to_adjust = idx_in_parent[bdpts[:, 0] - lowest < maxdist]
+    mpts[to_adjust, 0] = lowest
+
+    newmesh = vi.PolyData(mpts, mesh.faces)
+
+    return newmesh
+
 
 def remesh(mesh, npoints, subratio=10, max_iter=10000):
 #    mesh = correct_bad_mesh(mesh)
@@ -142,6 +291,7 @@ def remesh(mesh, npoints, subratio=10, max_iter=10000):
     cobj.GenMesh()
     newmesh = vi.PolyData(cobj.ReturnMesh())
     newmesh.FillHoles(100)
+    newmesh.ExtractLargest()
     newmesh.Clean()
     return newmesh
 
@@ -162,11 +312,41 @@ def remesh_decimate(mesh, iters):
     return B.mesh
 
 
-def get_non_manifold(mesh):
-    fe = mesh.ExtractEdges(feature_angle=0, boundary_edges=False,
+def get_non_manifold_edges(mesh):
+    edges = mesh.ExtractEdges(boundary_edges=False,
                            non_manifold_edges=True, feature_edges=False,
                            manifold_edges=False)
-    return fe
+    return edges
+
+def get_boundary_edges(mesh):
+    edges = mesh.ExtractEdges(boundary_edges=True,
+                           non_manifold_edges=False, feature_edges=False,
+                           manifold_edges=False)
+    return edges
+
+def get_manifold_edges(mesh):
+    edges = mesh.ExtractEdges(boundary_edges=False,
+                              non_manifold_edges=False, feature_edges=False,
+                              manifold_edges=True)
+    return edges
+
+def get_feature_edges(mesh, angle=30):
+    edges = mesh.ExtractEdges(feature_angle=angle, boundary_edges=False,
+                              non_manifold_edges=False, feature_edges=True,
+                              manifold_edges=False)
+    return edges
+
+def ECFT(mesh, holesize=100.0, inplace=False):
+    if not inplace:
+        mesh.Copy(mesh)
+
+    mesh.ExtractLargest()
+    mesh.Clean()
+    mesh.FillHoles(holesize)
+    mesh.TriFilter()
+
+    if not inplace:
+        return mesh
 
 def define_meristem(mesh, pointData, method='central_mass', res=(0,0,0), fluo=None):
     ccoord = np.zeros((3,))

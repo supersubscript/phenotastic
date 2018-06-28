@@ -120,89 +120,45 @@ xyzres = resolution
 verts, faces, normals, values = measure.marching_cubes_lewiner(
     A.contour, 0, spacing=list(resolution/np.min(resolution)), step_size=1,
     allow_degenerate=False)
-faces = np.hstack(np.c_[[len(ii) for ii in faces], faces])
+faces = np.hstack(np.c_[np.full(faces.shape[0], 3), faces])
 surf = vi.PolyData(verts, faces)
 
 ''' Process mesh '''
-bottom_cut = 20
 A.mesh = surf
-A.mesh.ExtractLargest()
-A.mesh.Clean()
-A.mesh.FillHoles(1000.0)
+A.mesh = mp.ECFT(A.mesh, 1000)
+
+bottom_cut = 10
 bounds = A.mesh.GetBounds()
 A.mesh.ClipPlane([bottom_cut , 0, 0], [1,0,0])
-A.mesh.ExtractLargest()
-A.mesh.Clean()
-A.mesh.FillHoles(100.0)
+A.mesh = mp.ECFT(A.mesh, 100)
 A.compute_normals()
 
 A.mesh.RotateY(-90)
 A.mesh = mp.remove_normals(A, threshold_angle=25, flip=False)
 A.mesh.RotateY(90)
-#A.mesh = mp.remove_bridges(A)
-A.mesh.ExtractLargest()
-A.mesh.Clean()
-A.mesh.FillHoles(50.0)
-
-################################################################################
+A.mesh = mp.ECFT(A.mesh, 50)
 A.compute_normals()
+################################################################################
 if np.sum(nps.vtk_to_numpy(A.mesh.GetPointData().GetNormals()), axis=0)[0] < 0:
     A.mesh.FlipNormals()
-#    A.mesh.Plot()
-
-yobro = 0.00001
-bounds = A.mesh.GetBounds()
-A.mesh.ClipPlane([np.ceil(bounds[0]), 0, 0], [yobro, 0, 0])
-A.mesh.ExtractLargest()
-A.mesh.Clean()
-A.mesh.FillHoles(100.0)
-A.compute_normals()
-
-plane = vtk.vtkPlaneSource()
-#plane.SetCenter(bottom_cut, 493 - 38, 456-30)
-plane.SetCenter(bottom_cut, 0, 0)
-plane.SetPoint1(bottom_cut, 493, 456)
-plane.SetPoint2(bottom_cut, 38, 30)
-
-mbounds = A.mesh.GetBounds()
-x = np.arange(mbounds[-2], mbounds[-1], 1)
-y = np.arange(mbounds[-4], mbounds[-3], 1)
-x, y = np.meshgrid(x, y)
-z = np.zeros(x.shape) + bottom_cut
-grid = vi.StructuredGrid(z, y, x)
-
-nm = A.mesh.BooleanAdd(grid.ExtractSurface())
-nm.FillHoles(100)
-#nm.ExtractLargest()
-nm.Clean()
-nm.Modified()
-nm.ClipPlane([bottom_cut, 0, 0], [1,0,0])
-
-#nm.PlotCurvature()
+    A.compute_normals()
 
 A.mesh = A.mesh.Decimate(0.95, volume_preservation=True, normals=True)
-A.mesh.ExtractLargest()
-A.mesh.Clean()
-A.compute_normals()
+A.mesh = mp.ECFT(A.mesh, 0)
 
 bounds = A.mesh.GetBounds()
-A.mesh.ClipPlane([bottom_cut, 0, 0], [1,0,0])
-A.mesh.FillHoles(100.0)
-A.compute_normals()
+A.mesh.ClipPlane([bottom_cut, 0, 0], [1, 0, 0])
+A.mesh = mp.ECFT(A.mesh, 100)
 
-A.mesh.ExtractLargest()
-A.mesh.Clean()
 A.mesh = mp.remove_bridges(A)
-A.mesh.FillHoles(100.0)
-#A.mesh.Plot()
+A.mesh = mp.ECFT(A.mesh, 100)
 
 A.mesh = mp.correct_bad_mesh(A.mesh)
-A.mesh.FillHoles(50.0)
-A.compute_normals()
+A.mesh = mp.adjust_skirt(A.mesh, 50)
+
 A.smooth_mesh(iterations=100, relaxation_factor=.01, boundarySmoothing=False,
               featureEdgeSmoothing=False, feature_angle=45)
-A.mesh.ExtractLargest()
-A.mesh.Clean()
+A.mesh = mp.ECFT(A.mesh, 0)
 
 # Sufficient loop to remesh
 while True:
@@ -212,19 +168,16 @@ while True:
     except:
         bounds = A.mesh.GetBounds()
         A.mesh.ClipPlane([bounds[0] + 1, 0, 0], [1,0,0])
-        A.mesh.ExtractLargest()
-        A.mesh.Clean()
+        A.mesh = mp.ECFT(A.mesh, 0)
         continue
     break
 
 A.mesh = mp.remove_bridges(A)
 A.mesh = mp.correct_bad_mesh(A.mesh)
-A.mesh.FillHoles(100)
-A.mesh.Clean()
-A.mesh.ExtractLargest()
-A.compute_normals()
+A.mesh = mp.ECFT(A.mesh, 100)
 
-A.mesh = remove_tongues(A, radius=30, threshold=3, threshold2=.8, holefill=100)
+A.mesh = mp.remove_tongues(A, radius=30, threshold=3, threshold2=.8, holefill=100)
+A.mesh = mp.adjust_skirt(A.mesh, 50)
 A.compute_normals()
 
 ################################################################################
@@ -235,9 +188,7 @@ neighs = np.array([ap.get_connected_vertices(A.mesh, ii)
                    for ii in xrange(A.mesh.points.shape[0])])
 
 curvs = A.mesh.Curvature('mean')
-
 curvs = boa.set_boundary_curv(curvs, A.mesh, np.min(curvs))
-
 curvs = boa.filter_curvature(curvs, neighs, np.min, 1)
 curvs = boa.filter_curvature(curvs, neighs, np.mean, 5)
 
@@ -257,7 +208,7 @@ safeCopy = copy.deepcopy(pdata)
 pdata = copy.deepcopy(safeCopy)
 boas, boasData = boa.get_boas(pdata)
 
-pdata = boa.merge_boas_depth(A, pdata, threshold=0.01)
+pdata = boa.merge_boas_depth(A, pdata, threshold=0.005)
 boas, boasData = boa.get_boas(pdata)
 print boa.nboas(pdata)
 
@@ -280,9 +231,8 @@ print boa.boas_npoints(pdata)
 boas, boasData = boa.get_boas(pdata)
 boaCoords = np.array([tuple(ii) for ii in boasData[['z', 'y', 'x']].values])
 
-pl.PlotPointData(A.mesh, pdata, 'domain',
-                 boaCoords=boaCoords, show_boundaries=True)
-
+#pl.PlotPointData(A.mesh, pdata, 'domain',
+#                 boaCoords=boaCoords, show_boundaries=True)
 
 ################################################################################
 ''' Export segmentation data '''
@@ -296,12 +246,20 @@ center_coord = mpoly.points[np.argmin(
     np.sqrt(np.sum((mpoly.points - apexcoords)**2, axis=1)))]
 apexcoords = mpoly.CenterOfMass()
 
+# Merge based on disconnected or not
+pdata = boa.merge_boas_disconnected(A, pdata, meristem_index, threshold=.3)
+boas, boasData = boa.get_boas(pdata)
+print boa.nboas(pdata)
+
+meristem_index, _ = boa.define_meristem(
+    A.mesh, pdata, method='central_mass', fluo=fluo)
+
 # Extract domain data
 ddata = boa.extract_domaindata(pdata, A.mesh, apexcoords, meristem_index)
 pdata, ddata = boa.relabel_domains(pdata, ddata)
 
 # Merge based on domain angles
-angle_threshold = 14
+angle_threshold = 8
 pdata, ddata = boa.merge_boas_angle(pdata, ddata, A.mesh, angle_threshold, apexcoords)
 
 pdata = boa.merge_boas_distance(pdata, boas, boasData, 15)
@@ -315,147 +273,11 @@ print boa.nboas(pdata)
 boas, boasData = boa.get_boas(pdata)
 boaCoords = np.array([tuple(ii) for ii in boasData[['z', 'y', 'x']].values])
 
-    pl.PlotPointData(A.mesh, pdata, 'domain',
-                     boaCoords=boaCoords, show_boundaries=True)
+#pl.PlotPointData(A.mesh, pdata, 'domain',
+#                 boaCoords=boaCoords, show_boundaries=True)
 
 res = np.array([360 - ii if np.abs(360 - ii - 137.5) < np.abs(ii - 137.5)
                 else ii for ii in np.abs(np.diff(ddata.angle.values))])
 print('Avg divergence angle: ' + str(np.mean(res[~np.isnan(res)])))
-
-''' Plot '''
-def geodesic(mesh, ii, jj):
-    dijkstra = vtk.vtkDijkstraGraphGeodesicPath()
-    dijkstra.SetInputData(mesh)
-    dijkstra.SetStartVertex(ii)
-    dijkstra.SetEndVertex(jj)
-    dijkstra.Update()
-    arc = dijkstra.GetOutput()
-    arc = vi.PolyData(arc)
-
-    return arc
-
-def remove_tongues_naive(A, radius, threshold, holefill=100):
-    from scipy.spatial import KDTree
-    mesh = A.mesh
-
-    # Preprocessing
-    mesh = mp.remove_bridges(A)
-    mesh.ExtractLargest()
-    mesh.Clean()
-    mesh.FillHoles(holefill)
-
-    boundary = mesh.ExtractEdges(boundary_edges=True, non_manifold_edges=False,
-                                 feature_edges=False, manifold_edges=False)
-
-    # Get points and corresponding indices
-    bdpts = boundary.points
-    pts = A.mesh.points
-    mesh_idxs = np.array([mesh.FindPoint(ii) for ii in bdpts])
-
-    # Get the neighbours and then the number of adjacent boundary indices
-    tree = KDTree(bdpts)
-    neighs = tree.query_ball_point(pts, radius)
-    nneighs = np.array([len([jj for jj in ii if jj in mesh_idxs]) for ii in neighs])
-
-    to_remove = nneighs > threshold
-    A.mesh = A.mesh.RemovePoints(to_remove, keepscalars=False)[0]
-
-    # Postprocessing
-    mesh = mp.remove_bridges(A)
-    mesh = mp.correct_bad_mesh(A.mesh)
-    mesh.ExtractLargest()
-    mesh.Clean()
-    mesh.FillHoles(holefill)
-    return mesh
-
-
-def remove_tongues(A, radius=30, threshold=6, threshold2=0.8, holefill=100):
-    ''' Requires a single connected boundary, i.e. no internal holes '''
-    import networkx as nx
-    from scipy.spatial import KDTree
-
-    mesh = A.mesh
-
-    while True:
-        # Preprocessing
-        mesh = mp.remove_bridges(A)
-        mesh.ExtractLargest()
-        mesh.Clean()
-        mesh.FillHoles(holefill)
-
-        # Get boundary information and index correspondences
-        boundary = mesh.ExtractEdges(boundary_edges=True, non_manifold_edges=False,
-                                     feature_edges=False, manifold_edges=False)
-        bdpts = boundary.points
-        from_ = np.array([mesh.FindPoint(ii) for ii in bdpts])
-        npts = boundary.points.shape[0]
-
-        # Find the cycles, i.e. the different boundaries we have
-        neighs = []
-        ids = vtk.vtkIdList()
-        for ii in xrange(npts):
-            boundary.GetCellPoints(ii, ids)
-            neighs.append([ids.GetId(0), ids.GetId(1)])
-
-        net = nx.DiGraph(neighs)
-        cycles = list(nx.simple_cycles(net))
-        cycles.sort(key=lambda x: len(x), reverse=True)
-        cycles = np.array([np.array(ii) for ii in cycles])
-
-        # Loop over the cycles and find boundary points within radius
-        to_remove = []
-        for ii in xrange(len(cycles)):
-            cpts = bdpts[cycles[ii]]
-
-            # Get the boundary points (in same loop) within a certain radius
-            tree = KDTree(cpts)
-            neighs = tree.query_ball_point(cpts, radius)
-            neighs = np.array([np.array(neighs[jj]) for jj in xrange(len(neighs))])
-            neighs = np.array([neighs[jj][neighs[jj] != jj] for jj in xrange(len(neighs))])
-
-            # Get and compare the euclidean and geodesic distance
-            eucdists = np.array([np.sqrt(np.sum((cpts[jj] - cpts[neighs[jj]])**2, axis=1)) for jj in xrange(len(neighs))])
-
-            geodists = []
-            for jj in xrange(len(cpts)):
-                geodists.append(np.array([geodesic(boundary, cycles[ii][jj], cycles[ii][neighs[jj][kk]]).GetLength() for kk in xrange(len(neighs[jj]))]))
-            geodists = np.array(geodists)
-
-            frac = np.array([geodists[jj] / eucdists[jj] for jj in xrange(len(neighs))])
-
-            # Find which ones to (possibly remove)
-            removal_anchors = []
-            removal_geodists = []
-            for kk in xrange(len(frac)):
-                for jj in xrange(len(frac[kk])):
-                    if frac[kk][jj] > threshold:
-                        removal_anchors.append((kk, neighs[kk][jj]))
-                        removal_geodists.append(geodists[kk][jj])
-            removal_anchors = np.array(removal_anchors)
-            removal_geodists = np.array(removal_geodists)
-
-            for jj in xrange(len(removal_anchors)):
-                gd = geodesic(mesh, from_[cycles[ii][removal_anchors[jj][0]]], from_[cycles[ii][removal_anchors[jj][1]]])
-                shortest_geo = gd.GetLength()
-                if shortest_geo / removal_geodists[jj] < threshold2:
-                    gdpts = gd.points
-                    to_remove.extend([mesh.FindPoint(kk) for kk in gdpts])
-        to_remove = np.array(to_remove)
-
-        if len(to_remove) == 0:
-            break
-
-        rmbool = np.zeros(mesh.points.shape[0], dtype=np.bool)
-        rmbool[to_remove] = True
-
-        A.mesh = mesh.RemovePoints(rmbool, keepscalars=False)[0]
-        mesh = A.mesh
-        mesh = mp.remove_bridges(A)
-        mesh = mp.correct_bad_mesh(mesh)
-        mesh.ExtractLargest()
-        mesh.Clean()
-        mesh.FillHoles(holefill)
-
-    return mesh
 
 ################################################################################

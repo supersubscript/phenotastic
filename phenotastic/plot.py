@@ -9,8 +9,18 @@ import numpy as np
 import vtkInterface as vi
 import domain_processing as boa
 #import copy
+def coord_array(arr, res=(1, 1, 1), offset=(0, 0, 0), mask=None, mesh=None, meshopacity=1, **kwargs):
+    xv = offset[0] + np.arange(0, arr.shape[0] * res[0], res[0])
+    yv = offset[1] + np.arange(0, arr.shape[1] * res[1], res[1])
+    zv = offset[2] + np.arange(0, arr.shape[2] * res[2], res[2])
+    xx, yy, zz = np.array(np.meshgrid(xv, yv, zv)).transpose(0, 2, 1, 3)
 
-def PlotImage(arr, res=(1, 1, 1), offset=(0, 0, 0), mask=None, **kwargs):
+    # Make compatible lists
+    coords = np.vstack((xx.ravel(), yy.ravel(), zz.ravel())).T
+    return coords
+
+
+def PlotImage(arr, res=(1, 1, 1), offset=(0, 0, 0), mask=None, mesh=None, meshopacity=1, **kwargs):
     # Create coordinate matrix
     xv = offset[0] + np.arange(0, arr.shape[0] * res[0], res[0])
     yv = offset[1] + np.arange(0, arr.shape[1] * res[1], res[1])
@@ -30,6 +40,10 @@ def PlotImage(arr, res=(1, 1, 1), offset=(0, 0, 0), mask=None, **kwargs):
     # Plot
     pobj = vi.PlotClass()
     pobj.AddPoints(coords, scalars=vals, **kwargs)
+
+    if mesh is not None:
+        pobj.AddMesh(mesh, opacity=meshopacity)
+
     pobj.Plot()
 
 def PlotPointData(mesh, pointData, var='domain', boaCoords=[], show_boundaries=False,
@@ -46,4 +60,4 @@ def PlotPointData(mesh, pointData, var='domain', boaCoords=[], show_boundaries=F
             pobj.AddMesh(boa.get_domain_boundary(mesh, pointData, ii),
                          color=bcolor, psize=bpsize, linethick=blinewidth)
 
-    pobj.Plot(*args)
+    pobj.Plot(**kwargs)

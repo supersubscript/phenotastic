@@ -6,11 +6,41 @@ Created on Tue May 29 22:10:18 2018
 @author: henrik
 """
 import numpy as np
+from vtk.util import numpy_support as nps
 import vtkInterface as vi
 import Meristem_Phenotyper_3D as ap
 from PyACVD import Clustering
 import vtk
+from scipy.ndimage.morphology import binary_fill_holes
 
+# Preprocessing
+def fill_contour(contour):
+    ''' Assumes first dimension being z, ordered bottom to top. '''
+    new_contour = contour.copy()
+
+    # Close all sides but top
+    new_contour[0] = 1
+    #new_contour[-1] = 1
+    new_contour[:, 0] = 1
+    new_contour[:, -1] = 1
+    new_contour[:, :, 0] = 1
+    new_contour[:, :, -1] = 1
+
+    for jj in xrange(new_contour.shape[1]):
+        new_contour[:, jj] = binary_fill_holes(new_contour[:, jj])
+    for jj in xrange(new_contour.shape[2]):
+        new_contour[:, :, jj] = binary_fill_holes(new_contour[:, :, jj])
+
+    new_contour[:, 0] = 0
+    new_contour[:, -1] = 0
+    new_contour[0] = 0
+    new_contour[-1] = 0
+    new_contour[:, :, 0] = 0
+    new_contour[:, :, -1] = 0
+    new_contour = binary_fill_holes(new_contour)
+    return new_contour
+
+# Actual mesh processing
 def correct_bad_mesh(mesh):
     ''' Assumes a triangulated mesh. Note that recalculation of cell and point
     properties will have to be done '''
@@ -56,14 +86,64 @@ def correct_bad_mesh(mesh):
 
         nm = get_non_manifold(new_poly)
 
+    new_poly.Clean()
+    new_poly.ExtractLargest()
+    new_poly.TriFilter()
+
     return new_poly
 
+def remove_bridges(A, distance=1, threshold=1.0):
+    ''' Assumes triangulated '''
+    from domain_processing import get_boundary_points
+    new_mesh = A.mesh
+
+    while True:
+        faces = new_mesh.faces.reshape(-1, 4).T[1:].T
+        f_flat = faces.reshape(1,-1)
+        boundary = get_boundary_points(new_mesh)
+        border_faces = faces[np.unique(np.where(np.in1d(f_flat, boundary))[0] // 3)]
+
+        # Find pts to remove
+        all_boundary = np.array([np.all(np.in1d(ii, boundary)) for ii in border_faces])
+        remove_pts = np.unique(border_faces[all_boundary].flatten())
+
+        print('Removing %d points' % len(remove_pts))
+        if len(remove_pts) == 0:
+            break
+
+        # Actually remove
+        mask = np.zeros((new_mesh.GetNumberOfPoints(),), dtype=np.bool)
+        mask[remove_pts] = True
+
+        new_mesh = new_mesh.RemovePoints(mask, keepscalars=False)[0]
+        new_mesh.ExtractLargest()
+        new_mesh.Clean()
+        new_mesh.Modified()
+    return new_mesh
+
+def remove_normals(A, threshold_angle=0, flip=False):
+
+    A.compute_normals()
+    negn = nps.vtk_to_numpy(A.mesh.GetPointData().GetNormals())
+    if flip:
+        negn *= -1
+    negn = ap.cart2sphere(negn) / (2 * np.pi) * 360
+    negn[:, 0] = 1
+
+    to_remove = negn[:, 1] < threshold_angle
+    A.mesh.RemovePoints(to_remove, keepscalars=False)[0]
+    return A.mesh.RemovePoints(to_remove, keepscalars=False)[0]
+
+
 def remesh(mesh, npoints, subratio=10, max_iter=10000):
-    mesh = correct_bad_mesh(mesh)
+#    mesh = correct_bad_mesh(mesh)
     cobj = Clustering.Cluster(mesh)
     cobj.GenClusters(npoints, subratio=subratio, max_iter=max_iter)
     cobj.GenMesh()
-    return vi.PolyData(cobj.ReturnMesh())
+    newmesh = vi.PolyData(cobj.ReturnMesh())
+    newmesh.FillHoles(100)
+    newmesh.Clean()
+    return newmesh
 
 
 def remesh_decimate(mesh, iters):

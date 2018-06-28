@@ -27,7 +27,7 @@ import sys
 import os
 #from tissueviewer.tvtiff import tiffread, tiffsave
 from libtiff import TIFF
-import handy_functions as hf
+#import handy_functions as hf
 from vtk.util import numpy_support
 import copy
 import domain_processing as boa
@@ -35,6 +35,7 @@ import networkx as nx
 import tifffile as tiff
 import vtkInterface as vi
 from vtkInterface import PolyData
+import misc
 """
 ===================
 AutoPhenotype class
@@ -1153,7 +1154,7 @@ class AutoPhenotype(object):
         if discrete:
             vals = pd.DataFrame(pd.Categorical(vals[0]).codes)
         if stdevs != "all" and not discrete:
-            vals = hf.reject_outliers_2(vals, m=stdevs)
+            vals = misc.reject_outliers_2(vals, m=stdevs)
 
         if discrete:
             vals = pd.DataFrame(pd.Categorical(vals[0]).codes)
@@ -1161,7 +1162,7 @@ class AutoPhenotype(object):
         scalarRange = [vals.min().values[0], vals.max().values[0]]
 
         if discrete:
-          cols = hf.get_max_contrast_colours(n=len(np.unique(vals)))
+          cols = misc.get_max_contrast_colours(n=len(np.unique(vals)))
           dctf = vtk.vtkDiscretizableColorTransferFunction()
           dctf.DiscretizeOn()
           dctf.SetRange(scalarRange[0], scalarRange[1])
@@ -1238,7 +1239,7 @@ class AutoPhenotype(object):
         acts = [actor]
 
         acts.extend(boaActors)
-        hf.render_actors(acts, colorbar=True, ruler=ruler, bg = bg)
+        misc.render_actors(acts, colorbar=True, ruler=ruler, bg = bg)
 
     # TODO:
     def show_normals(self, reverseNormals=False, onRatio=1, maxPoints=10000, scaleFactor=10, return_actors=False, opacity=1.0):
@@ -1324,7 +1325,7 @@ class AutoPhenotype(object):
         # Create a renderer, render window, and interactor
         if return_actors:
           return [actorNormals, actorPoly]
-        hf.render_actors([actorNormals, actorPoly])
+        misc.render_actors([actorNormals, actorPoly])
 
     def show_curvatures(self, curv_types=['mean'], operations=[],
                         stdevs=2, numColors=2, curvs=None, normalise=False,
@@ -1357,7 +1358,7 @@ class AutoPhenotype(object):
             curvVals = copy.deepcopy(curvs)
 
         if stdevs != "all":
-            curvVals = hf.reject_outliers_2(curvVals, m=stdevs)
+            curvVals = misc.reject_outliers_2(curvVals, m=stdevs)
 
         if normalise:
           min_ = curvs.min()
@@ -1421,7 +1422,7 @@ class AutoPhenotype(object):
         if return_actors:
           return actor
 
-        hf.render_actors([actor], colorbar=True)
+        misc.render_actors([actor], colorbar=True)
 
     def show_spheres_and_features(self, return_actors=False):
         """"3D visualisation of the sphere fit.

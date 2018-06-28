@@ -7,8 +7,6 @@ Created on Sun Jan 14 14:38:43 2018
 """
 import numpy as np
 import pandas as pd
-#import networkx as nx
-#import handy_functions as hf
 import scipy
 from vtk.util import numpy_support as nps
 import vtk
@@ -107,8 +105,8 @@ def merge_boas_distance(pdata, boas, bdata, distance):
     # Find BoAs within certain distance of each other
     tree = scipy.spatial.cKDTree(bdata[['x', 'y', 'z']])
     groups = tree.query_ball_point(bdata[['x', 'y', 'z']], distance)
-    groups = misc.merge_lists_to_sets(groups)
-    groups = np.array([np.array(ii) for ii in groups])
+    groups = misc.merge(groups)
+    groups = np.array([np.array(list(ii)) for ii in groups])
 
     # Merge domains
     for key, value in enumerate(groups):
@@ -489,7 +487,7 @@ def boas_npoints(pdata):
     """
     return pd.DataFrame(np.array(pdata['domain']))[0].value_counts()
 
-def init_pdata(A, curvs, neighs):
+def init_pointdata(A, curvs, neighs):
     """
 
     Parameters
@@ -598,4 +596,119 @@ def define_meristem(mesh, pdata, method='central_mass', res=(0, 0, 0), fluo=None
                                          ccoord)**2, axis=1)))
     meristem = pdata.loc[meristem, 'domain']
     return meristem, ccoord
+
+def extract_domaindata(pdata, mesh, apex, meristem):
+    domains = np.unique(pdata.domain)
+    domains = domains[~np.isnan(domains)]
+    ddata = pd.DataFrame(columns=['domain', 'dist_boundary', 'dist_com', 'angle',
+                                  'area', 'com', 'ismeristem'], dtype=np.object)
+
+    for ii in domains:
+        # Get distance for closest boundary point to apex
+        dom = get_domain(mesh, pdata, ii)
+        dom_boundary = get_boundary_points(dom)
+        dom_boundary_coords = dom.points[dom_boundary]
+        dom_boundary_dists = np.sqrt(
+            np.sum((dom_boundary_coords - apex)**2, axis=1))
+        d2boundary = np.min(dom_boundary_dists)
+
+        # Get distance for center of mass from apex
+        center = dom.CenterOfMass()
+        d2com = np.sqrt(np.sum((center - apex)**2))
+
+        # Get domain angle in relation to apex
+        rel_pos = center - apex
+        angle = np.arctan2(rel_pos[1], rel_pos[2])  # angle in yz-plane
+        if angle < 0:
+            angle += 2. * np.pi
+        angle *= 360 / (2. * np.pi)
+
+        # Get surface area
+        area = dom.SurfaceArea()
+
+        # Define type
+        ismeristem = ii == meristem
+        if ismeristem:
+            angle = np.nan
+
+        # Set data
+        ddata.loc[int(ii)] = [int(ii), d2boundary, d2com, angle, area, tuple(center), ismeristem]
+    ddata = ddata.infer_objects()
+    ddata = ddata.sort_values(['ismeristem', 'area'], ascending=False)
+    return ddata
+
+
+def merge_boas_angle(pdata, ddata, mesh, threshold, apex):
+    """ Merge domains based on the angles between them.
+
+    Parameters
+    ----------
+    Returns
+    -------
+
+    """
+
+#    boundary = get_boundary_points(mesh)
+    new_ddata = ddata.copy()
+    new_pdata = pdata.copy()
+    apex = apex.copy()
+#    meristem_index = copy.copy(meristem_index)
+
+#    meristem = new_ddata.loc[new_ddata.ismeristem].copy()
+#    new_ddata = new_ddata.loc[~np.isnan(new_ddata.angle)].copy()
+
+    changed = True
+    while changed:
+        changed = False  # new round
+        new_ddata = new_ddata.sort_values('angle', na_position='first')
+        angles = np.sort(new_ddata[1:].angle.values)
+        domains = new_ddata[1:].domain.values.astype(np.int)
+
+        diffs = np.diff(np.append(angles, angles[0]))
+        diffs[diffs < 0] += 360
+
+        too_close = np.where(diffs < threshold)[0]
+
+        if len(too_close) > 0:
+            changed = True
+        else:
+            break
+
+        to_merge = [[domains[ii], domains[(ii + 1) % len(domains)]] for ii in too_close]
+
+        flatten = lambda l: [item for sublist in l for item in sublist]
+        to_merge.extend([[ii] for ii in domains if ii not in flatten(to_merge)])
+        to_merge.insert(0, [0]) # meristem
+
+        doms = misc.merge(to_merge)
+        domains_overwrite = copy.deepcopy(new_pdata.domain.values)
+        for ii in xrange(len(doms)):
+            domains_overwrite[new_pdata.domain.isin(list(doms[ii]))] = ii
+        new_pdata.domain = domains_overwrite
+
+        new_ddata = extract_domaindata(new_pdata, mesh, apex, 0)
+        new_pdata, new_ddata = relabel_domains(new_pdata, new_ddata)
+        new_ddata = new_ddata.sort_values(['ismeristem', 'area'], ascending=False)
+
+    new_ddata = new_ddata.sort_values(['ismeristem', 'area'], ascending=False)
+    return new_pdata, new_ddata
+
+def relabel_domains(pdata, ddata, order='area'):
+    new_pdata = pdata.copy()
+    new_ddata = ddata.copy()
+
+    if order == 'area':
+        new_ddata.sort_values(['ismeristem', 'area'], ascending=False)
+
+    dmap = dict()
+    for ii in xrange(len(new_ddata)):
+        old_dom = new_ddata.iloc[ii].domain
+        dmap[old_dom] = ii
+        new_ddata['domain'].iloc[ii] = ii
+
+    for ii in dmap:
+        new_pdata.loc[pdata.domain == ii, 'domain'] = dmap[ii]
+
+    return new_pdata, new_ddata
+
 

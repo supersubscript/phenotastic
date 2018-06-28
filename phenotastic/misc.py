@@ -6,7 +6,6 @@ Created on Tue May 29 20:00:11 2018
 @author: henrik
 """
 
-# -*- coding: utf-8 -*-
 import pickle
 import numpy as np
 import time
@@ -48,6 +47,9 @@ def merge(lists):
         sets = results
     return sets
 
+def flatten(llist):
+    ''' Flatten a list of lists '''
+    return [item for sublist in llist for item in sublist]
 
 def reject_outliers(data, n=2.):
     """ Remove outliers outside of @n standard deviations.

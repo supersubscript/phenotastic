@@ -29,7 +29,8 @@ import phenotastic.domain_processing as boa
 import phenotastic.plot as pl
 import phenotastic.mesh_processing as mp
 #import phenotastic.misc
-from tissueviewer import fileProcessing as fp
+import phenotastic.file_processing as fp
+#from tissueviewer import fileProcessing as fp
 
 ''' FILE INPUT '''
 home = os.path.expanduser('~')

@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>phenotastic package &#8212; Phenotastic 0.1.0 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
@@ -16,15 +16,27 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Contributing" href="contributing.html" />
-    <link rel="prev" title="phenotastic" href="modules.html" />
-   
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-  
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
-
+    <link rel="prev" title="phenotastic" href="modules.html" /> 
   </head><body>
-  
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="contributing.html" title="Contributing"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="phenotastic"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Phenotastic 0.1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" accesskey="U">phenotastic</a> &#187;</li> 
+      </ul>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -40,7 +52,7 @@
 <span id="phenotastic-meristem-phenotyper-3d-module"></span><h2>phenotastic.Meristem_Phenotyper_3D module<a class="headerlink" href="#module-phenotastic.Meristem_Phenotyper_3D" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="phenotastic.Meristem_Phenotyper_3D.AutoPhenotype">
-<em class="property">class </em><code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">AutoPhenotype</code><span class="sig-paren">(</span><em>data=None</em>, <em>tags=None</em>, <em>contour=None</em>, <em>mesh=None</em>, <em>features=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#AutoPhenotype"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.AutoPhenotype" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">AutoPhenotype</code><span class="sig-paren">(</span><em>data=None</em>, <em>contour=None</em>, <em>mesh=None</em>, <em>pdata=None</em>, <em>ddata=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#AutoPhenotype"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.AutoPhenotype" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A python class for the automated extraction of SAM features in three
 dimensions from a stack of confocal microscope images.</p>
@@ -71,11 +83,6 @@ columns depends on the number of evaluation operations performed. New
 results are appended.</dd>
 </dl>
 <dl class="method">
-<dt id="phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.calculate_curvatures">
-<code class="descname">calculate_curvatures</code><span class="sig-paren">(</span><em>curv_types=['mean'], operations=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#AutoPhenotype.calculate_curvatures"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.calculate_curvatures" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
 <dt id="phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.clean_mesh">
 <code class="descname">clean_mesh</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#AutoPhenotype.clean_mesh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.clean_mesh" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extract largest connected set in self.mesh.</p>
@@ -83,7 +90,7 @@ results are appended.</dd>
 Works only if residues are not connected (share at least one point with)
 the meristems surface.</p>
 <dl class="docutils">
-<dt>no return :</dt>
+<dt>No return :</dt>
 <dd>Overwrites mesh.</dd>
 </dl>
 </dd></dl>
@@ -103,14 +110,7 @@ the meristems surface.</p>
 <a href="#id19"><span class="problematic" id="id20">*</span></a>’results’</dd>
 </dl>
 <p>Specified attributes are reset into initial condition.</p>
-<dl class="docutils">
-<dt>what <span class="classifier-delimiter">:</span> <span class="classifier">list of strings</span></dt>
-<dd>List of attributes to be cleared. See description.</dd>
-</dl>
-<dl class="docutils">
-<dt>no return :</dt>
-<dd>Clears attributes.</dd>
-</dl>
+<p>what :</p>
 </dd></dl>
 
 <dl class="method">
@@ -134,7 +134,7 @@ the meristems surface.</p>
 iteration.</dd>
 </dl>
 <dl class="docutils">
-<dt>no return :</dt>
+<dt>No return :</dt>
 <dd>overwrite contour.</dd>
 </dl>
 </dd></dl>
@@ -145,22 +145,12 @@ iteration.</dd>
 <dd><p>Generate contour fit via a threshold.</p>
 <p>Uses a threshold based approach to generate the initial model of
 self.data. Threshold default is half of the images mean intensity;
-can be adjusted.
-Subsequently, the contour is smoothed</p>
+can be adjusted. Subsequently, the contour is smoothed.</p>
 <dl class="docutils">
-<dt>threshold <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
-<dd><p class="first">Sets the threshold for a voxel to be considered in- or outside the
-contour.</p>
-<blockquote class="last">
-<div><a href="#id21"><span class="problematic" id="id22">*</span></a>Inside: intensity(voxel) &gt; mean_intensity/2*threshold
-<a href="#id23"><span class="problematic" id="id24">*</span></a>Outside: else</div></blockquote>
-</dd>
-<dt>iterate_smooth <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd>Number of times, the smoothing operation is performed.</dd>
-</dl>
-<dl class="docutils">
-<dt>no return :</dt>
-<dd>Overwrites contour.</dd>
+<dt>threshold :</dt>
+<dd>(Default value = .8)</dd>
+<dt>smooth_iterate :</dt>
+<dd>(Default value = 3)</dd>
 </dl>
 </dd></dl>
 
@@ -180,8 +170,9 @@ as initial contour for the regular fit.</p>
 <dd>Number of times, the smoothing operation is performed during one
 iteration.</dd>
 </dl>
+<p>zoom_factor :</p>
 <dl class="docutils">
-<dt>no return :</dt>
+<dt>No return :</dt>
 <dd>overwrite contour.</dd>
 </dl>
 </dd></dl>
@@ -193,7 +184,17 @@ iteration.</dd>
 <p>Computes the curvature of the mesh and then uses a threshold filter to
 remove the parts with negative curvature.</p>
 <dl class="docutils">
-<dt>no return :</dt>
+<dt>threshold :</dt>
+<dd>(Default value = 0.)</dd>
+<dt>curv_types :</dt>
+<dd>(Default value = [‘mean’])</dd>
+<dt>operations :</dt>
+<dd>(Default value = [])</dd>
+<dt>lower :</dt>
+<dd>(Default value = False)</dd>
+</dl>
+<dl class="docutils">
+<dt>No return :</dt>
 <dd>Overwrites mesh.</dd>
 </dl>
 </dd></dl>
@@ -201,7 +202,8 @@ remove the parts with negative curvature.</p>
 <dl class="method">
 <dt id="phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.decimate_mesh">
 <code class="descname">decimate_mesh</code><span class="sig-paren">(</span><em>fraction</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#AutoPhenotype.decimate_mesh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.decimate_mesh" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>fraction :</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.feature_extraction">
@@ -212,26 +214,16 @@ The points of the mesh are numbered. The method steps through the points
 (stepsize = total#ofPoints/res) and selects the connected surface in
 which the point lies. The selected surface is saved if:</p>
 <blockquote>
-<div><p><a href="#id25"><span class="problematic" id="id26">*</span></a>Its #ofPoints is larger than stepsize
-<a href="#id27"><span class="problematic" id="id28">*</span></a>It has not already been selected</p>
+<div><p><a href="#id21"><span class="problematic" id="id22">*</span></a>Its #ofPoints is larger than stepsize
+<a href="#id23"><span class="problematic" id="id24">*</span></a>It has not already been selected</p>
 <blockquote>
 <div>(#ofPoints != #ofPoints(previous_iterations) )</div></blockquote>
 </div></blockquote>
 <dl class="docutils">
-<dt>min_percent <span class="classifier-delimiter">:</span> <span class="classifier">float (element of [0,100])</span></dt>
-<dd>Minimum percentage of cells / points in a primordium / SAM to be
-extracted. Connected regions with less cells / points are ignored.</dd>
-</dl>
-<dl class="docutils">
-<dt>no return :</dt>
-<dd>Overwrites features.</dd>
+<dt>min_percent :</dt>
+<dd>(Default value = 1.)</dd>
 </dl>
 </dd></dl>
-
-<dl class="method">
-<dt id="phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.fill_holes">
-<code class="descname">fill_holes</code><span class="sig-paren">(</span><em>size=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#AutoPhenotype.fill_holes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.fill_holes" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="method">
 <dt id="phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.get_div_angle">
@@ -240,76 +232,10 @@ extracted. Connected regions with less cells / points are ignored.</dd>
 <p>Can only be used after self.sphere_evaluation() has been used.
 Note: all angles must be in degree. Output is also in degree.</p>
 <dl class="docutils">
-<dt>sort_by <span class="classifier-delimiter">:</span> <span class="classifier">str, index in self.results</span></dt>
-<dd>specify the order in which the organs are.
-E.g. sort by ‘sphere_radius’
-Default is ‘sphere_radius’.</dd>
-<dt>sort_results <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
-<dd>Specify, if self.results should be sorted accordingly.
-Default is no sorting.</dd>
-</dl>
-<dl class="docutils">
-<dt>clockwise <span class="classifier-delimiter">:</span> <span class="classifier">float list</span></dt>
-<dd>Difference between angles of the primordiae,
-clockwise orientation.</dd>
-<dt>counterclockwise <span class="classifier-delimiter">:</span> <span class="classifier">float list</span></dt>
-<dd>Difference between angles of the primordiae,
-counterclockwise orientation.</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.invert_normals">
-<code class="descname">invert_normals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#AutoPhenotype.invert_normals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.invert_normals" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.load">
-<code class="descname">load</code><span class="sig-paren">(</span><em>where</em>, <em>what=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#AutoPhenotype.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.load" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load data to existing AutoPhenotype Object.</p>
-<p>What is loaded can be specified.</p>
-<dl class="docutils">
-<dt>where <span class="classifier-delimiter">:</span> <span class="classifier">string, path</span></dt>
-<dd>Path to the folder from which the data should be loaded from.</dd>
-<dt>what <span class="classifier-delimiter">:</span> <span class="classifier">either None, logfile or list of strings</span></dt>
-<dd><p class="first"><a href="#id29"><span class="problematic" id="id30">*</span></a>None: Logfile from specified folder is used.
-<a href="#id31"><span class="problematic" id="id32">*</span></a>logfile: No logfile is imported, instead the specified logfile is</p>
-<blockquote>
-<div>used. E.g. generated by create_logfile() function</div></blockquote>
-<dl class="last docutils">
-<dt><a href="#id33"><span class="problematic" id="id34">*</span></a>list of strings: List of keywords specifying which data should be</dt>
-<dd>loaded. See logfile_from_str() for more information.</dd>
-</dl>
-</dd>
-</dl>
-<dl class="docutils">
-<dt>no return :</dt>
-<dd>Attributes are overwritten.</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.load2">
-<code class="descname">load2</code><span class="sig-paren">(</span><em>where</em>, <em>what=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#AutoPhenotype.load2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.load2" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load data to existing AutoPhenotype Object.</p>
-<p>What is loaded can be specified.</p>
-<dl class="docutils">
-<dt>where <span class="classifier-delimiter">:</span> <span class="classifier">string, path</span></dt>
-<dd>Path to the folder from which the data should be loaded from.</dd>
-<dt>what <span class="classifier-delimiter">:</span> <span class="classifier">either None, logfile or list of strings</span></dt>
-<dd><p class="first"><a href="#id35"><span class="problematic" id="id36">*</span></a>None: Logfile from specified folder is used.
-<a href="#id37"><span class="problematic" id="id38">*</span></a>logfile: No logfile is imported, instead the specified logfile is</p>
-<blockquote>
-<div>used. E.g. generated by create_logfile() function</div></blockquote>
-<dl class="last docutils">
-<dt><a href="#id39"><span class="problematic" id="id40">*</span></a>list of strings: List of keywords specifying which data should be</dt>
-<dd>loaded. See logfile_from_str() for more information.</dd>
-</dl>
-</dd>
-</dl>
-<dl class="docutils">
-<dt>no return :</dt>
-<dd>Attributes are overwritten.</dd>
+<dt>sort_by :</dt>
+<dd>(Default value = ‘sphere_radius’)</dd>
+<dt>sort_results :</dt>
+<dd>(Default value = False)</dd>
 </dl>
 </dd></dl>
 
@@ -317,6 +243,7 @@ counterclockwise orientation.</dd>
 <dt id="phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.load_mesh">
 <code class="descname">load_mesh</code><span class="sig-paren">(</span><em>where</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#AutoPhenotype.load_mesh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.load_mesh" title="Permalink to this definition">¶</a></dt>
 <dd><p>TODO DOCS</p>
+<p>where :</p>
 </dd></dl>
 
 <dl class="method">
@@ -326,7 +253,7 @@ counterclockwise orientation.</dd>
 <p>Uses the marching cubes algorithm from vtk and the tvMeshImageVTK
 function is from tissuviewer.</p>
 <dl class="docutils">
-<dt>no return :</dt>
+<dt>No return :</dt>
 <dd>Overwrites mesh.</dd>
 </dl>
 </dd></dl>
@@ -334,38 +261,15 @@ function is from tissuviewer.</p>
 <dl class="method">
 <dt id="phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.mesh_from_arrays">
 <code class="descname">mesh_from_arrays</code><span class="sig-paren">(</span><em>verts</em>, <em>faces</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#AutoPhenotype.mesh_from_arrays"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.mesh_from_arrays" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.paraboloid_fit_mersitem">
-<code class="descname">paraboloid_fit_mersitem</code><span class="sig-paren">(</span><em>weighted=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#AutoPhenotype.paraboloid_fit_mersitem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.paraboloid_fit_mersitem" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fit the mersitem with a paraboloid.</p>
-<p>Uses the first entry of self.features as meristem.
-See fit_paraboloid() function for more info.</p>
-<dl class="docutils">
-<dt>no return :</dt>
-<dd><p class="first">New results are added to self.results
-<a href="#id41"><span class="problematic" id="id42">*</span></a>para_p1 … para_p5: Parameters of the paraboloid fit.
-<a href="#id43"><span class="problematic" id="id44">*</span></a>para_alpha,beta,gamma: Rotation of the paraboloid relative to</p>
-<blockquote>
-<div>image.</div></blockquote>
-<dl class="last docutils">
-<dt><a href="#id45"><span class="problematic" id="id46">*</span></a>para_apex_x,y,z: Location of the paraboloids apex in coordinates</dt>
-<dd>of the image.</dd>
-</dl>
-</dd>
-</dl>
+<dd><p>verts :</p>
+<p>faces :</p>
 </dd></dl>
-
-<dl class="method">
-<dt id="phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.quadric_decimation">
-<code class="descname">quadric_decimation</code><span class="sig-paren">(</span><em>dec=0.9</em>, <em>method='percentage'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#AutoPhenotype.quadric_decimation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.quadric_decimation" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="method">
 <dt id="phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.read_data">
 <code class="descname">read_data</code><span class="sig-paren">(</span><em>where</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#AutoPhenotype.read_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.read_data" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>where :</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.reduce">
@@ -376,16 +280,17 @@ slicing.</p>
 Can also use spline filters for up and downsampling.</p>
 <dl class="docutils">
 <dt>factor <span class="classifier-delimiter">:</span> <span class="classifier">int if spline = False, float else</span></dt>
-<dd>Specify the factor of reduction.</dd>
+<dd>Specify the factor of reduction. (Default value = 2)</dd>
 <dt>spline <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span></dt>
-<dd><p class="first"><a href="#id47"><span class="problematic" id="id48">*</span></a>if False (default): use numpy slicing to reduce number of planes.
-<a href="#id49"><span class="problematic" id="id50">*</span></a>if True: use spline interpolation for reducing / enlarging data and</p>
-<blockquote class="last">
-<div>contour.</div></blockquote>
+<dd><ul class="first last simple">
+<li>False (default): use numpy slicing to reduce number of planes.</li>
+<li>True: use spline interpolation for reducing / enlarging data and
+contour.</li>
+</ul>
 </dd>
 </dl>
 <dl class="docutils">
-<dt>no return :</dt>
+<dt>No return :</dt>
 <dd>overwrite self.contour and self.data.</dd>
 </dl>
 </dd></dl>
@@ -397,15 +302,8 @@ Can also use spline filters for up and downsampling.</p>
 <p>Results to be kept can be specified. Keeps points_in_feature by default.
 If all results should be deleted use keep = []</p>
 <dl class="docutils">
-<dt>keep <span class="classifier-delimiter">:</span> <span class="classifier">list of strings</span></dt>
-<dd>List specifying the results to be kept.
-E.g. [‘points_in_feature’, ‘sphere_radius’]
-Note: Has to be list even if it only has one entry.
-Use [] for no results to be kept.</dd>
-</dl>
-<dl class="docutils">
-<dt>no return :</dt>
-<dd>Overwrites self.results.</dd>
+<dt>keep :</dt>
+<dd>(Default value = [‘points_in_feature’])</dd>
 </dl>
 </dd></dl>
 
@@ -418,29 +316,26 @@ Note: it is advised to create a new folder for every save, since
 multiple files are created which always have the same name.
 The following files are saved (if avaliable):</p>
 <blockquote>
-<div><p><a href="#id51"><span class="problematic" id="id52">*</span></a>data.tif : processed input data (e.g. reduced) as .tif stack
-<a href="#id53"><span class="problematic" id="id54">*</span></a>contour.tif : contour of data as .tif stack
-<a href="#id55"><span class="problematic" id="id56">*</span></a>mesh.vtp : mesh as vtk .vtp data (readable with</p>
+<div><p><a href="#id25"><span class="problematic" id="id26">*</span></a>data.tif : processed input data (e.g. reduced) as .tif stack
+<a href="#id27"><span class="problematic" id="id28">*</span></a>contour.tif : contour of data as .tif stack
+<a href="#id29"><span class="problematic" id="id30">*</span></a>mesh.vtp : mesh as vtk .vtp data (readable with</p>
 <blockquote>
 <div>vtk.vtkXMLPolyDataReader() )</div></blockquote>
 <dl class="docutils">
-<dt><a href="#id57"><span class="problematic" id="id58">*</span></a>featuresX.vtp <span class="classifier-delimiter">:</span> <span class="classifier">features in same format as mesh.vtp. Each feature</span></dt>
+<dt><a href="#id31"><span class="problematic" id="id32">*</span></a>featuresX.vtp <span class="classifier-delimiter">:</span> <span class="classifier">features in same format as mesh.vtp. Each feature</span></dt>
 <dd>is a separate file and X is a running number starting from 0.</dd>
-<dt><a href="#id59"><span class="problematic" id="id60">*</span></a>results.csv <span class="classifier-delimiter">:</span> <span class="classifier">the results from e.g. the spherical fit as .csv</span></dt>
+<dt><a href="#id33"><span class="problematic" id="id34">*</span></a>results.csv <span class="classifier-delimiter">:</span> <span class="classifier">the results from e.g. the spherical fit as .csv</span></dt>
 <dd>data generated with pandas DataFrame.to_csv().</dd>
 </dl>
 </div></blockquote>
-<dl class="docutils">
-<dt>where <span class="classifier-delimiter">:</span> <span class="classifier">string, path</span></dt>
-<dd>Path to the folder in which the data should be saved. If folder
-does not exist, it is created.</dd>
-</dl>
+<p>where :</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.save_mesh_PLY">
 <code class="descname">save_mesh_PLY</code><span class="sig-paren">(</span><em>where</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#AutoPhenotype.save_mesh_PLY"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.save_mesh_PLY" title="Permalink to this definition">¶</a></dt>
 <dd><p>TODO DOCS</p>
+<p>where :</p>
 </dd></dl>
 
 <dl class="method">
@@ -448,11 +343,7 @@ does not exist, it is created.</dd>
 <code class="descname">save_results</code><span class="sig-paren">(</span><em>where</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#AutoPhenotype.save_results"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.save_results" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save results to specified directory.</p>
 <p>Results are saved as .csv file.</p>
-<dl class="docutils">
-<dt>where <span class="classifier-delimiter">:</span> <span class="classifier">string</span></dt>
-<dd>Path of the saved file. has to include the new filename wothout
-extension. .csv is automaticly added.</dd>
-</dl>
+<p>where :</p>
 </dd></dl>
 
 <dl class="method">
@@ -462,75 +353,84 @@ extension. .csv is automaticly added.</dd>
 <p>The box consists of ones on the surfaces except the edges and the first
 plane on the first axis (axis = 0). The rest is zeros.</p>
 <dl class="docutils">
-<dt>no return :</dt>
+<dt>No return :</dt>
 <dd>Overwrites contour.</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.show_curvatures">
-<code class="descname">show_curvatures</code><span class="sig-paren">(</span><em>curv_types=['mean'], operations=[], stdevs=2, numColors=2, curvs=None, normalise=False, log_=False, return_actors=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#AutoPhenotype.show_curvatures"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.show_curvatures" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.show_features">
-<code class="descname">show_features</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#AutoPhenotype.show_features"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.show_features" title="Permalink to this definition">¶</a></dt>
-<dd><p>“___.</p>
-<p>Uses vtk to visualise the mesh.
-This can be done before or after the segmentation (using
-self.curvatures_slice() ).
-Note: This makes the script pause at the position of the call. Closing
-the render window lets the script continue.</p>
-<dl class="docutils">
-<dt>no return :</dt>
-<dd>Opens a render window.</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.show_mesh">
-<code class="descname">show_mesh</code><span class="sig-paren">(</span><em>opacity=1.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#AutoPhenotype.show_mesh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.show_mesh" title="Permalink to this definition">¶</a></dt>
-<dd><p>“Visualise the mesh.</p>
-<p>Uses vtk to visualise the mesh.
-This can be done before or after the segmentation (using
-self.curvatures_slice() ).
-Note: This makes the script pause at the position of the call. Closing
-the render window lets the script continue.</p>
-<dl class="docutils">
-<dt>no return :</dt>
-<dd>Opens a render window.</dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.show_normals">
 <code class="descname">show_normals</code><span class="sig-paren">(</span><em>reverseNormals=False</em>, <em>onRatio=1</em>, <em>maxPoints=10000</em>, <em>scaleFactor=10</em>, <em>return_actors=False</em>, <em>opacity=1.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#AutoPhenotype.show_normals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.show_normals" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><dl class="docutils">
+<dt>reverseNormals :</dt>
+<dd>(Default value = False)</dd>
+<dt>onRatio :</dt>
+<dd>(Default value = 1)</dd>
+<dt>maxPoints :</dt>
+<dd>(Default value = 10000)</dd>
+<dt>scaleFactor :</dt>
+<dd>(Default value = 10)</dd>
+<dt>return_actors :</dt>
+<dd>(Default value = False)</dd>
+<dt>opacity :</dt>
+<dd>(Default value = 1.0)</dd>
+</dl>
+</dd></dl>
 
 <dl class="method">
 <dt id="phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.show_paraboloid_and_mesh">
 <code class="descname">show_paraboloid_and_mesh</code><span class="sig-paren">(</span><em>p, sampleDim=(200, 200, 200), bounds=[-2000, 2000, -2000, 2000, -2000, 2000]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#AutoPhenotype.show_paraboloid_and_mesh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.show_paraboloid_and_mesh" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>p :</p>
+<dl class="docutils">
+<dt>sampleDim :</dt>
+<dd>(Default value = (200)</dd>
+</dl>
+</dd></dl>
 
 <dl class="method">
 <dt id="phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.show_point_values">
 <code class="descname">show_point_values</code><span class="sig-paren">(</span><em>vals, stdevs=2, discrete=False, return_actors=False, boaCoords=[], bg=[0.1, 0.2, 0.3], logScale=False, ruler=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#AutoPhenotype.show_point_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.show_point_values" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>vals :</p>
+<dl class="docutils">
+<dt>stdevs :</dt>
+<dd>(Default value = 2)</dd>
+<dt>discrete :</dt>
+<dd>(Default value = False)</dd>
+<dt>return_actors :</dt>
+<dd>(Default value = False)</dd>
+<dt>boaCoords :</dt>
+<dd>(Default value = [])</dd>
+</dl>
+<p>bg :</p>
+<dl class="docutils">
+<dt>logScale :</dt>
+<dd>(Default value = False)</dd>
+<dt>ruler :</dt>
+<dd>(Default value = False)</dd>
+</dl>
+</dd></dl>
 
 <dl class="method">
 <dt id="phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.show_spheres">
 <code class="descname">show_spheres</code><span class="sig-paren">(</span><em>meristem_first=False</em>, <em>return_actors=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#AutoPhenotype.show_spheres"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.show_spheres" title="Permalink to this definition">¶</a></dt>
-<dd><p>“3D visualisation of the sphere fit.</p>
+<dd><p>3D visualisation of the sphere fit.</p>
 <p>Uses vtk to show the fitted spheres.
 Color coding:</p>
 <blockquote>
-<div><a href="#id61"><span class="problematic" id="id62">*</span></a>White: first entry in self.results
-<a href="#id63"><span class="problematic" id="id64">*</span></a>R-&gt;G-&gt;B-&gt;P: following results</div></blockquote>
+<div><a href="#id35"><span class="problematic" id="id36">*</span></a>White: first entry in self.results
+<a href="#id37"><span class="problematic" id="id38">*</span></a>R-&gt;G-&gt;B-&gt;P: following results</div></blockquote>
 <p>Note: This makes the script pause at the position of the call. Closing
 the render window lets the script continue.</p>
 <dl class="docutils">
-<dt>no return :</dt>
-<dd>Opens a render window.</dd>
+<dt>meristem_first :</dt>
+<dd>(Default value = False)</dd>
+<dt>return_actors :</dt>
+<dd>(Default value = False)</dd>
+</dl>
+<dl class="docutils">
+<dt>type</dt>
+<dd>no return :
+Opens a render window.</dd>
 </dl>
 </dd></dl>
 
@@ -541,12 +441,19 @@ the render window lets the script continue.</p>
 <p>Uses vtk to show the fitted spheres.
 Color coding:</p>
 <blockquote>
-<div><a href="#id65"><span class="problematic" id="id66">*</span></a>White: first entry in self.results
-<a href="#id67"><span class="problematic" id="id68">*</span></a>R-&gt;G-&gt;B-&gt;P: following results</div></blockquote>
+<div><ul class="simple">
+<li>White: first entry in self.results</li>
+<li>R-&gt;G-&gt;B-&gt;P: following results</li>
+</ul>
+</div></blockquote>
 <p>Note: This makes the script pause at the position of the call. Closing
 the render window lets the script continue.</p>
 <dl class="docutils">
-<dt>no return :</dt>
+<dt>return_actors :</dt>
+<dd>(Default value = False)</dd>
+</dl>
+<dl class="docutils">
+<dt>No return :</dt>
 <dd>Opens a render window.</dd>
 </dl>
 </dd></dl>
@@ -555,6 +462,12 @@ the render window lets the script continue.</p>
 <dt id="phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.slice_bottom">
 <code class="descname">slice_bottom</code><span class="sig-paren">(</span><em>threshold=0.0</em>, <em>dim=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#AutoPhenotype.slice_bottom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.slice_bottom" title="Permalink to this definition">¶</a></dt>
 <dd><p>TODO</p>
+<dl class="docutils">
+<dt>threshold :</dt>
+<dd>(Default value = 0.)</dd>
+<dt>dim :</dt>
+<dd>(Default value = 0)</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -564,6 +477,10 @@ the render window lets the script continue.</p>
 <p>Uses the SIoIS and ISoSI operator of Marquez-Neila et al. 2014
 (Section 3.5) to smooth the contour. At least one iteration after step
 is needed to get a good contour.</p>
+<dl class="docutils">
+<dt>iterate :</dt>
+<dd>(Default value = 1)</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -573,14 +490,18 @@ is needed to get a good contour.</p>
 <p>Uses vtk methods to clean and smooth the mesh. See documentation of
 vtkSmoothPolyData and vtkCleanPolyData for more info.</p>
 <dl class="docutils">
-<dt>iterations <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd>Number of iterations of the smooth algorithm.</dd>
-<dt>relaxation_factor: float</dt>
-<dd>Relaxation factor of the smooth algorithm.</dd>
-</dl>
-<dl class="docutils">
-<dt>no return :</dt>
-<dd>Overwrites mesh.</dd>
+<dt>iterations :</dt>
+<dd>(Default value = 500)</dd>
+<dt>relaxation_factor :</dt>
+<dd>(Default value = .5)</dd>
+<dt>featureEdgeSmoothing :</dt>
+<dd>(Default value = False)</dd>
+<dt>boundarySmoothing :</dt>
+<dd>(Default value = True)</dd>
+<dt>feature_angle :</dt>
+<dd>(Default value = 30)</dd>
+<dt>edge_angle :</dt>
+<dd>(Default value = 15)</dd>
 </dl>
 </dd></dl>
 
@@ -590,23 +511,12 @@ vtkSmoothPolyData and vtkCleanPolyData for more info.</p>
 <dd><p>Sort results by specified column.</p>
 <p>The sorting direction can be adjusted.</p>
 <dl class="docutils">
-<dt>column <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Name of the column by which the array should be sorted.
-If column = ‘index’, the array will be sorted by its index</dd>
-<dt>ascending <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
-<dd><dl class="first last docutils">
-<dt>Specifies the sorting direction:</dt>
-<dd><a href="#id69"><span class="problematic" id="id70">*</span></a>False: high-&gt;low
-<a href="#id71"><span class="problematic" id="id72">*</span></a>True: low-&gt;high</dd>
-</dl>
-</dd>
-<dt>reset_index <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
-<dd>Reset the row index after sorting the array. If True, the order of
-self.features is also changed accordingly.</dd>
-</dl>
-<dl class="docutils">
-<dt>no return :</dt>
-<dd>Overwrites results</dd>
+<dt>column :</dt>
+<dd>(Default value = ‘index’)</dd>
+<dt>ascending :</dt>
+<dd>(Default value = False)</dd>
+<dt>reset_index :</dt>
+<dd>(Default value = False)</dd>
 </dl>
 </dd></dl>
 
@@ -617,28 +527,27 @@ self.features is also changed accordingly.</dd>
 <dl class="docutils">
 <dt>Added results are:</dt>
 <dd><dl class="first docutils">
-<dt><a href="#id73"><span class="problematic" id="id74">*</span></a>’sphere_x_rel’: x-location of the primordium relative to the</dt>
+<dt><a href="#id39"><span class="problematic" id="id40">*</span></a>’sphere_x_rel’: x-location of the primordium relative to the</dt>
 <dd>meristem.</dd>
-<dt><a href="#id75"><span class="problematic" id="id76">*</span></a>’sphere_y_rel’: y-location of the primordium relative to the</dt>
+<dt><a href="#id41"><span class="problematic" id="id42">*</span></a>’sphere_y_rel’: y-location of the primordium relative to the</dt>
 <dd>meristem.</dd>
-<dt><a href="#id77"><span class="problematic" id="id78">*</span></a>’sphere_z_rel’: z-location of the primordium relative to the</dt>
+<dt><a href="#id43"><span class="problematic" id="id44">*</span></a>’sphere_z_rel’: z-location of the primordium relative to the</dt>
 <dd>meristem.</dd>
 </dl>
-<p><a href="#id79"><span class="problematic" id="id80">*</span></a>’sphere_volume’: Volume of the sphere
-<a href="#id81"><span class="problematic" id="id82">*</span></a>’sphere_R’: Distance of the primordium to the meristem.
-<a href="#id83"><span class="problematic" id="id84">*</span></a>’sphere_angle_raw’: Angle between the primordia in the y,z plane.</p>
+<p><a href="#id45"><span class="problematic" id="id46">*</span></a>’sphere_volume’: Volume of the sphere
+<a href="#id47"><span class="problematic" id="id48">*</span></a>’sphere_R’: Distance of the primordium to the meristem.
+<a href="#id49"><span class="problematic" id="id50">*</span></a>’sphere_angle_raw’: Angle between the primordia in the y,z plane.</p>
 <blockquote>
 <div>Zero is chosen to be z = 0 and y &gt; 0.</div></blockquote>
-<p class="last"><a href="#id85"><span class="problematic" id="id86">*</span></a>–results missing–</p>
+<p class="last"><a href="#id51"><span class="problematic" id="id52">*</span></a>–results missing–</p>
 </dd>
 </dl>
 <p>Note: List of results is newly sorted in a way that the row with index
-0 is the meristem. The row label is changed accordingly.
-Return
-——
-no return :</p>
-<blockquote>
-<div>Results are updated (see description).</div></blockquote>
+0 is the meristem. The row label is changed accordingly.</p>
+<dl class="docutils">
+<dt>No return :</dt>
+<dd>Results are updated (see description).</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -648,22 +557,16 @@ no return :</p>
 <p>Iterates over the vtkPolyData objects in features and performs a least
 square fit of a sphere to each feature.</p>
 <dl class="docutils">
-<dt>self.results <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
-<dd><dl class="first docutils">
-<dt>Four additional rows in self.results:</dt>
-<dd><dl class="first last docutils">
-<dt><a href="#id87"><span class="problematic" id="id88">*</span></a>sphere_x_abs: absolute x-coordinate of the center of the</dt>
-<dd>fitted sphere</dd>
-<dt><a href="#id89"><span class="problematic" id="id90">*</span></a>sphere_y_abs: absolute y-coordinate of the center of the</dt>
-<dd>fitted sphere</dd>
-<dt><a href="#id91"><span class="problematic" id="id92">*</span></a>sphere_z_abs: absolute z-coordinate of the center of the</dt>
-<dd>fitted sphere</dd>
-</dl>
-</dd>
-</dl>
-<p class="last">Note: absolute means in units of the coordinate system used in
-self.features.</p>
-</dd>
+<dt>self.results <span class="classifier-delimiter">:</span> <span class="classifier">pd.DataFrame</span></dt>
+<dd>Four additional rows in self.results:
+* sphere_x_abs: absolute x-coordinate of the center of the
+fitted sphere
+* sphere_y_abs: absolute y-coordinate of the center of the
+fitted sphere
+* sphere_z_abs: absolute z-coordinate of the center of the
+fitted sphere
+Note: absolute means in units of the coordinate system used in
+self.features.</dd>
 </dl>
 </dd></dl>
 
@@ -674,25 +577,12 @@ self.features.</p>
 <p>Implementation of the first two parts of Equation 32 in Marquez-Neila
 et al. 2014. (DOI: 10.1109/TPAMI.2013.106). The third part (smoothing)
 is implemented in the smooth_contour method.</p>
-<dl class="docutils">
-<dt>weighting <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
-<dd>Ratio of the weightings of the inside to outside intensity.
-(lambda_1/lambda_2 in Equation 32, where lambda_2 is chosen to be 1</dd>
-</dl>
-<dl class="docutils">
-<dt>no return :</dt>
-<dd>Overwrite self.contour.</dd>
-</dl>
+<p>weighting :</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.triangulate">
 <code class="descname">triangulate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#AutoPhenotype.triangulate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.triangulate" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.update_mesh">
-<code class="descname">update_mesh</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#AutoPhenotype.update_mesh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.AutoPhenotype.update_mesh" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -702,6 +592,11 @@ is implemented in the smooth_contour method.</p>
 <code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">IS</code><span class="sig-paren">(</span><em>u</em>, <em>iterate=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#IS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.IS" title="Permalink to this definition">¶</a></dt>
 <dd><p>IS operator.</p>
 <p>Marquez-Neila et al. 2014. (DOI: 10.1109/TPAMI.2013.106)</p>
+<p>u :</p>
+<dl class="docutils">
+<dt>iterate :</dt>
+<dd>(Default value = 1)</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
@@ -709,6 +604,7 @@ is implemented in the smooth_contour method.</p>
 <code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">ISoSI</code><span class="sig-paren">(</span><em>u</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#ISoSI"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.ISoSI" title="Permalink to this definition">¶</a></dt>
 <dd><p>ISoSI operator.</p>
 <p>Marquez-Neila et al. 2014. (DOI: 10.1109/TPAMI.2013.106)</p>
+<p>u :</p>
 </dd></dl>
 
 <dl class="function">
@@ -716,6 +612,11 @@ is implemented in the smooth_contour method.</p>
 <code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">SI</code><span class="sig-paren">(</span><em>u</em>, <em>iterate=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#SI"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.SI" title="Permalink to this definition">¶</a></dt>
 <dd><p>SI operator.</p>
 <p>Marquez-Neila et al. 2014. (DOI: 10.1109/TPAMI.2013.106)</p>
+<p>u :</p>
+<dl class="docutils">
+<dt>iterate :</dt>
+<dd>(Default value = 1)</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
@@ -723,6 +624,7 @@ is implemented in the smooth_contour method.</p>
 <code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">SIoIS</code><span class="sig-paren">(</span><em>u</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#SIoIS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.SIoIS" title="Permalink to this definition">¶</a></dt>
 <dd><p>SIoIS operator.</p>
 <p>Marquez-Neila et al. 2014. (DOI: 10.1109/TPAMI.2013.106)</p>
+<p>u :</p>
 </dd></dl>
 
 <dl class="function">
@@ -731,118 +633,16 @@ is implemented in the smooth_contour method.</p>
 <dd><p>Return the differences between consecutive angles in an array.</p>
 <p>Computes both clockwise and counterclockwise angle differences.
 Angles need to be in degree.</p>
-<dl class="docutils">
-<dt>array <span class="classifier-delimiter">:</span> <span class="classifier">list with n entries</span></dt>
-<dd>List of angles.</dd>
-</dl>
-<dl class="docutils">
-<dt>angle differences <span class="classifier-delimiter">:</span> <span class="classifier">list with two entries each with n-1 entries</span></dt>
-<dd><a href="#id93"><span class="problematic" id="id94">*</span></a>return[0]: clockwise angle differences
-<a href="#id95"><span class="problematic" id="id96">*</span></a>return[1]: counterclockwise angle differences</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.Meristem_Phenotyper_3D.array_from_vtk_polydata">
-<code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">array_from_vtk_polydata</code><span class="sig-paren">(</span><em>poly</em>, <em>size=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#array_from_vtk_polydata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.array_from_vtk_polydata" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a boolean numpy array from vtkPolyData.</p>
-<p>The size of the created numpy array can be specified. It has to be equal or
-larger than the bounds of the polydata. Scalar values in the polyData are
-ignored. All nonzero values in poly are transformed into ones in the return.
-Note: works only in 3D.</p>
-<dl class="docutils">
-<dt>poly <span class="classifier-delimiter">:</span> <span class="classifier">vtkPolyData (3D)</span></dt>
-<dd>polyData to be transformed.</dd>
-<dt>size <span class="classifier-delimiter">:</span> <span class="classifier">tuple / list of int</span></dt>
-<dd>Size of the created numpy array. By default set to the boundd of the
-polyData. e.g. (3,4,5)</dd>
-</dl>
-<dl class="docutils">
-<dt>array <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd>Boolean numpy array corresponding to the nonzero points in poly.</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.Meristem_Phenotyper_3D.blockPrint">
-<code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">blockPrint</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#blockPrint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.blockPrint" title="Permalink to this definition">¶</a></dt>
-<dd><p>Suppress all print output after call.</p>
+<p>array :</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="phenotastic.Meristem_Phenotyper_3D.cart2sphere">
 <code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">cart2sphere</code><span class="sig-paren">(</span><em>xyz</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#cart2sphere"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.cart2sphere" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert cartesian coordinates into spherical coordinates.</p>
-<p>Convert a list of cartesian coordinates x,y,z to spherical coordinates
-r,theta,phi. theta is defined as 0 along z-axis.</p>
-<dl class="docutils">
-<dt>xyz <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd>List of cartesian coordinates</dd>
-</dl>
-<dl class="docutils">
-<dt>rtp <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd>List of spherical coordinates</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.Meristem_Phenotyper_3D.coord_to_polydata">
-<code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">coord_to_polydata</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#coord_to_polydata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.coord_to_polydata" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.Meristem_Phenotyper_3D.create_logfile">
-<code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">create_logfile</code><span class="sig-paren">(</span><em>logs</em>, <em>path=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#create_logfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.create_logfile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a logfile for saving and loading AutoPhenotype data from boolean
-list.</p>
-<p>Return logfile and optionally save it as .csv file.</p>
-<dl class="docutils">
-<dt>logs <span class="classifier-delimiter">:</span> <span class="classifier">list of 1,0</span></dt>
-<dd><dl class="first last docutils">
-<dt>Has to have six entries. 0: deactivated, 1: activated</dt>
-<dd><a href="#id97"><span class="problematic" id="id98">*</span></a>Entry 0: data
-<a href="#id99"><span class="problematic" id="id100">*</span></a>Entry 1: contour
-<a href="#id101"><span class="problematic" id="id102">*</span></a>Entry 2: mesh
-<a href="#id103"><span class="problematic" id="id104">*</span></a>Entry 3: features
-<a href="#id105"><span class="problematic" id="id106">*</span></a>Entry 4: results
-<a href="#id107"><span class="problematic" id="id108">*</span></a>Entry 5: tags</dd>
-</dl>
-</dd>
-<dt>path = string</dt>
-<dd>If specified, the logfile is created at the specified location as .csv
-file. Path has to include file name.</dd>
-</dl>
-<dl class="docutils">
-<dt>logfile <span class="classifier-delimiter">:</span> <span class="classifier">logfile</span></dt>
-<dd>Logfile which can be used in saving, loading AutoPhenotype data. Format
-is pandas.DataFrame()</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.Meristem_Phenotyper_3D.curvature_gauss">
-<code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">curvature_gauss</code><span class="sig-paren">(</span><em>mesh</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#curvature_gauss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.curvature_gauss" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.Meristem_Phenotyper_3D.curvature_max">
-<code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">curvature_max</code><span class="sig-paren">(</span><em>mesh</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#curvature_max"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.curvature_max" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.Meristem_Phenotyper_3D.curvature_mean">
-<code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">curvature_mean</code><span class="sig-paren">(</span><em>mesh</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#curvature_mean"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.curvature_mean" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.Meristem_Phenotyper_3D.curvature_min">
-<code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">curvature_min</code><span class="sig-paren">(</span><em>mesh</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#curvature_min"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.curvature_min" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.Meristem_Phenotyper_3D.enablePrint">
-<code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">enablePrint</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#enablePrint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.enablePrint" title="Permalink to this definition">¶</a></dt>
-<dd><p>Enable all print output after call, if it was blocked before.</p>
+<p>Convert a list of cartesian coordinates x, y, z to spherical coordinates
+r, theta, phi. theta is defined as 0 along z-axis.</p>
+<p>xyz :</p>
 </dd></dl>
 
 <dl class="class">
@@ -853,89 +653,24 @@ is pandas.DataFrame()</dd>
 </dd></dl>
 
 <dl class="function">
-<dt id="phenotastic.Meristem_Phenotyper_3D.fit_paraboloid">
-<code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">fit_paraboloid</code><span class="sig-paren">(</span><em>data, init=[1, 1, 1, 1, 1, 0, 0, 0]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#fit_paraboloid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.fit_paraboloid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fit a paraboloid to arbitrarily oriented 3D data.</p>
-<p>The paraboloid data can by oriented along an arbitrary axis. Not neccesary
-x,y,z. The function rotates the data points and returns the rotation angles
-along the x,y,z axis.
-Returns the parameters for a praboloid along the z-axis. The angles can be
-used to correct the paraboloid for rotation.
-Paraboloid equation : p1*x**2.+p2*y**2.+p3*x+p4*y+p5 = z</p>
-<dl class="docutils">
-<dt>data <span class="classifier-delimiter">:</span> <span class="classifier">array or list of cartesian coordinates</span></dt>
-<dd>Cartesian coordinates of the data points.</dd>
-<dt>init <span class="classifier-delimiter">:</span> <span class="classifier">list of 8 scalars</span></dt>
-<dd>Initial parameter set.
-[p1, p2, p3, p4, p5, alpha, beta, gamma]
-<a href="#id109"><span class="problematic" id="id110">*</span></a>alpha: rotation around x axis
-<a href="#id111"><span class="problematic" id="id112">*</span></a>beta: rotation around y axis
-<a href="#id113"><span class="problematic" id="id114">*</span></a>gamma: rotation around z axis</dd>
-</dl>
-<dl class="docutils">
-<dt>popt <span class="classifier-delimiter">:</span> <span class="classifier">list of 8 scalars</span></dt>
-<dd>Optimised parameters.
-[p1, p2, p3, p4, p5, alpha, beta, gamma]
-<a href="#id115"><span class="problematic" id="id116">*</span></a>alpha: rotation around x axis
-<a href="#id117"><span class="problematic" id="id118">*</span></a>beta: rotation around y axis
-<a href="#id119"><span class="problematic" id="id120">*</span></a>gamma: rotation around z axis</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.Meristem_Phenotyper_3D.fit_paraboloid_weighted">
-<code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">fit_paraboloid_weighted</code><span class="sig-paren">(</span><em>data, init=[1, 1, 1, 1, 1, 0, 0, 0]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#fit_paraboloid_weighted"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.fit_paraboloid_weighted" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
 <dt id="phenotastic.Meristem_Phenotyper_3D.fit_sphere">
 <code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">fit_sphere</code><span class="sig-paren">(</span><em>data, init=[0, 0, 0, 10]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#fit_sphere"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.fit_sphere" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit a sphere to specified data.</p>
 <p>Uses a least square fit for optimisation.
 Return coordinates of the sphere center and its radius as well as the
 residual variance of the fit.</p>
-<dl class="docutils">
-<dt>data <span class="classifier-delimiter">:</span> <span class="classifier">3D numpy array</span></dt>
-<dd>Data to be fit with a sphere</dd>
-<dt>init <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd>List of initial parameters:
-[x0, y0, z0, r0]</dd>
-</dl>
-<dl class="docutils">
-<dt>parameter <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd>list of fitted parameters and residual variance:
-[x,y,z,r,res_var]</dd>
-</dl>
+<p>data :</p>
+<p>init :</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="phenotastic.Meristem_Phenotyper_3D.get_connected_vertices">
 <code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">get_connected_vertices</code><span class="sig-paren">(</span><em>mesh</em>, <em>seed</em>, <em>includeSelf=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#get_connected_vertices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.get_connected_vertices" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.Meristem_Phenotyper_3D.get_curvatures">
-<code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">get_curvatures</code><span class="sig-paren">(</span><em>A, dist_=1, curv_types=['mean'], operations=[], ignore_boundary=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#get_curvatures"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.get_curvatures" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.Meristem_Phenotyper_3D.get_paraboloid_apex">
-<code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">get_paraboloid_apex</code><span class="sig-paren">(</span><em>p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#get_paraboloid_apex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.get_paraboloid_apex" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the apex of a paraboloid.</p>
-<p>Use the return of fit_paraboloid() to compute the apex of the paraboloid.
-The return is in the coordinate system of the data, meaning that the
-coordinates have been corected for the rotation angles.</p>
+<dd><p>mesh :</p>
+<p>seed :</p>
 <dl class="docutils">
-<dt>p <span class="classifier-delimiter">:</span> <span class="classifier">list of 8 scalars</span></dt>
-<dd>Optimised parameters.
-[p1, p2, p3, p4, p5, alpha, beta, gamma]
-<a href="#id121"><span class="problematic" id="id122">*</span></a>alpha: rotation around x axis
-<a href="#id123"><span class="problematic" id="id124">*</span></a>beta: rotation around y axis
-<a href="#id125"><span class="problematic" id="id126">*</span></a>gamma: rotation around z axis</dd>
-</dl>
-<dl class="docutils">
-<dt>coord <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd>List of the apex’ [x,y,z] coordinates.</dd>
+<dt>includeSelf :</dt>
+<dd>(Default value = True)</dd>
 </dl>
 </dd></dl>
 
@@ -950,7 +685,7 @@ coordinates have been corected for the rotation angles.</p>
 <dd>Shape of the returned array</dd>
 </dl>
 <dl class="docutils">
-<dt>array <span class="classifier-delimiter">:</span> <span class="classifier">numpy array with shape() = shape</span></dt>
+<dt>array <span class="classifier-delimiter">:</span> <span class="classifier">np.array</span></dt>
 <dd>Three dimensional numpy array with zeros on the edges and ones else.</dd>
 </dl>
 </dd></dl>
@@ -965,53 +700,18 @@ other way around.</p>
 <dt>shape <span class="classifier-delimiter">:</span> <span class="classifier">tuple with three components</span></dt>
 <dd>Shape of the returned array</dd>
 <dt>invert <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
-<dd><a href="#id127"><span class="problematic" id="id128">*</span></a>True: Ones on surface, zeros else
-<a href="#id129"><span class="problematic" id="id130">*</span></a>False: Zeros on surface, ones else</dd>
+<dd><ul class="first last simple">
+<li>True: Ones on surface, zeros else</li>
+<li>False: Zeros on surface, ones else</li>
+</ul>
+</dd>
 </dl>
 <dl class="docutils">
-<dt>array <span class="classifier-delimiter">:</span> <span class="classifier">numpy array with shape() = shape</span></dt>
+<dt>array <span class="classifier-delimiter">:</span> <span class="classifier">np.array</span></dt>
 <dd>Three dimensional numpy array with zeros on the surface and ones else
 or the other way around.</dd>
 </dl>
 </dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.Meristem_Phenotyper_3D.logfile_from_str">
-<code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">logfile_from_str</code><span class="sig-paren">(</span><em>what</em>, <em>path=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#logfile_from_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.logfile_from_str" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a logfile for saving and loading AutoPhenotype data from keywords</p>
-<dl class="docutils">
-<dt>Uses keywords to generate a logfile. Keywords can be:</dt>
-<dd><a href="#id131"><span class="problematic" id="id132">*</span></a>’all’: everything below
-<a href="#id133"><span class="problematic" id="id134">*</span></a>’data’: input data as .tif
-<a href="#id135"><span class="problematic" id="id136">*</span></a>’contour’: contour fit as .tif
-<a href="#id137"><span class="problematic" id="id138">*</span></a>’mesh’: mesh as vtk data .vtp
-<a href="#id139"><span class="problematic" id="id140">*</span></a>’features’: features as vtk data .vtp
-<a href="#id141"><span class="problematic" id="id142">*</span></a>’results’: results as .csv</dd>
-</dl>
-<dl class="docutils">
-<dt>what <span class="classifier-delimiter">:</span> <span class="classifier">list of strings</span></dt>
-<dd>Use specified strings from description.
-Note: has to be list, even if only one keyword is specified.</dd>
-<dt>path = string</dt>
-<dd>If specified, the logfile is created at the specified location as .csv
-file. Path has to include file name.</dd>
-</dl>
-<dl class="docutils">
-<dt>logfile <span class="classifier-delimiter">:</span> <span class="classifier">logfile</span></dt>
-<dd>Logfile which can be used in saving, loading AutoPhenotype data. Format
-is pandas.DataFrame()</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.Meristem_Phenotyper_3D.polydata_to_coord">
-<code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">polydata_to_coord</code><span class="sig-paren">(</span><em>poly</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#polydata_to_coord"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.polydata_to_coord" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.Meristem_Phenotyper_3D.readTiff">
-<code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">readTiff</code><span class="sig-paren">(</span><em>file_loc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#readTiff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.readTiff" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="function">
 <dt id="phenotastic.Meristem_Phenotyper_3D.rgb_list">
@@ -1022,19 +722,11 @@ have N entries. The range of each tuple entry is between 0. and 1. The list
 goes from red over green to blue and purple.</p>
 <dl class="docutils">
 <dt>N <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd>Number of returned RGB-tuples.</dd>
-<dt>firstcolor <span class="classifier-delimiter">:</span> <span class="classifier">list, three components</span></dt>
-<dd>First entry of the returned RGB-list.</dd>
-<dt>lastcolor <span class="classifier-delimiter">:</span> <span class="classifier">list, three components</span></dt>
-<dd>Last entry of the returned RGB-list.</dd>
-<dt>s <span class="classifier-delimiter">:</span> <span class="classifier">float between 0 and 1</span></dt>
-<dd>Saturation value of the list</dd>
-<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">float between 0 and 1</span></dt>
-<dd>Value value of the list</dd>
+<dd>Number of colours.</dd>
 </dl>
 <dl class="docutils">
-<dt>RGB-list <span class="classifier-delimiter">:</span> <span class="classifier">list of tuples with three components</span></dt>
-<dd>List with N RGB-tuples</dd>
+<dt>RGB_tuples <span class="classifier-delimiter">:</span> <span class="classifier">tuple</span></dt>
+<dd>Tuples of RGB colours</dd>
 </dl>
 </dd></dl>
 
@@ -1042,40 +734,38 @@ goes from red over green to blue and purple.</p>
 <dt id="phenotastic.Meristem_Phenotyper_3D.rot_coord">
 <code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">rot_coord</code><span class="sig-paren">(</span><em>coord</em>, <em>angles</em>, <em>invert=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#rot_coord"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.rot_coord" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rotate given coordinates by specified angles.</p>
-<p>Use rotation matrices to rotate a list of coordinates around the x,y,z axis
-by specified angles alpha,beta,gamma.</p>
+<p>Use rotation matrices to rotate a list of coordinates around the x, y, z axis
+by specified angles alpha, beta, gamma.</p>
+<p>coord :</p>
+<p>angles :</p>
 <dl class="docutils">
-<dt>coord <span class="classifier-delimiter">:</span> <span class="classifier">list of coordinates</span></dt>
-<dd>List of catesian coordinates</dd>
-<dt>angles <span class="classifier-delimiter">:</span> <span class="classifier">list of three scalars</span></dt>
-<dd>List specifying the rotation angles. See description.</dd>
-<dt>invert <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span></dt>
-<dd>True inverts the used rotation matrix. This can be used for undoing a
-rotation.</dd>
-</dl>
-<dl class="docutils">
-<dt>rotated_coord <span class="classifier-delimiter">:</span> <span class="classifier">list of cordinates</span></dt>
-<dd>List of rotated cartesian coordinates</dd>
+<dt>invert :</dt>
+<dd>(Default value = False)</dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="phenotastic.Meristem_Phenotyper_3D.rot_matrix_44">
 <code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">rot_matrix_44</code><span class="sig-paren">(</span><em>angles</em>, <em>invert=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#rot_matrix_44"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.rot_matrix_44" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>angles :</p>
+<dl class="docutils">
+<dt>invert :</dt>
+<dd>(Default value = False)</dd>
+</dl>
+</dd></dl>
 
 <dl class="function">
 <dt id="phenotastic.Meristem_Phenotyper_3D.save_polydata_ply">
 <code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">save_polydata_ply</code><span class="sig-paren">(</span><em>what</em>, <em>where</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#save_polydata_ply"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.save_polydata_ply" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save vtk.PolyData() as .ply file.</p>
+<dd><p>Save vtk.PolyData as .ply file.</p>
 <p>File location can be specified.</p>
 <dl class="docutils">
-<dt>what <span class="classifier-delimiter">:</span> <span class="classifier">vtk.PolyData()</span></dt>
-<dd>PolyData to be saved.</dd>
-<dt>where <span class="classifier-delimiter">:</span> <span class="classifier">string</span></dt>
-<dd>File location including file name without extension. .ply is automaticly
-added.</dd>
+<dt>what <span class="classifier-delimiter">:</span> <span class="classifier">vi.PolyData</span></dt>
+<dd>PolyData to save.</dd>
+<dt>where <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Path for saving in.</dd>
 </dl>
+<p>No return :</p>
 </dd></dl>
 
 <dl class="function">
@@ -1089,7 +779,7 @@ added.</dd>
 <dd>Desired value for the edges of the array.</dd>
 </dl>
 <dl class="docutils">
-<dt>array <span class="classifier-delimiter">:</span> <span class="classifier">numpy array with shape() = (x,y,z)</span></dt>
+<dt>array <span class="classifier-delimiter">:</span> <span class="classifier">np.array</span></dt>
 <dd>Input array with edges set to value.</dd>
 </dl>
 </dd></dl>
@@ -1105,7 +795,7 @@ added.</dd>
 <dd>Desired value for the surface of the array.</dd>
 </dl>
 <dl class="docutils">
-<dt>array <span class="classifier-delimiter">:</span> <span class="classifier">numpy array with shape() = (x,y,z)</span></dt>
+<dt>array <span class="classifier-delimiter">:</span> <span class="classifier">np.array</span></dt>
 <dd>Input array with surface set to value.</dd>
 </dl>
 </dd></dl>
@@ -1121,62 +811,23 @@ Example:  to array</p>
 <div>a = [p,c,e,s,e,i,l]; b = [5,2,7,6,1,4,3]
 -&gt; sort_a_along_b(a,b) = [e,c,l,i,p,s,e];
 # and b would be [1,2,3,4,5,6,7]</div></blockquote>
-<dl class="docutils">
-<dt>a <span class="classifier-delimiter">:</span> <span class="classifier">list (same length as b)</span></dt>
-<dd>List to be sorted.</dd>
-<dt>b <span class="classifier-delimiter">:</span> <span class="classifier">list (same length as a)</span></dt>
-<dd>Reference list for sorting.</dd>
-</dl>
-<dl class="docutils">
-<dt>a’ <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd>List ‘a’ sorted with respect to ‘b’.</dd>
-</dl>
+<p>b :</p>
+<p>a :</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="phenotastic.Meristem_Phenotyper_3D.sphere2cart">
 <code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">sphere2cart</code><span class="sig-paren">(</span><em>rtp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#sphere2cart"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.sphere2cart" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert spherical coordinates into cartesian coordinates.</p>
-<p>Convert a list of spherical coordinates r,theta,phi to cartesian coordinates
-x,y,z. theta is defined as 0 along z-axis.</p>
-<dl class="docutils">
-<dt>rtp <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd>List of spherical coordinates</dd>
-</dl>
-<dl class="docutils">
-<dt>xyz <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd>List of cartesian coordinates</dd>
-</dl>
+<p>Convert a list of spherical coordinates r, theta, phi to cartesian coordinates
+x, y, z. Theta is defined as 0 along z-axis.</p>
+<p>rtp :</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="phenotastic.Meristem_Phenotyper_3D.sphere_volume">
 <code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">sphere_volume</code><span class="sig-paren">(</span><em>radius</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#sphere_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.sphere_volume" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the volume of a sphere.</p>
-<p>Is able to process numpy arrays.</p>
-<dl class="docutils">
-<dt>R <span class="classifier-delimiter">:</span> <span class="classifier">ndarray of floats</span></dt>
-<dd>Radi of spheres.</dd>
-</dl>
-<dl class="docutils">
-<dt>Volumes <span class="classifier-delimiter">:</span> <span class="classifier">ndarray of floats</span></dt>
-<dd>Volumes of spheres.</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.Meristem_Phenotyper_3D.view_polydata">
-<code class="descclassname">phenotastic.Meristem_Phenotyper_3D.</code><code class="descname">view_polydata</code><span class="sig-paren">(</span><em>poly</em>, <em>firstcolor=()</em>, <em>lastcolor=()</em>, <em>return_actors=False</em>, <em>opacity=1.0</em>, <em>bg=(0</em>, <em>0</em>, <em>0)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/Meristem_Phenotyper_3D.html#view_polydata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.Meristem_Phenotyper_3D.view_polydata" title="Permalink to this definition">¶</a></dt>
-<dd><p>Display vtkPolyData. Can show superposition of many vtkPolyData.</p>
-<p>If input is a list of vtkPolyData, displays all of them in one viewer.</p>
-<dl class="docutils">
-<dt>poly <span class="classifier-delimiter">:</span> <span class="classifier">vtkPolyData (3D) / list of vtkPolyData (3D)</span></dt>
-<dd>polyData to be displayed. List or single polydata.</dd>
-</dl>
-<dl class="docutils">
-<dt>no return :</dt>
-<dd>Opens render window.</dd>
-</dl>
+<dd><p>Return the volume of a sphere of a given radius.</p>
 </dd></dl>
 
 </div>
@@ -1206,11 +857,7 @@ x,y,z. theta is defined as 0 along z-axis.</p>
 <dd>Fluorescence data matrix. Needed for method == central_space.
 TODO: Avoid needing this.</dd>
 </dl>
-<dl class="docutils">
-<dt>meristem, coord <span class="classifier-delimiter">:</span> <span class="classifier">int, tuple</span></dt>
-<dd>Meristem domain index and coordinate tuple specifying the center
-coordinates.</dd>
-</dl>
+<p>0 :</p>
 </dd></dl>
 
 <dl class="function">
@@ -1222,10 +869,15 @@ coordinates.</dd>
 <dd>DataFrame containing information about mesh points, their curvature, and
 neighbourhood.</dd>
 </dl>
-<dl class="docutils">
-<dt>new_pdata <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
-<dd>DataFrame with domain label set.</dd>
-</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="phenotastic.domain_processing.extract_domaindata">
+<code class="descclassname">phenotastic.domain_processing.</code><code class="descname">extract_domaindata</code><span class="sig-paren">(</span><em>pdata</em>, <em>mesh</em>, <em>apex</em>, <em>meristem</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/domain_processing.html#extract_domaindata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.domain_processing.extract_domaindata" title="Permalink to this definition">¶</a></dt>
+<dd><p>pdata :</p>
+<p>mesh :</p>
+<p>apex :</p>
+<p>meristem :</p>
 </dd></dl>
 
 <dl class="function">
@@ -1248,10 +900,6 @@ neighbourhood.</dd>
 <dd><p>Returns which point indices in the input pdata are attractors, based on
 having the maximum curvature within the domain.</p>
 <p>pdata : pandas.DataFrame</p>
-<dl class="docutils">
-<dt>boas, bdata <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray, pandas.DataFrame</span></dt>
-<dd>Indices of boas and their corresponding data.</dd>
-</dl>
 </dd></dl>
 
 <dl class="function">
@@ -1280,11 +928,22 @@ having the maximum curvature within the domain.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="phenotastic.domain_processing.init_pdata">
-<code class="descclassname">phenotastic.domain_processing.</code><code class="descname">init_pdata</code><span class="sig-paren">(</span><em>A</em>, <em>curvs</em>, <em>neighs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/domain_processing.html#init_pdata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.domain_processing.init_pdata" title="Permalink to this definition">¶</a></dt>
+<dt id="phenotastic.domain_processing.init_pointdata">
+<code class="descclassname">phenotastic.domain_processing.</code><code class="descname">init_pointdata</code><span class="sig-paren">(</span><em>A</em>, <em>curvs</em>, <em>neighs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/domain_processing.html#init_pointdata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.domain_processing.init_pointdata" title="Permalink to this definition">¶</a></dt>
 <dd><p>A :</p>
 <p>curvs :</p>
 <p>neighs :</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="phenotastic.domain_processing.merge_boas_angle">
+<code class="descclassname">phenotastic.domain_processing.</code><code class="descname">merge_boas_angle</code><span class="sig-paren">(</span><em>pdata</em>, <em>ddata</em>, <em>mesh</em>, <em>threshold</em>, <em>apex</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/domain_processing.html#merge_boas_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.domain_processing.merge_boas_angle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Merge domains based on the angles between them.</p>
+<p>pdata :</p>
+<p>ddata :</p>
+<p>mesh :</p>
+<p>threshold :</p>
+<p>apex :</p>
 </dd></dl>
 
 <dl class="function">
@@ -1322,6 +981,22 @@ having the maximum curvature within the domain.</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="phenotastic.domain_processing.merge_boas_disconnected">
+<code class="descclassname">phenotastic.domain_processing.</code><code class="descname">merge_boas_disconnected</code><span class="sig-paren">(</span><em>A</em>, <em>pdata</em>, <em>meristem</em>, <em>threshold=0.9</em>, <em>threshold2=0.2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/domain_processing.html#merge_boas_disconnected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.domain_processing.merge_boas_disconnected" title="Permalink to this definition">¶</a></dt>
+<dd><p>TODO: REWRITE
+Merge boas that have 1) less then threshold2 of a fraction of its boundary
+points not connected to the meristem, and 2) has a neighbour which borders
+at least a fraction of the given threshold of the domain’s border vertices.</p>
+<p>A : Meristem_Phenotyper_3D.AutoPhenotype</p>
+<p>pdata : pandas.DataFrame</p>
+<dl class="docutils">
+<dt>threshold <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>Minimum fraction enclosure needed in order to merge. (Default value = .9)</dd>
+</dl>
+<p>meristem :</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="phenotastic.domain_processing.merge_boas_distance">
 <code class="descclassname">phenotastic.domain_processing.</code><code class="descname">merge_boas_distance</code><span class="sig-paren">(</span><em>pdata</em>, <em>boas</em>, <em>bdata</em>, <em>distance</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/domain_processing.html#merge_boas_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.domain_processing.merge_boas_distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Merge basins of attraction based on their euclidian distance from one
@@ -1334,10 +1009,6 @@ another.</p>
 <dt>distance <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
 <dd>Maximal allowed euclidean distance. Smaller distances than this will be
 merged.</dd>
-</dl>
-<dl class="docutils">
-<dt>pdata <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
-<dd>New pdata object.</dd>
 </dl>
 </dd></dl>
 
@@ -1353,7 +1024,6 @@ certain fraction of the domain boundary.</p>
 <dt>threshold <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
 <dd>Minimum fraction enclosure needed in order to merge. (Default value = .9)</dd>
 </dl>
-<p>pdata : pandas.DataFrame</p>
 </dd></dl>
 
 <dl class="function">
@@ -1361,6 +1031,17 @@ certain fraction of the domain boundary.</p>
 <code class="descclassname">phenotastic.domain_processing.</code><code class="descname">nboas</code><span class="sig-paren">(</span><em>pdata</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/domain_processing.html#nboas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.domain_processing.nboas" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the number of attractors.</p>
 <p>pdata :</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="phenotastic.domain_processing.relabel_domains">
+<code class="descclassname">phenotastic.domain_processing.</code><code class="descname">relabel_domains</code><span class="sig-paren">(</span><em>pdata</em>, <em>ddata</em>, <em>order='area'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/domain_processing.html#relabel_domains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.domain_processing.relabel_domains" title="Permalink to this definition">¶</a></dt>
+<dd><p>pdata :</p>
+<p>ddata :</p>
+<dl class="docutils">
+<dt>order :</dt>
+<dd>(Default value = ‘area’)</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
@@ -1385,41 +1066,526 @@ certain fraction of the domain boundary.</p>
 </dd></dl>
 
 </div>
+<div class="section" id="module-phenotastic.file_processing">
+<span id="phenotastic-file-processing-module"></span><h2>phenotastic.file_processing module<a class="headerlink" href="#module-phenotastic.file_processing" title="Permalink to this headline">¶</a></h2>
+<p>Created on Mon Jun  4 13:56:10 2018</p>
+<p>&#64;author: henrik</p>
+<dl class="function">
+<dt id="phenotastic.file_processing.get_array">
+<code class="descclassname">phenotastic.file_processing.</code><code class="descname">get_array</code><span class="sig-paren">(</span><em>fobj</em>, <em>channel=-1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/file_processing.html#get_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.file_processing.get_array" title="Permalink to this definition">¶</a></dt>
+<dd><p>TODO</p>
+<p>fobj :</p>
+<dl class="docutils">
+<dt>channel :</dt>
+<dd>(Default value = -1)</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="phenotastic.file_processing.get_metadata">
+<code class="descclassname">phenotastic.file_processing.</code><code class="descname">get_metadata</code><span class="sig-paren">(</span><em>fobj</em>, <em>mtype=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/file_processing.html#get_metadata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.file_processing.get_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve file metadata.</p>
+<dl class="docutils">
+<dt>fobj <span class="classifier-delimiter">:</span> <span class="classifier">tvfile</span></dt>
+<dd>Input file.</dd>
+<dt>mtype <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
+<dd>Metadata type. Possible values are among others “lsm2 and “”imagej”.
+(Default = “imagej”).</dd>
+</dl>
+<dl class="docutils">
+<dt>metadata <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd>File metadata.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="phenotastic.file_processing.get_resolution">
+<code class="descclassname">phenotastic.file_processing.</code><code class="descname">get_resolution</code><span class="sig-paren">(</span><em>fobj</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/file_processing.html#get_resolution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.file_processing.get_resolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns resolution of the image in ZYX order.</p>
+<p>The z-resolution must have been stored as imagej metadata under the name
+“spacing”. Similarly, the x, and y resolutions must exist as
+tifffile.tifffile.TiffTags entries as “‘“XResolution”’” and “YResolution”
+respectively. If these values cannot be found, a value of 1 for the
+corresponding dimension is returned.</p>
+<p>fobj : tifffile.TiffFile</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="phenotastic.file_processing.set_metadata">
+<code class="descclassname">phenotastic.file_processing.</code><code class="descname">set_metadata</code><span class="sig-paren">(</span><em>fobj</em>, <em>metadata</em>, <em>mtype='imagej'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/file_processing.html#set_metadata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.file_processing.set_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set file metadata.</p>
+<dl class="docutils">
+<dt>fobj <span class="classifier-delimiter">:</span> <span class="classifier">tifffile.TiffFile</span></dt>
+<dd>Input file.</dd>
+<dt>metadata <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd>New metadata dictionary.</dd>
+<dt>mtype <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
+<dd>Metadata type. Possible values are among others ‘lsm’ and ‘imagej’.
+(Default = ‘imagej’).</dd>
+</dl>
+<p>Missing but required values will be added when the file is saved if not
+contained in ultimate metadata. See &#64;tiffsave.</p>
+<blockquote>
+<div>No return. Modifies input file in place.</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="phenotastic.file_processing.set_resolution">
+<code class="descclassname">phenotastic.file_processing.</code><code class="descname">set_resolution</code><span class="sig-paren">(</span><em>fobj</em>, <em>values</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/file_processing.html#set_resolution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.file_processing.set_resolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets resolution of image file.</p>
+<dl class="docutils">
+<dt>fobj <span class="classifier-delimiter">:</span> <span class="classifier">tifffile.TiffFile</span></dt>
+<dd>Input file.</dd>
+<dt>values <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
+<dd>New resolution.</dd>
+</dl>
+<p>Values are in order ZYX.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="phenotastic.file_processing.set_xresolution">
+<code class="descclassname">phenotastic.file_processing.</code><code class="descname">set_xresolution</code><span class="sig-paren">(</span><em>fobj</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/file_processing.html#set_xresolution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.file_processing.set_xresolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns resolution of the image in ZYX format.</p>
+<dl class="docutils">
+<dt>fobj <span class="classifier-delimiter">:</span> <span class="classifier">tifffile.TiffFile</span></dt>
+<dd>Input file.</dd>
+<dt>value <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>New resolution.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="phenotastic.file_processing.set_yresolution">
+<code class="descclassname">phenotastic.file_processing.</code><code class="descname">set_yresolution</code><span class="sig-paren">(</span><em>fobj</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/file_processing.html#set_yresolution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.file_processing.set_yresolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets resolution of image file.</p>
+<dl class="docutils">
+<dt>fobj <span class="classifier-delimiter">:</span> <span class="classifier">tifffile.TiffFile</span></dt>
+<dd>Input file.</dd>
+<dt>value <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>New resolution.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="phenotastic.file_processing.set_zresolution">
+<code class="descclassname">phenotastic.file_processing.</code><code class="descname">set_zresolution</code><span class="sig-paren">(</span><em>fobj</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/file_processing.html#set_zresolution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.file_processing.set_zresolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets resolution of image file.</p>
+<dl class="docutils">
+<dt>fobj <span class="classifier-delimiter">:</span> <span class="classifier">tifffile.TiffFile</span></dt>
+<dd>Input file.</dd>
+<dt>value <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>New resolution.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="phenotastic.file_processing.si2tvf">
+<code class="descclassname">phenotastic.file_processing.</code><code class="descname">si2tvf</code><span class="sig-paren">(</span><em>fobj</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/file_processing.html#si2tvf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.file_processing.si2tvf" title="Permalink to this definition">¶</a></dt>
+<dd><p>TODO: This might not be working properly yet.</p>
+<p>fobj :</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="phenotastic.file_processing.tiffload">
+<code class="descclassname">phenotastic.file_processing.</code><code class="descname">tiffload</code><span class="sig-paren">(</span><em>fname</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/file_processing.html#tiffload"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.file_processing.tiffload" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads an image file as a tifffile.TiffFile object.</p>
+<dl class="docutils">
+<dt>fname <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>File path.</dd>
+</dl>
+<dl class="docutils">
+<dt>fobj <span class="classifier-delimiter">:</span> <span class="classifier">tvfile</span></dt>
+<dd>The file object.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="phenotastic.file_processing.tiffsave">
+<code class="descclassname">phenotastic.file_processing.</code><code class="descname">tiffsave</code><span class="sig-paren">(</span><em>fname, data, metadata=None, resolution=[1.0, 1.0, 1.0], dtype=None, unit='um', segmented=False, backgroundlabel='', walllabel='', ncells='', segmentation_software='', segmentation_method='', parameters='', preprocessing='', extra_tags={}, **kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/file_processing.html#tiffsave"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.file_processing.tiffsave" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a file in ImageJ-compatible Tiff format.</p>
+<dl class="docutils">
+<dt>fname <span class="classifier-delimiter">:</span> <span class="classifier">str,</span></dt>
+<dd>File path.</dd>
+<dt>data <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
+<dd>Data to save.</dd>
+<dt>metadata <span class="classifier-delimiter">:</span> <span class="classifier">dict, optional</span></dt>
+<dd>File metadata to store in file (ImageJ format). Default = None.</dd>
+<dt>resolution <span class="classifier-delimiter">:</span> <span class="classifier">3-tuple, optional</span></dt>
+<dd>Resolution of the file. Default value = [1,1,1].</dd>
+</dl>
+<p>No return. Saves file to disk.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="phenotastic.file_processing.tvf2si">
+<code class="descclassname">phenotastic.file_processing.</code><code class="descname">tvf2si</code><span class="sig-paren">(</span><em>fobj</em>, <em>reduce_dims=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/file_processing.html#tvf2si"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.file_processing.tvf2si" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a TiffFile to a SpatialImage.</p>
+<dl class="docutils">
+<dt>fobj <span class="classifier-delimiter">:</span> <span class="classifier">tifffile.TiffFile</span></dt>
+<dd>Input file.</dd>
+<dt>reduce_dims <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>List of tuples setting what dimensions to reduce, and by what index,
+using np.take under the hood. First tuple index sets the index of the
+given axis, whereas the second tuple index sets the corresponding axis
+itself. An input array arr of shape (193, 3, 512, 512) using
+reduce_dims=[(2, 1)] therefore inputs the equivalent of arr[:,2,…]
+into the conversion.</dd>
+</dl>
+<blockquote>
+<div><dl class="docutils">
+<dt>simage <span class="classifier-delimiter">:</span> <span class="classifier">timagetk.components.SpatialImage</span></dt>
+<dd>SpatialImage object.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="class">
+<dt id="phenotastic.file_processing.tvfile">
+<em class="property">class </em><code class="descclassname">phenotastic.file_processing.</code><code class="descname">tvfile</code><span class="sig-paren">(</span><em>fname=''</em>, <em>data=None</em>, <em>metadata=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/file_processing.html#tvfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.file_processing.tvfile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tifffile.tifffile.TiffFile</span></code></p>
+<p>Namespace storing the corresponding file stream and attributes governing
+(array) data and metadata.</p>
+<dl class="docutils">
+<dt>fname <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
+<dd>Path to the input file when loading.</dd>
+<dt>data <span class="classifier-delimiter">:</span> <span class="classifier">numpy.ndarray, optional</span></dt>
+<dd>File (intensity) data. Stored in ZCYX order by default.</dd>
+<dt>metadata <span class="classifier-delimiter">:</span> <span class="classifier">dict, optional</span></dt>
+<dd>File metadata.</dd>
+</dl>
+<p>tvfile.asarray() and tvfile.data are not guaranteed to give the same result,
+as tvfile.asarray() reads the input file path for data.</p>
+</dd></dl>
+
+</div>
 <div class="section" id="module-phenotastic.mesh_processing">
 <span id="phenotastic-mesh-processing-module"></span><h2>phenotastic.mesh_processing module<a class="headerlink" href="#module-phenotastic.mesh_processing" title="Permalink to this headline">¶</a></h2>
 <p>Created on Tue May 29 22:10:18 2018</p>
 <p>&#64;author: henrik</p>
 <dl class="function">
+<dt id="phenotastic.mesh_processing.ECFT">
+<code class="descclassname">phenotastic.mesh_processing.</code><code class="descname">ECFT</code><span class="sig-paren">(</span><em>mesh</em>, <em>holesize=100.0</em>, <em>inplace=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh_processing.html#ECFT"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.mesh_processing.ECFT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform ExtractLargest, Clean, FillHoles, and TriFilter
+operations in sequence.</p>
+<dl class="docutils">
+<dt>mesh <span class="classifier-delimiter">:</span> <span class="classifier">vi.PolyData</span></dt>
+<dd>Mesh to operate on.</dd>
+<dt>holesize <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd>Size of holes to fill. Default = 100.0.</dd>
+<dt>inplace <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd>Flag for performing operation in-place. Default = False.</dd>
+</dl>
+<dl class="docutils">
+<dt>new_mesh <span class="classifier-delimiter">:</span> <span class="classifier">vi.PolyData</span></dt>
+<dd>Mesh after operation. Returns None if inplace == True.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
 <dt id="phenotastic.mesh_processing.correct_bad_mesh">
-<code class="descclassname">phenotastic.mesh_processing.</code><code class="descname">correct_bad_mesh</code><span class="sig-paren">(</span><em>mesh</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh_processing.html#correct_bad_mesh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.mesh_processing.correct_bad_mesh" title="Permalink to this definition">¶</a></dt>
-<dd><p>Assumes a triangulated mesh. Note that recalculation of cell and point
-properties will have to be done</p>
+<code class="descclassname">phenotastic.mesh_processing.</code><code class="descname">correct_bad_mesh</code><span class="sig-paren">(</span><em>mesh</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh_processing.html#correct_bad_mesh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.mesh_processing.correct_bad_mesh" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Correct a bad (non-manifold) mesh with two methods:</dt>
+<dd><ol class="first last arabic simple">
+<li>method removesmallcomponents from the pymeshfixpackage, and</li>
+<li>identifying leftover non-manifold edges and removing all the points
+in these.</li>
+</ol>
+</dd>
+</dl>
+<dl class="docutils">
+<dt>mesh <span class="classifier-delimiter">:</span> <span class="classifier">vi.PolyData</span></dt>
+<dd>Input mesh.</dd>
+<dt>verbose <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd>Flag to print out operation procedure.</dd>
+</dl>
+<ul class="simple">
+<li>Assumes a triangulated mesh.</li>
+<li>Recalculation of cell and point attributes will have to be redone</li>
+<li>All points in non-manifold edges will be removed. This could in principle
+be improved upon, since one point may be sufficient to create a manifold
+mesh.</li>
+</ul>
 </dd></dl>
 
 <dl class="function">
 <dt id="phenotastic.mesh_processing.define_meristem">
-<code class="descclassname">phenotastic.mesh_processing.</code><code class="descname">define_meristem</code><span class="sig-paren">(</span><em>mesh</em>, <em>pointData</em>, <em>method='central_mass'</em>, <em>res=(0</em>, <em>0</em>, <em>0)</em>, <em>fluo=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh_processing.html#define_meristem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.mesh_processing.define_meristem" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descclassname">phenotastic.mesh_processing.</code><code class="descname">define_meristem</code><span class="sig-paren">(</span><em>mesh</em>, <em>pdata</em>, <em>method='central_mass'</em>, <em>res=(1</em>, <em>1</em>, <em>1)</em>, <em>fluo=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh_processing.html#define_meristem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.mesh_processing.define_meristem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine which domain in the segmentation that corresponds to the meristem.
+Some methods are deprecated and should not be used.</p>
+<dl class="docutils">
+<dt>mesh <span class="classifier-delimiter">:</span> <span class="classifier">vi.PolyData</span></dt>
+<dd>Mesh to operate on.</dd>
+<dt>pdata <span class="classifier-delimiter">:</span> <span class="classifier">pd.DataFrame</span></dt>
+<dd>Corresonding point data for input mesh.</dd>
+<dt>method <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
+<dd>Method for defining the meristem to use. Default = ‘central_mass’.</dd>
+<dt>res <span class="classifier-delimiter">:</span> <span class="classifier">3-tuple, optional</span></dt>
+<dd>Resolution of the dimensions. Default = (1,1,1).</dd>
+<dt>fluo <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray, optional</span></dt>
+<dd>Intensity matrix.</dd>
+</dl>
+<dl class="docutils">
+<dt>meristem, ccoord <span class="classifier-delimiter">:</span> <span class="classifier">int, 3-tuple</span></dt>
+<dd>Domain index of the meristem, as well as the center coordinates using
+the given method.</dd>
+</dl>
+</dd></dl>
 
 <dl class="function">
-<dt id="phenotastic.mesh_processing.get_non_manifold">
-<code class="descclassname">phenotastic.mesh_processing.</code><code class="descname">get_non_manifold</code><span class="sig-paren">(</span><em>mesh</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh_processing.html#get_non_manifold"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.mesh_processing.get_non_manifold" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="phenotastic.mesh_processing.drop_skirt">
+<code class="descclassname">phenotastic.mesh_processing.</code><code class="descname">drop_skirt</code><span class="sig-paren">(</span><em>mesh</em>, <em>maxdist</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh_processing.html#drop_skirt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.mesh_processing.drop_skirt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Downprojects the boundary to the lowest point in the z-direction.</p>
+<dl class="docutils">
+<dt>mesh <span class="classifier-delimiter">:</span> <span class="classifier">vi.PolyData</span></dt>
+<dd>Mesh to operate on.</dd>
+<dt>maxdist <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>Distance in z-direction from the lowest point in the mesh to consider.</dd>
+</dl>
+<dl class="docutils">
+<dt>new_mesh <span class="classifier-delimiter">:</span> <span class="classifier">vi.PolyData</span></dt>
+<dd>Mesh with boundary downprojected.</dd>
+</dl>
+</dd></dl>
 
 <dl class="function">
-<dt id="phenotastic.mesh_processing.paraboloid_fit_mersitem">
-<code class="descclassname">phenotastic.mesh_processing.</code><code class="descname">paraboloid_fit_mersitem</code><span class="sig-paren">(</span><em>mesh</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh_processing.html#paraboloid_fit_mersitem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.mesh_processing.paraboloid_fit_mersitem" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="phenotastic.mesh_processing.fill_contour">
+<code class="descclassname">phenotastic.mesh_processing.</code><code class="descname">fill_contour</code><span class="sig-paren">(</span><em>contour</em>, <em>fill_xy=False</em>, <em>inplace=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh_processing.html#fill_contour"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.mesh_processing.fill_contour" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fill contour by closing all the edges (except for the top one), and applying
+a binary fill-holes operation. Note that this causes some errors if there is
+significant curvature on the contour, since the above-signal is
+down-projected. This can cause some erronous sharp edges which ruin the
+contour.</p>
+<p>Assumes first dimension being z, ordered bottom to top.</p>
+<dl class="docutils">
+<dt>contour <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
+<dd>Contour to operate on.</dd>
+<dt>fill_xy <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd>Flag to also fill in the xy-plane. Note that this can fill actual holes
+that arise if for example two relatively distant primordia touch each
+other at a point that isn’t close to the meristem.</dd>
+<dt>inplace <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd>Flag to modify object in place.</dd>
+</dl>
+<dl class="docutils">
+<dt>new_contour <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
+<dd>Contour after modification. If inplace == True, nothing is returned.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="phenotastic.mesh_processing.fit_paraboloid">
+<code class="descclassname">phenotastic.mesh_processing.</code><code class="descname">fit_paraboloid</code><span class="sig-paren">(</span><em>data, init=[1, 1, 1, 1, 1, 0, 0, 0]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh_processing.html#fit_paraboloid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.mesh_processing.fit_paraboloid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit a paraboloid to arbitrarily oriented 3D data.</p>
+<p>The paraboloid data can by oriented along an arbitrary axis –
+not necessarily x, y, z. The function rotates the data points and returns
+the rotation angles along the x, y, z axis.</p>
+<p>Returns the parameters for a paraboloid along the z-axis. The angles can be
+used to correct the paraboloid for rotation.</p>
+<p>Paraboloid equation : p1 * x**2. + p2 * y**2. + p3 * x + p4 * y + p5 = z</p>
+<dl class="docutils">
+<dt>data <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
+<dd>Data to fit the paraboloid to.</dd>
+<dt>init <span class="classifier-delimiter">:</span> <span class="classifier">8-tuple</span></dt>
+<dd>Initial parameters for the paraboloid.</dd>
+</dl>
+<dl class="docutils">
+<dt>popt <span class="classifier-delimiter">:</span> <span class="classifier">np.array</span></dt>
+<dd>Parameters after optimisation.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="phenotastic.mesh_processing.fit_paraboloid_mesh">
+<code class="descclassname">phenotastic.mesh_processing.</code><code class="descname">fit_paraboloid_mesh</code><span class="sig-paren">(</span><em>mesh</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh_processing.html#fit_paraboloid_mesh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.mesh_processing.fit_paraboloid_mesh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit a paraboloid to a mesh.</p>
+<dl class="docutils">
+<dt>mesh <span class="classifier-delimiter">:</span> <span class="classifier">vi.PolyData</span></dt>
+<dd>Mesh to fit paraboloid to.</dd>
+</dl>
+<dl class="docutils">
+<dt>popt, apex <span class="classifier-delimiter">:</span> <span class="classifier">8-tuple, 3-tuple</span></dt>
+<dd>Parameters for the paraboloid, as well as the coordinates for the
+paraboloid apex.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="phenotastic.mesh_processing.geodesic">
+<code class="descclassname">phenotastic.mesh_processing.</code><code class="descname">geodesic</code><span class="sig-paren">(</span><em>mesh</em>, <em>ii</em>, <em>jj</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh_processing.html#geodesic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.mesh_processing.geodesic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Geodesic arc between two vertices on the input mesh.</p>
+<p>Utilises Dikstra’s algorithm algorithm to compute this.</p>
+<dl class="docutils">
+<dt>mesh <span class="classifier-delimiter">:</span> <span class="classifier">vi.PolyData</span></dt>
+<dd>Mesh to operate on.</dd>
+<dt>ii <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>First point index.</dd>
+<dt>jj <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Second point index.</dd>
+</dl>
+<p>Requires manifold mesh.</p>
+<dl class="docutils">
+<dt>arc <span class="classifier-delimiter">:</span> <span class="classifier">vi.PolyData</span></dt>
+<dd>PolyData corresponding to the geodesic line between the two points.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="phenotastic.mesh_processing.get_boundary_edges">
+<code class="descclassname">phenotastic.mesh_processing.</code><code class="descname">get_boundary_edges</code><span class="sig-paren">(</span><em>mesh</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh_processing.html#get_boundary_edges"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.mesh_processing.get_boundary_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get boundary edges.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="phenotastic.mesh_processing.get_boundary_points">
+<code class="descclassname">phenotastic.mesh_processing.</code><code class="descname">get_boundary_points</code><span class="sig-paren">(</span><em>mesh</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh_processing.html#get_boundary_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.mesh_processing.get_boundary_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get indices of points in the boundary.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="phenotastic.mesh_processing.get_feature_edges">
+<code class="descclassname">phenotastic.mesh_processing.</code><code class="descname">get_feature_edges</code><span class="sig-paren">(</span><em>mesh</em>, <em>angle=30</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh_processing.html#get_feature_edges"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.mesh_processing.get_feature_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get feature edges defined by given angle.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="phenotastic.mesh_processing.get_manifold_edges">
+<code class="descclassname">phenotastic.mesh_processing.</code><code class="descname">get_manifold_edges</code><span class="sig-paren">(</span><em>mesh</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh_processing.html#get_manifold_edges"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.mesh_processing.get_manifold_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get manifold edges.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="phenotastic.mesh_processing.get_non_manifold_edges">
+<code class="descclassname">phenotastic.mesh_processing.</code><code class="descname">get_non_manifold_edges</code><span class="sig-paren">(</span><em>mesh</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh_processing.html#get_non_manifold_edges"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.mesh_processing.get_non_manifold_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get non-manifold edges.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="phenotastic.mesh_processing.get_paraboloid_apex">
+<code class="descclassname">phenotastic.mesh_processing.</code><code class="descname">get_paraboloid_apex</code><span class="sig-paren">(</span><em>p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh_processing.html#get_paraboloid_apex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.mesh_processing.get_paraboloid_apex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the apex coordinates of a paraboloid.</p>
+<p>Use the return of fit_paraboloid() to compute the apex of the paraboloid.
+The return is in the coordinate system of the data, meaning that the
+coordinates have been corrected for the rotation angles.</p>
+<dl class="docutils">
+<dt>p <span class="classifier-delimiter">:</span> <span class="classifier">8-tuple</span></dt>
+<dd>Parameters defining the paraboloid.</dd>
+</dl>
+<dl class="docutils">
+<dt>coords <span class="classifier-delimiter">:</span> <span class="classifier">np.array</span></dt>
+<dd>Coordinates for the paraboloid apex.</dd>
+</dl>
+</dd></dl>
 
 <dl class="function">
 <dt id="phenotastic.mesh_processing.remesh">
-<code class="descclassname">phenotastic.mesh_processing.</code><code class="descname">remesh</code><span class="sig-paren">(</span><em>mesh</em>, <em>npoints</em>, <em>subratio=10</em>, <em>max_iter=10000</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh_processing.html#remesh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.mesh_processing.remesh" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descclassname">phenotastic.mesh_processing.</code><code class="descname">remesh</code><span class="sig-paren">(</span><em>mesh</em>, <em>npoints</em>, <em>subratio=10</em>, <em>max_iter=10000</em>, <em>holefill=100</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh_processing.html#remesh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.mesh_processing.remesh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remesh the input PolyData.</p>
+<p>Can be used to equalize the sizes of the triangles in the mesh.</p>
+<dl class="docutils">
+<dt>mesh <span class="classifier-delimiter">:</span> <span class="classifier">vi.PolyData</span></dt>
+<dd>Mesh to operate on.</dd>
+<dt>npoints <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>The number of vertices in the resulting mesh.</dd>
+<dt>subratio <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
+<dd>TODO. Default = 10.</dd>
+<dt>max_iter <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
+<dd>Maximal number of iterations before stopping. Default = 10000.</dd>
+</dl>
+<dl class="docutils">
+<dt>new_mesh <span class="classifier-delimiter">:</span> <span class="classifier">vi.PolyData</span></dt>
+<dd>Resulting mesh.</dd>
+</dl>
+</dd></dl>
 
 <dl class="function">
 <dt id="phenotastic.mesh_processing.remesh_decimate">
-<code class="descclassname">phenotastic.mesh_processing.</code><code class="descname">remesh_decimate</code><span class="sig-paren">(</span><em>mesh</em>, <em>iters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh_processing.html#remesh_decimate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.mesh_processing.remesh_decimate" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descclassname">phenotastic.mesh_processing.</code><code class="descname">remesh_decimate</code><span class="sig-paren">(</span><em>mesh</em>, <em>iters</em>, <em>upfactor=2</em>, <em>downfactor=0.5</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh_processing.html#remesh_decimate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.mesh_processing.remesh_decimate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterative remeshing/decimation.</p>
+<p>Can be thought of as an alternative
+smoothing approach. The input mesh is remeshed with a factor times the
+original number of vertices, and then downsampled by another factor.</p>
+<dl class="docutils">
+<dt>mesh <span class="classifier-delimiter">:</span> <span class="classifier">vi.PolyData</span></dt>
+<dd>Mesh to operate on.</dd>
+<dt>iters <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Number of iterations.</dd>
+<dt>upfactor <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd>Factor with which to upsample. Default = 2.</dd>
+<dt>downfactor <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd>Factor with which to downsample. Default = 0.5.</dd>
+<dt>verbose <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd>Flag for whether to print operation steps. Default = True.</dd>
+</dl>
+<dl class="docutils">
+<dt>mesh <span class="classifier-delimiter">:</span> <span class="classifier">vi.PolyData</span></dt>
+<dd>Processed mesh.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="phenotastic.mesh_processing.remove_bridges">
+<code class="descclassname">phenotastic.mesh_processing.</code><code class="descname">remove_bridges</code><span class="sig-paren">(</span><em>mesh</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh_processing.html#remove_bridges"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.mesh_processing.remove_bridges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove triangles where all vertices are part of the mesh.</p>
+<dl class="docutils">
+<dt>mesh <span class="classifier-delimiter">:</span> <span class="classifier">vi.PolyData</span></dt>
+<dd>Mesh to operate on.</dd>
+<dt>verbose <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd>Flag to print processing steps.</dd>
+</dl>
+<p>Assumes triangulated mesh.</p>
+<dl class="docutils">
+<dt>new_mesh <span class="classifier-delimiter">:</span> <span class="classifier">vi.PolyData</span></dt>
+<dd>Mesh after bridge removal.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="phenotastic.mesh_processing.remove_normals">
+<code class="descclassname">phenotastic.mesh_processing.</code><code class="descname">remove_normals</code><span class="sig-paren">(</span><em>mesh</em>, <em>threshold_angle=0</em>, <em>flip=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh_processing.html#remove_normals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.mesh_processing.remove_normals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove points based on the point normal angle.</p>
+<p>Currently only considering the polar angle.</p>
+<dl class="docutils">
+<dt>mesh <span class="classifier-delimiter">:</span> <span class="classifier">vi.PolyData</span></dt>
+<dd>Mesh on which to operate.</dd>
+<dt>threshold_angle <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd>Threshold for the polar angle (theta). Values smaller than this will be
+removed. Default = 0.</dd>
+<dt>flip <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd>Flag to flip normal orientation. Default = False.</dd>
+</dl>
+<dl class="docutils">
+<dt>new_mesh <span class="classifier-delimiter">:</span> <span class="classifier">vi.PolyData</span></dt>
+<dd>Mesh with the resulting vertices removed.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="phenotastic.mesh_processing.remove_tongues">
+<code class="descclassname">phenotastic.mesh_processing.</code><code class="descname">remove_tongues</code><span class="sig-paren">(</span><em>mesh</em>, <em>radius</em>, <em>threshold=6</em>, <em>threshold2=0.8</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh_processing.html#remove_tongues"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.mesh_processing.remove_tongues" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove “tongues” in mesh.</p>
+<p>All boundary points within a given radius are considered. The ones where the
+fraction of the distance along the boundary, as divided by the euclidean
+distance, is greater than the given threshold. The second threshold compares
+the euclidean distance to the geodesic one, and removes the vertices in this
+if the threshold is met.</p>
+<dl class="docutils">
+<dt>mesh <span class="classifier-delimiter">:</span> <span class="classifier">vi.PolyData</span></dt>
+<dd>Mesh to operate on.</dd>
+<dt>radius <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>Radius for boundary point neighbourhood.</dd>
+<dt>threshold <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd>Threshold for fraction between boundary distance and euclidean distance.
+Default = 6.</dd>
+<dt>threshold2 <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd>Threshold for fraction between boundary distance and geodesic distance.
+Default = 0.8.</dd>
+</dl>
+<dl class="docutils">
+<dt>mesh <span class="classifier-delimiter">:</span> <span class="classifier">vi.PolyData</span></dt>
+<dd>Resulting mesh.</dd>
+</dl>
+</dd></dl>
 
 </div>
 <div class="section" id="module-phenotastic.misc">
@@ -1427,30 +1593,19 @@ properties will have to be done</p>
 <p>Created on Tue May 29 20:00:11 2018</p>
 <p>&#64;author: henrik</p>
 <dl class="function">
-<dt id="phenotastic.misc.circle_levelset">
-<code class="descclassname">phenotastic.misc.</code><code class="descname">circle_levelset</code><span class="sig-paren">(</span><em>shape</em>, <em>center</em>, <em>sqradius</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#circle_levelset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.misc.circle_levelset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Build a binary function with a circle as the 0.5-levelset.</p>
-<p>shape :</p>
-<p>center :</p>
-<p>sqradius :</p>
+<dt id="phenotastic.misc.flatten">
+<code class="descclassname">phenotastic.misc.</code><code class="descname">flatten</code><span class="sig-paren">(</span><em>llist</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#flatten"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.misc.flatten" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flatten a list of lists</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="phenotastic.misc.close_window">
-<code class="descclassname">phenotastic.misc.</code><code class="descname">close_window</code><span class="sig-paren">(</span><em>iren</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#close_window"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.misc.close_window" title="Permalink to this definition">¶</a></dt>
-<dd><p>iren :</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.misc.fit_sphere">
-<code class="descclassname">phenotastic.misc.</code><code class="descname">fit_sphere</code><span class="sig-paren">(</span><em>data, init=[0, 0, 0, 10]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#fit_sphere"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.misc.fit_sphere" title="Permalink to this definition">¶</a></dt>
-<dd><p>data :</p>
-<dl class="docutils">
-<dt>init :</dt>
-<dd>(Default value = [0)</dd>
-</dl>
-<p>0 :</p>
-<p>10] :</p>
+<dt id="phenotastic.misc.get_factors">
+<code class="descclassname">phenotastic.misc.</code><code class="descname">get_factors</code><span class="sig-paren">(</span><em>n</em>, <em>primelist=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#get_factors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.misc.get_factors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all factors for N.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_factors</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Out</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="function">
@@ -1461,12 +1616,20 @@ properties will have to be done</p>
 <dt>n <span class="classifier-delimiter">:</span> <span class="classifier">Numbers of RGB colors to return.</span></dt>
 <dd>(Default value = 64)</dd>
 </dl>
+<dl class="docutils">
+<dt>rgbs <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>List of colours (RGB) up to a certain n that maximise contrast.</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
-<dt id="phenotastic.misc.load_var">
-<code class="descclassname">phenotastic.misc.</code><code class="descname">load_var</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#load_var"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.misc.load_var" title="Permalink to this definition">¶</a></dt>
-<dd><p>path :</p>
+<dt id="phenotastic.misc.get_prime_factors">
+<code class="descclassname">phenotastic.misc.</code><code class="descname">get_prime_factors</code><span class="sig-paren">(</span><em>n</em>, <em>primelist=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#get_prime_factors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.misc.get_prime_factors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of prime factors and corresponding powers.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_prime_factors</span><span class="p">(</span><span class="mi">140</span><span class="p">)</span> <span class="c1"># 140 = 2^2 * 5^1 * 7^1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Out</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="p">[(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="function">
@@ -1475,7 +1638,7 @@ properties will have to be done</p>
 <dd><p>Merge lists based on overlapping elements.</p>
 <dl class="docutils">
 <dt>lists <span class="classifier-delimiter">:</span> <span class="classifier">list of lists</span></dt>
-<dd>Lists to be merged based on overlap.</dd>
+<dd>Lists to be merged.</dd>
 </dl>
 <dl class="docutils">
 <dt>sets <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
@@ -1484,177 +1647,42 @@ properties will have to be done</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="phenotastic.misc.outlineactor">
-<code class="descclassname">phenotastic.misc.</code><code class="descname">outlineactor</code><span class="sig-paren">(</span><em>poly</em>, <em>opacity=0.5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#outlineactor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.misc.outlineactor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return an outline actor for a given polydata.</p>
-<dl class="docutils">
-<dt>poly <span class="classifier-delimiter">:</span> <span class="classifier">vtk.PolyData or vtkInterface.PolyData</span></dt>
-<dd>PolyData object to get outline actor for.</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
 <dt id="phenotastic.misc.paraboloid">
 <code class="descclassname">phenotastic.misc.</code><code class="descname">paraboloid</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#paraboloid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.misc.paraboloid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the z-value for a paraboloid given input xy-coordinates and
 parameters.</p>
-<p>x : float</p>
-<p>y : float</p>
 <dl class="docutils">
-<dt>p <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
+<dt>x <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>x-coordinate.</dd>
+<dt>y <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>y-coordinate.</dd>
+<dt>p <span class="classifier-delimiter">:</span> <span class="classifier">5-length np.array</span></dt>
 <dd>Paraboloid parameters.</dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
-<dt id="phenotastic.misc.radius">
-<code class="descclassname">phenotastic.misc.</code><code class="descname">radius</code><span class="sig-paren">(</span><em>x</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#radius"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.misc.radius" title="Permalink to this definition">¶</a></dt>
-<dd><p>x :</p>
-<p>y :</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.misc.readImages">
-<code class="descclassname">phenotastic.misc.</code><code class="descname">readImages</code><span class="sig-paren">(</span><em>fname</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#readImages"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.misc.readImages" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read images using the legacy tiffread function from TissueViewer. To be
-removed.</p>
-<p>imageFileName :</p>
+<dt id="phenotastic.misc.prime_sieve">
+<code class="descclassname">phenotastic.misc.</code><code class="descname">prime_sieve</code><span class="sig-paren">(</span><em>n</em>, <em>output={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#prime_sieve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.misc.prime_sieve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a dict or a list of primes up to N create full prime sieve for
+N=10^6 in 1 sec</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="phenotastic.misc.reject_outliers">
 <code class="descclassname">phenotastic.misc.</code><code class="descname">reject_outliers</code><span class="sig-paren">(</span><em>data</em>, <em>n=2.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#reject_outliers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.misc.reject_outliers" title="Permalink to this definition">¶</a></dt>
-<dd><p>Remove outliers outside of &#64;n standard deviations.</p>
+<dd><p>Remove outliers outside of n standard deviations.</p>
 <dl class="docutils">
 <dt>data <span class="classifier-delimiter">:</span> <span class="classifier">np.array</span></dt>
 <dd>1D array containing data to be filtered.</dd>
 <dt>n <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
 <dd>Number of standard deviations that should be included in final data.
-(Default value = 2.)</dd>
+(Default = 2.)</dd>
 </dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.misc.render_four_viewports">
-<code class="descclassname">phenotastic.misc.</code><code class="descname">render_four_viewports</code><span class="sig-paren">(</span><em>actors</em>, <em>viewports</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#render_four_viewports"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.misc.render_four_viewports" title="Permalink to this definition">¶</a></dt>
-<dd><p>actors :</p>
-<p>viewports :</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.misc.save_var">
-<code class="descclassname">phenotastic.misc.</code><code class="descname">save_var</code><span class="sig-paren">(</span><em>variables</em>, <em>path</em>, <em>confirm=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#save_var"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.misc.save_var" title="Permalink to this definition">¶</a></dt>
-<dd><p>variables :</p>
-<p>path :</p>
 <dl class="docutils">
-<dt>confirm :</dt>
-<dd>(Default value = False)</dd>
+<dt>filtered_data <span class="classifier-delimiter">:</span> <span class="classifier">bool, np.array</span></dt>
+<dd>Data within the specified range.</dd>
 </dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.misc.shake">
-<code class="descclassname">phenotastic.misc.</code><code class="descname">shake</code><span class="sig-paren">(</span><em>array</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#shake"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.misc.shake" title="Permalink to this definition">¶</a></dt>
-<dd><p>array :</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.misc.sort_a_along_b">
-<code class="descclassname">phenotastic.misc.</code><code class="descname">sort_a_along_b</code><span class="sig-paren">(</span><em>b</em>, <em>a</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#sort_a_along_b"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.misc.sort_a_along_b" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sort a along b.</p>
-<p>b :</p>
-<p>a :</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.misc.sort_columns">
-<code class="descclassname">phenotastic.misc.</code><code class="descname">sort_columns</code><span class="sig-paren">(</span><em>a</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#sort_columns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.misc.sort_columns" title="Permalink to this definition">¶</a></dt>
-<dd><p>a :</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.misc.spherefit_results">
-<code class="descclassname">phenotastic.misc.</code><code class="descname">spherefit_results</code><span class="sig-paren">(</span><em>spheres</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#spherefit_results"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.misc.spherefit_results" title="Permalink to this definition">¶</a></dt>
-<dd><p>Legacy method retrieving results from a sphere-fit operation.</p>
-<p>Gives several results from an array of spheres, such as distance between the first sphere (mersitem) and the other spheres (organs).
-Input:</p>
-<blockquote>
-<div><dl class="docutils">
-<dt>np.array[[x_center_meristem, y_center_meristem, z_center_meristem, radius_mersitem],</dt>
-<dd>[x_center_organ1, y_center_organ1, z_center_organ1, radius_organ1]
-…]</dd>
-</dl>
-</div></blockquote>
-<dl class="docutils">
-<dt>Output:</dt>
-<dd><dl class="first last docutils">
-<dt>np.array[[voulme_meristem, 0,0,0,0,0,0]</dt>
-<dd>[volume_organ1, location_organ1_realtive_to_meristem_x, y, z, r, theta, phi, projected_theta]
-…]</dd>
-</dl>
-</dd>
-</dl>
-<p>For spherical coordinates:  xyz -&gt; yzx
-Angles in radians, distances in voxel</p>
-<p>spheres : list of sphere PolyData</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.misc.squared_dist_para">
-<code class="descclassname">phenotastic.misc.</code><code class="descname">squared_dist_para</code><span class="sig-paren">(</span><em>data</em>, <em>p</em>, <em>shiftx=0</em>, <em>shifty=0</em>, <em>shiftz=0</em>, <em>shiftcurv=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#squared_dist_para"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.misc.squared_dist_para" title="Permalink to this definition">¶</a></dt>
-<dd><p>data :</p>
-<p>p :</p>
-<dl class="docutils">
-<dt>shiftx :</dt>
-<dd>(Default value = 0)</dd>
-<dt>shifty :</dt>
-<dd>(Default value = 0)</dd>
-<dt>shiftz :</dt>
-<dd>(Default value = 0)</dd>
-<dt>shiftcurv :</dt>
-<dd>(Default value = 0)</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.misc.swaprows">
-<code class="descclassname">phenotastic.misc.</code><code class="descname">swaprows</code><span class="sig-paren">(</span><em>a, how=[2, 0, 1]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#swaprows"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.misc.swaprows" title="Permalink to this definition">¶</a></dt>
-<dd><p>a :</p>
-<dl class="docutils">
-<dt>how :</dt>
-<dd>(Default value = [2)</dd>
-</dl>
-<p>0 :</p>
-<p>1] :</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.misc.tic">
-<code class="descclassname">phenotastic.misc.</code><code class="descname">tic</code><span class="sig-paren">(</span><em>name='time1'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#tic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.misc.tic" title="Permalink to this definition">¶</a></dt>
-<dd><p>Elapsed time tracking function. See &#64;toc.</p>
-<dl class="docutils">
-<dt>name :</dt>
-<dd>(Default value = ‘time1’)</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.misc.toc">
-<code class="descclassname">phenotastic.misc.</code><code class="descname">toc</code><span class="sig-paren">(</span><em>name='time1'</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#toc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.misc.toc" title="Permalink to this definition">¶</a></dt>
-<dd><p>Elapsed time tracking function. See &#64;tic.</p>
-<dl class="docutils">
-<dt>name :</dt>
-<dd>(Default value = ‘time1’)</dd>
-<dt>print_it :</dt>
-<dd>(Default value = True)</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="phenotastic.misc.view3d">
-<code class="descclassname">phenotastic.misc.</code><code class="descname">view3d</code><span class="sig-paren">(</span><em>data</em>, <em>contour=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#view3d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.misc.view3d" title="Permalink to this definition">¶</a></dt>
-<dd><p>p :</p>
-<p>x :</p>
 </dd></dl>
 
 </div>
@@ -1668,13 +1696,71 @@ Angles in radians, distances in voxel</p>
 <p>&#64;author: henrik</p>
 <dl class="function">
 <dt id="phenotastic.plot.PlotImage">
-<code class="descclassname">phenotastic.plot.</code><code class="descname">PlotImage</code><span class="sig-paren">(</span><em>arr</em>, <em>res=(1</em>, <em>1</em>, <em>1)</em>, <em>offset=(0</em>, <em>0</em>, <em>0)</em>, <em>mask=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/plot.html#PlotImage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.plot.PlotImage" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descclassname">phenotastic.plot.</code><code class="descname">PlotImage</code><span class="sig-paren">(</span><em>arr</em>, <em>res=(1</em>, <em>1</em>, <em>1)</em>, <em>offset=(0</em>, <em>0</em>, <em>0)</em>, <em>mask=None</em>, <em>mesh=None</em>, <em>meshopacity=1</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/plot.html#PlotImage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.plot.PlotImage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot an intensity image with its mesh (optional).</p>
+<dl class="docutils">
+<dt>arr <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
+<dd>Array defining dimensions of coordinate array</dd>
+<dt>res <span class="classifier-delimiter">:</span> <span class="classifier">3-tuple, optional</span></dt>
+<dd>Resolution of the array in the three dimensions. Default = (1,1,1).</dd>
+<dt>offset <span class="classifier-delimiter">:</span> <span class="classifier">3-tuple, optional</span></dt>
+<dd>Origin offset. Default = (0,0,0).</dd>
+<dt>mask <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray, optional</span></dt>
+<dd>Array of same dimension as arr. Specifies what values should (True) or
+shouldn’t be plotted. Default = None.</dd>
+<dt>mesh <span class="classifier-delimiter">:</span> <span class="classifier">vi.PolyData, optional</span></dt>
+<dd>PolyData mesh to plot along with the intensity array. Default = None.</dd>
+<dt>meshopacity <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd>Opacity of the mesh.</dd>
+</dl>
+<p>Only 3D.</p>
+<p>No return. Plots input array and mesh if given.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="phenotastic.plot.PlotPointData">
-<code class="descclassname">phenotastic.plot.</code><code class="descname">PlotPointData</code><span class="sig-paren">(</span><em>mesh</em>, <em>pointData</em>, <em>var='domain'</em>, <em>boaCoords=[]</em>, <em>show_boundaries=False</em>, <em>bcolor='black'</em>, <em>bpsize=10</em>, <em>blinewidth=10</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/plot.html#PlotPointData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.plot.PlotPointData" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descclassname">phenotastic.plot.</code><code class="descname">PlotPointData</code><span class="sig-paren">(</span><em>mesh</em>, <em>pdata</em>, <em>var='domain'</em>, <em>boacoords=[]</em>, <em>show_boundaries=False</em>, <em>bcolor='black'</em>, <em>bpsize=10</em>, <em>blinewidth=10</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/plot.html#PlotPointData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.plot.PlotPointData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot point data of mesh, with eventual domain boundaries and attractor maxima.</p>
+<dl class="docutils">
+<dt>mesh <span class="classifier-delimiter">:</span> <span class="classifier">vi.PolyData</span></dt>
+<dd>Mesh to plot.</dd>
+<dt>pdata <span class="classifier-delimiter">:</span> <span class="classifier">pd.DataFrame</span></dt>
+<dd>DataFrame containing the point data of the mesh.</dd>
+<dt>var <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
+<dd>Variable in pdata to visualise. Default = ‘domain’.</dd>
+<dt>boacoords <span class="classifier-delimiter">:</span> <span class="classifier">list, optional</span></dt>
+<dd>List of the coordinates of potential basins of attraction. If given, will
+label the domain curvature maxima. Default = [].</dd>
+<dt>show_boundaries <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd>Show domain boundaries flag. Default = False.</dd>
+<dt>bcolor <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
+<dd>Boundary color. Default = ‘black’.</dd>
+<dt>bpsize <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd>Boundary point size. Default = 10.</dd>
+<dt>blinewith <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd>Boundary line width. Default = 10.</dd>
+</dl>
+<p>No return. Plots input.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="phenotastic.plot.coord_array">
+<code class="descclassname">phenotastic.plot.</code><code class="descname">coord_array</code><span class="sig-paren">(</span><em>arr</em>, <em>res=(1</em>, <em>1</em>, <em>1)</em>, <em>offset=(0</em>, <em>0</em>, <em>0)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/plot.html#coord_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phenotastic.plot.coord_array" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a coordinate array (of e.g. same dimensionality as intensity array) of the same dimensions as another array. Only defined for 3D.</p>
+<dl class="docutils">
+<dt>arr <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
+<dd>Array defining dimensions of coordinate array</dd>
+<dt>res <span class="classifier-delimiter">:</span> <span class="classifier">3-tuple, optional</span></dt>
+<dd>Resolution of the array in the three dimensions. Default = (1,1,1).</dd>
+<dt>offset <span class="classifier-delimiter">:</span> <span class="classifier">3-tuple, optional</span></dt>
+<dd>Origin offset. Default = (0,0,0).</dd>
+</dl>
+<p>Only 3D.</p>
+<dl class="docutils">
+<dt>coords <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
+<dd>Vertically stacked coordinate array for the input data.</dd>
+</dl>
+</dd></dl>
 
 </div>
 <div class="section" id="module-phenotastic">
@@ -1695,6 +1781,7 @@ Angles in radians, distances in voxel</p>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-phenotastic.Meristem_Phenotyper_3D">phenotastic.Meristem_Phenotyper_3D module</a></li>
 <li><a class="reference internal" href="#module-phenotastic.domain_processing">phenotastic.domain_processing module</a></li>
+<li><a class="reference internal" href="#module-phenotastic.file_processing">phenotastic.file_processing module</a></li>
 <li><a class="reference internal" href="#module-phenotastic.mesh_processing">phenotastic.mesh_processing module</a></li>
 <li><a class="reference internal" href="#module-phenotastic.misc">phenotastic.misc module</a></li>
 <li><a class="reference internal" href="#module-phenotastic.phenotastic">phenotastic.phenotastic module</a></li>
@@ -1703,17 +1790,13 @@ Angles in radians, distances in voxel</p>
 </ul>
 </li>
 </ul>
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-  <li><a href="modules.html">phenotastic</a><ul>
-      <li>Previous: <a href="modules.html" title="previous chapter">phenotastic</a></li>
-      <li>Next: <a href="contributing.html" title="next chapter">Contributing</a></li>
-  </ul></li>
-  </ul></li>
-</ul>
-</div>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="modules.html"
+                        title="previous chapter">phenotastic</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="contributing.html"
+                        title="next chapter">Contributing</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -1737,20 +1820,28 @@ Angles in radians, distances in voxel</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
-      &copy;2018, Henrik Ahl.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
-      
-      |
-      <a href="_sources/phenotastic.rst.txt"
-          rel="nofollow">Page source</a>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="contributing.html" title="Contributing"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="phenotastic"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Phenotastic 0.1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >phenotastic</a> &#187;</li> 
+      </ul>
     </div>
-
-    
-
-    
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Henrik Ahl.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.1.
+    </div>
   </body>
 </html>

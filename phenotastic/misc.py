@@ -16,12 +16,13 @@ import Meristem_Phenotyper_3D as ap
 
 
 def merge(lists):
-    """ Merge lists based on overlapping elements.
+    """
+    Merge lists based on overlapping elements.
 
     Parameters
     ----------
     lists : list of lists
-        Lists to be merged based on overlap.
+        Lists to be merged.
 
     Returns
     -------
@@ -48,11 +49,11 @@ def merge(lists):
     return sets
 
 def flatten(llist):
-    ''' Flatten a list of lists '''
+    """ Flatten a list of lists """
     return [item for sublist in llist for item in sublist]
 
 def reject_outliers(data, n=2.):
-    """ Remove outliers outside of @n standard deviations.
+    """ Remove outliers outside of n standard deviations.
 
     Parameters
     ----------
@@ -61,46 +62,19 @@ def reject_outliers(data, n=2.):
 
     n : float
          Number of standard deviations that should be included in final data.
-         (Default value = 2.)
+         (Default = 2.)
 
     Returns
     -------
+    filtered_data : bool, np.array
+        Data within the specified range.
 
     """
     d = np.abs(data - np.median(data))
     mdev = np.median(d)
     s = d / (mdev if mdev else 1.)
-    return data[s < n]
-
-
-def squared_dist_para(data, p, shiftx=0, shifty=0, shiftz=0, shiftcurv=0):
-    """
-
-    Parameters
-    ----------
-    data :
-
-    p :
-
-    shiftx :
-         (Default value = 0)
-    shifty :
-         (Default value = 0)
-    shiftz :
-         (Default value = 0)
-    shiftcurv :
-         (Default value = 0)
-
-    Returns
-    -------
-
-    """
-    return np.sum((p[0] - shiftcurv) * (data[:, 0] - shiftx)**2
-                  + (p[1] - shiftcurv) * (data[:, 1] - shifty)**2
-                  + p[2] * (data[:, 0] - shiftx)
-                  + p[3] * (data[:, 1] - shifty)
-                  + p[4]
-                  - data[:, 2])**2
+    filtered_data = data[s < n]
+    return filtered_data
 
 
 def paraboloid(x, y, p):
@@ -110,10 +84,10 @@ def paraboloid(x, y, p):
     Parameters
     ----------
     x : float
-
+        x-coordinate.
     y : float
-
-    p : np.ndarray
+        y-coordinate.
+    p : 5-length np.array
         Paraboloid parameters.
 
     Returns
@@ -122,435 +96,6 @@ def paraboloid(x, y, p):
     """
     p1, p2, p3, p4, p5 = p
     return p1 * x**2 + p2 * y**2 + p3 * x + p4 * y + p5
-
-
-def swaprows(a, how=[2, 0, 1]):
-    """
-
-    Parameters
-    ----------
-    a :
-
-    how :
-         (Default value = [2)
-    0 :
-
-    1] :
-
-
-    Returns
-    -------
-
-    """
-    a[:, [0, 1, 2]] = a[:, how]
-    return a
-
-
-def radius(x, y):
-    """
-
-    Parameters
-    ----------
-    x :
-
-    y :
-
-
-    Returns
-    -------
-
-    """
-    return np.sqrt(x**2 + y**2)
-
-
-def sort_columns(a):
-    """
-
-    Parameters
-    ----------
-    a :
-
-
-    Returns
-    -------
-
-    """
-    for i in range(np.shape(a)[0]):
-        if a[i, 0] < a[i, 1]:
-            a[i, [0, 1]] = a[i, [1, 0]]
-    return a
-
-
-def close_window(iren):
-    """
-
-    Parameters
-    ----------
-    iren :
-
-
-    Returns
-    -------
-
-    """
-    render_window = iren.GetRenderWindow()
-    render_window.Finalize()
-    iren.TerminateApp()
-
-
-def render_four_viewports(actors, viewports):
-    """
-
-    Parameters
-    ----------
-    actors :
-
-    viewports :
-
-
-    Returns
-    -------
-
-    """
-    assert(len(actors) == len(viewports))
-    actors = np.array(actors)
-    viewports = np.array(viewports)
-
-    # Set viewport ranges
-    xmins = [0.0, 0.5, 0.0, 0.5]
-    xmaxs = [0.5, 1.0, 0.5, 1.0]
-    ymins = [0.0, 0.0, 0.5, 0.5]
-    ymaxs = [0.5, 0.5, 1.0, 1.0]
-
-    rw = vtk.vtkRenderWindow()
-    iren = vtk.vtkRenderWindowInteractor()
-    iren.SetRenderWindow(rw)
-    for ii in xrange(4):
-        ren = vtk.vtkRenderer()
-        rw.AddRenderer(ren)
-        ren.SetViewport(xmins[ii], ymins[ii], xmaxs[ii], ymaxs[ii])
-
-        for jj in [i for i, x in enumerate(viewports == ii) if x]:
-            ren.AddActor(actors[jj])
-            ren.ResetCamera()
-        ren.ResetCamera()
-    rw.Render()
-    rw.SetWindowName('RW: Multiple ViewPorts')
-    iren.Start()
-
-
-def outlineactor(poly, opacity=.5):
-    """ Return an outline actor for a given polydata.
-
-    Parameters
-    ----------
-    poly : vtk.PolyData or vtkInterface.PolyData
-        PolyData object to get outline actor for.
-
-    Returns
-    -------
-
-    """
-    outline = vtk.vtkOutlineFilter()
-    outline.SetInput(poly.GetOutput())
-
-    outlineMapper = vtk.vtkPolyDataMapper()
-    outlineMapper.SetInput(outline.GetOutput())
-
-    outlineActor = vtk.vtkActor()
-    outlineActor.SetMapper(outlineMapper)
-    outlineActor.GetProperty().SetOpacity(opacity)
-    return outlineActor
-
-
-def tic(name='time1'):
-    """ Elapsed time tracking function. See @toc.
-
-    Parameters
-    ----------
-    name :
-         (Default value = 'time1')
-
-    Returns
-    -------
-
-    """
-    globals()[name] = time.time()
-
-
-def toc(name='time1', verbose=True):
-    """ Elapsed time tracking function. See @tic.
-
-    Parameters
-    ----------
-    name :
-         (Default value = 'time1')
-    print_it :
-         (Default value = True)
-
-    Returns
-    -------
-
-    """
-    total_time = time.time() - globals()[name]
-    if verbose == True:
-        if total_time < 0.001:
-            print '--- ', round(total_time * 1000., 2), 'ms', ' ---'
-        elif total_time >= 0.001 and total_time < 60:
-            print '--- ', round(total_time, 2), 's', ' ---'
-        elif total_time >= 60 and total_time / 3600. < 1:
-            print '--- ', round(total_time / 60., 2), 'min', ' ---'
-        else:
-            print '--- ', round(total_time / 3600., 2), 'h', ' ---'
-    else:
-        return total_time
-
-
-def readImages(fname):
-    """ Read images using the legacy tiffread function from TissueViewer. To be
-    removed.
-
-    Parameters
-    ----------
-    imageFileName :
-
-
-    Returns
-    -------
-
-    """
-    image, tags = tiffread(fname)
-    return image, tags
-
-
-def circle_levelset(shape, center, sqradius):
-    """Build a binary function with a circle as the 0.5-levelset.
-
-    Parameters
-    ----------
-    shape :
-
-    center :
-
-    sqradius :
-
-
-    Returns
-    -------
-
-    """
-    grid = np.mgrid[list(map(slice, shape))].T - center
-    phi = sqradius - np.sqrt(np.sum((grid.T)**2, 0))
-    u = np.float_(phi > 0)
-    return u
-
-
-def fit_sphere(data, init=[0, 0, 0, 10]):
-    """
-
-    Parameters
-    ----------
-    data :
-
-    init :
-         (Default value = [0)
-    0 :
-
-    10] :
-
-
-    Returns
-    -------
-
-    """
-    def fitfunc(p, coords):
-        """
-
-        Parameters
-        ----------
-        p :
-
-        coords :
-
-
-        Returns
-        -------
-
-        """
-        x0, y0, z0, _ = p
-        x, y, z = coords.T
-        return ((x - x0)**2 + (y - y0)**2 + (z - z0)**2)
-
-    def errfunc(p, x): return fitfunc(p, x) - p[3]**2.
-    p1, _ = opt.leastsq(errfunc, init, args=(np.array(np.nonzero(data)).T,))
-    p1[3] = abs(p1[3])
-    return p1
-
-
-def view3d(data, contour=False):
-    """
-
-    Parameters
-    ----------
-    p :
-
-    x :
-
-
-    Returns
-    -------
-
-    """
-    from mayavi import mlab
-    data = np.array(data)
-    if data.dtype == 'bool':
-        data = np.array(data, dtype='int')
-    mlab.gcf()
-    mlab.clf()
-    if contour == False:
-        mlab.points3d(np.nonzero(data)[0], np.nonzero(data)[
-                      1], np.nonzero(data)[2], scale_factor=.5)
-    else:
-        mlab.contour3d(data, contours=[0.5])
-    mlab.show()
-
-
-def save_var(variables, path, confirm=False):
-    """
-
-    Parameters
-    ----------
-    variables :
-
-    path :
-
-    confirm :
-         (Default value = False)
-
-    Returns
-    -------
-
-    """
-    with open(path, 'w') as f:
-        pickle.dump(variables, f)
-    if confirm != False:
-        print 'all saved'
-
-
-def load_var(path):
-    """
-
-    Parameters
-    ----------
-    path :
-
-
-    Returns
-    -------
-
-    """
-    with open(path) as f:
-        return pickle.load(f)
-
-
-def shake(array):
-    """
-
-    Parameters
-    ----------
-    array :
-
-
-    Returns
-    -------
-
-    """
-    msk = np.array(array)
-    msk[1::, :, :] = msk[:-1:, :, :] + msk[1::, :, :]
-    msk[:-1:, :, :] = msk[:-1:, :, :] + msk[1::, :, :]
-    msk[:, 1::, :] = msk[:, :-1:, :] + msk[:, 1::, :]
-    msk[:, :-1:, :] = msk[:, :-1:, :] + msk[:, 1::, :]
-    msk[:, :, 1::] = msk[:, :, 1:] + msk[:, :, :-1:]
-    msk[:, :, :-1:] = msk[:, :, 1:] + msk[:, :, :-1:]
-    return np.array(msk, dtype='bool')
-
-
-def sort_a_along_b(b, a):
-    """ Sort a along b.
-
-    Parameters
-    ----------
-    b :
-
-    a :
-
-
-    Returns
-    -------
-
-    """
-    return np.array(sorted(zip(a, b)))[:, 1]
-#
-
-
-def spherefit_results(spheres):
-    """ Legacy method retrieving results from a sphere-fit operation.
-
-    Gives several results from an array of spheres, such as distance between the first sphere (mersitem) and the other spheres (organs).
-    Input:
-        np.array[[x_center_meristem, y_center_meristem, z_center_meristem, radius_mersitem],
-                [x_center_organ1, y_center_organ1, z_center_organ1, radius_organ1]
-                ...]
-    Output:
-        np.array[[voulme_meristem, 0,0,0,0,0,0]
-                [volume_organ1, location_organ1_realtive_to_meristem_x, y, z, r, theta, phi, projected_theta]
-                ...]
-
-    Note
-    ----
-    For spherical coordinates:  xyz -> yzx
-    Angles in radians, distances in voxel
-
-    Parameters
-    ----------
-    spheres : list of sphere PolyData
-
-
-    Returns
-    -------
-
-    """
-
-    num_obj = np.shape(spheres)[0]
-    out = np.zeros((num_obj, 8))
-
-    def sphere_voulume(radius):
-        """
-
-        Parameters
-        ----------
-        radius :
-
-
-        Returns
-        -------
-
-        """
-        return 4. / 3. * np.pi * radius**3.
-
-    out[:, 0] = sphere_voulume(spheres[:, -1])  # voulumes
-    out[1:, 1] = spheres[1:, 0] - spheres[0, 0]  # x relative to meristem
-    out[1:, 2] = spheres[1:, 1] - spheres[0, 1]  # y
-    out[1:, 3] = spheres[1:, 2] - spheres[0, 2]  # z
-    out[1:, 4] = np.sqrt(out[1:, 1]**2. + out[1:, 2]**2. + out[1:, 3]**2.)  # r
-    out[1:, 5] = np.arccos(out[1:, 1] / out[1:, 4])  # theta
-    out[1:, 6] = np.arctan(out[1:, 3] / out[1:, 2])  # phi
-    out[1:, 7] = np.arctan2(out[1:, 2], out[1:, 3])
-    for i in range(1, num_obj):
-        if out[i, 7] < 0:
-            out[i, 7] = out[i, 7] + 2. * np.pi
-
-    return out
 
 
 def get_max_contrast_colours(n=64):
@@ -563,6 +108,8 @@ def get_max_contrast_colours(n=64):
 
     Returns
     -------
+    rgbs : list
+        List of colours (RGB) up to a certain n that maximise contrast.
 
     """
     rgbs = [[0, 0, 0],
@@ -630,3 +177,94 @@ def get_max_contrast_colours(n=64):
             [255, 110, 65],
             [232, 94, 190]]
     return rgbs[0:n]
+
+import math
+
+
+def prime_sieve(n, output={}):
+    '''
+    Return a dict or a list of primes up to N create full prime sieve for
+    N=10^6 in 1 sec
+
+    '''
+
+    nroot = int(math.sqrt(n))
+    sieve = range(n+1)
+    sieve[1] = 0
+
+    for i in xrange(2, nroot+1):
+        if sieve[i] != 0:
+            m = n/i - i
+            sieve[i*i: n+1:i] = [0] * (m+1)
+
+    if type(output) == dict:
+        pmap = {}
+        for x in sieve:
+            if x != 0:
+                pmap[x] = True
+        return pmap
+    elif type(output) == list:
+        return [x for x in sieve if x != 0]
+    else:
+        return None
+
+def get_factors(n, primelist=None):
+    '''
+    Get a list of all factors for N.
+
+    Example
+    -------
+    >>> get_factors(10)
+    >>> Out[1]: [1, 2, 5, 10]
+
+    '''
+    if primelist is None:
+        primelist = prime_sieve(n,output=[])
+
+    fcount = {}
+    for p in primelist:
+        if p > n:
+            break
+        if n % p == 0:
+            fcount[p] = 0
+
+        while n % p == 0:
+            n /= p
+            fcount[p] += 1
+
+    factors = [1]
+    for i in fcount:
+        level = []
+        exp = [i**(x+1) for x in range(fcount[i])]
+        for j in exp:
+            level.extend([j*x for x in factors])
+        factors.extend(level)
+
+    return factors
+
+
+
+def get_prime_factors(n, primelist=None):
+    ''' Get a list of prime factors and corresponding powers.
+
+    Example
+    -------
+    >>> get_prime_factors(140) # 140 = 2^2 * 5^1 * 7^1
+    >>> Out[1]: [(2, 2), (5, 1), (7, 1)]
+
+    '''
+    if primelist is None:
+        primelist = prime_sieve(n,output=[])
+
+    fs = []
+    for p in primelist:
+        count = 0
+        while n % p == 0:
+            n /= p
+            count += 1
+        if count > 0:
+            fs.append((p, count))
+
+    return fs
+
+

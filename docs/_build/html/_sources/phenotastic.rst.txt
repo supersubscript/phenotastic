@@ -20,6 +20,14 @@ phenotastic.domain\_processing module
     :undoc-members:
     :show-inheritance:
 
+phenotastic.file\_processing module
+-----------------------------------
+
+.. automodule:: phenotastic.file_processing
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 phenotastic.mesh\_processing module
 -----------------------------------
 

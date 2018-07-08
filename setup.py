@@ -4,19 +4,21 @@
 """The setup script."""
 
 from setuptools import setup, find_packages
+import numpy as np
+from Cython.Build import cythonize
 
+# Description files
 with open('README.rst') as readme_file:
     readme = readme_file.read()
-
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
+# Requirements & test
 requirements = [ ]
-
 setup_requirements = ['pytest-runner', ]
-
 test_requirements = ['pytest', ]
 
+# Actual setup
 setup(
     author="Henrik Ahl",
     author_email='hpa22@cam.ac.uk',
@@ -25,11 +27,7 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Natural Language :: English',
-        "Programming Language :: Python :: 2",
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
     description="3D plant phenotyping.",
@@ -39,7 +37,12 @@ setup(
     include_package_data=True,
     keywords='phenotastic',
     name='phenotastic',
-    packages=find_packages(include=['phenotastic']),
+    ext_modules=cythonize('**/*.pyx'),
+    packages=find_packages(
+        include=['phenotastic',
+                 'phenotastic/external',
+                 'phenotastic/external/clahe']),
+    include_dirs=[np.get_include()],
     setup_requires=setup_requirements,
     test_suite='tests',
     tests_require=test_requirements,

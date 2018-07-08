@@ -7,22 +7,28 @@
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>phenotastic.domain_processing &#8212; Phenotastic 0.1.0 documentation</title>
-    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" />
-   
-  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
-  
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
-
+    <link rel="search" title="Search" href="../../search.html" /> 
   </head><body>
-  
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Phenotastic 0.1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -39,8 +45,6 @@
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="c1">#import networkx as nx</span>
-<span class="c1">#import handy_functions as hf</span>
 <span class="kn">import</span> <span class="nn">scipy</span>
 <span class="kn">from</span> <span class="nn">vtk.util</span> <span class="k">import</span> <span class="n">numpy_support</span> <span class="k">as</span> <span class="n">nps</span>
 <span class="kn">import</span> <span class="nn">vtk</span>
@@ -52,7 +56,7 @@
 
 <span class="c1"># TODO: Documentation</span>
 <div class="viewcode-block" id="domains_from_curvature"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.domain_processing.domains_from_curvature">[docs]</a><span class="k">def</span> <span class="nf">domains_from_curvature</span><span class="p">(</span><span class="n">pdata</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Create domains based on a Steepest Descent approach on an</span>
+    <span class="sd">&quot;&quot;&quot;Create domains based on a Steepest Descent approach on an</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -62,8 +66,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    new_pdata : pandas.DataFrame</span>
-<span class="sd">        DataFrame with domain label set.</span>
+
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">new_pdata</span> <span class="o">=</span> <span class="n">pdata</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -89,7 +92,7 @@
     <span class="k">return</span> <span class="n">new_pdata</span>
 
 <div class="viewcode-block" id="get_boas"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.domain_processing.get_boas">[docs]</a><span class="k">def</span> <span class="nf">get_boas</span><span class="p">(</span><span class="n">pdata</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Returns which point indices in the input pdata are attractors, based on</span>
+    <span class="sd">&quot;&quot;&quot;Returns which point indices in the input pdata are attractors, based on</span>
 <span class="sd">    having the maximum curvature within the domain.</span>
 
 <span class="sd">    Parameters</span>
@@ -99,8 +102,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    boas, bdata : np.ndarray, pandas.DataFrame</span>
-<span class="sd">        Indices of boas and their corresponding data.</span>
+
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">doms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">pdata</span><span class="o">.</span><span class="n">domain</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
@@ -113,7 +115,7 @@
     <span class="k">return</span> <span class="n">boas</span><span class="p">,</span> <span class="n">bdata</span>
 
 <div class="viewcode-block" id="merge_boas_distance"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.domain_processing.merge_boas_distance">[docs]</a><span class="k">def</span> <span class="nf">merge_boas_distance</span><span class="p">(</span><span class="n">pdata</span><span class="p">,</span> <span class="n">boas</span><span class="p">,</span> <span class="n">bdata</span><span class="p">,</span> <span class="n">distance</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Merge basins of attraction based on their euclidian distance from one</span>
+    <span class="sd">&quot;&quot;&quot;Merge basins of attraction based on their euclidian distance from one</span>
 <span class="sd">    another.</span>
 
 <span class="sd">    Uses a KDTree to find closest points.</span>
@@ -132,15 +134,14 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    pdata : pandas.DataFrame</span>
-<span class="sd">        New pdata object.</span>
+
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Find BoAs within certain distance of each other</span>
     <span class="n">tree</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">spatial</span><span class="o">.</span><span class="n">cKDTree</span><span class="p">(</span><span class="n">bdata</span><span class="p">[[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">]])</span>
     <span class="n">groups</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">query_ball_point</span><span class="p">(</span><span class="n">bdata</span><span class="p">[[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">]],</span> <span class="n">distance</span><span class="p">)</span>
-    <span class="n">groups</span> <span class="o">=</span> <span class="n">misc</span><span class="o">.</span><span class="n">merge_lists_to_sets</span><span class="p">(</span><span class="n">groups</span><span class="p">)</span>
-    <span class="n">groups</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">])</span>
+    <span class="n">groups</span> <span class="o">=</span> <span class="n">misc</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">groups</span><span class="p">)</span>
+    <span class="n">groups</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">ii</span><span class="p">))</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">])</span>
 
     <span class="c1"># Merge domains</span>
     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">groups</span><span class="p">):</span>
@@ -153,7 +154,7 @@
 
 <span class="c1"># TODO: This piece of shit function</span>
 <div class="viewcode-block" id="merge_boas_engulfing"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.domain_processing.merge_boas_engulfing">[docs]</a><span class="k">def</span> <span class="nf">merge_boas_engulfing</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">pdata</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=.</span><span class="mi">9</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Merge boas based on whether adjacent domains are encircling more than a</span>
+    <span class="sd">&quot;&quot;&quot;Merge boas based on whether adjacent domains are encircling more than a</span>
 <span class="sd">    certain fraction of the domain boundary.</span>
 
 <span class="sd">    TODO: Unfinished function. Needs a rewrite.</span>
@@ -169,7 +170,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    pdata : pandas.DataFrame</span>
+
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">changed</span> <span class="o">=</span> <span class="kc">True</span>
@@ -199,9 +200,71 @@
     <span class="n">pdata</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;domain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">pdata</span><span class="o">.</span><span class="n">domain</span><span class="p">)</span><span class="o">.</span><span class="n">codes</span></div>
     <span class="k">return</span> <span class="n">pdata</span>
 
+<div class="viewcode-block" id="merge_boas_disconnected"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.domain_processing.merge_boas_disconnected">[docs]</a><span class="k">def</span> <span class="nf">merge_boas_disconnected</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">pdata</span><span class="p">,</span> <span class="n">meristem</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=.</span><span class="mi">9</span><span class="p">,</span> <span class="n">threshold2</span><span class="o">=</span><span class="mf">0.2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    TODO: REWRITE</span>
+<span class="sd">    Merge boas that have 1) less then threshold2 of a fraction of its boundary</span>
+<span class="sd">    points not connected to the meristem, and 2) has a neighbour which borders</span>
+<span class="sd">    at least a fraction of the given threshold of the domain&#39;s border vertices.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    A : Meristem_Phenotyper_3D.AutoPhenotype</span>
+
+<span class="sd">    pdata : pandas.DataFrame</span>
+
+<span class="sd">    threshold : float</span>
+<span class="sd">        Minimum fraction enclosure needed in order to merge. (Default value = .9)</span>
+<span class="sd">    meristem :</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">changed</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">while</span> <span class="n">changed</span><span class="p">:</span>
+        <span class="n">changed</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># new round</span>
+        <span class="n">domains</span> <span class="o">=</span> <span class="n">pdata</span><span class="o">.</span><span class="n">domain</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+        <span class="n">domains</span> <span class="o">=</span> <span class="n">domains</span><span class="p">[</span><span class="n">domains</span> <span class="o">!=</span> <span class="n">meristem</span><span class="p">]</span>
+
+        <span class="c1"># For every domain, find points facing other domains and domains facing</span>
+        <span class="c1"># NaN</span>
+        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">domains</span><span class="p">:</span>
+<span class="c1">#            print ii</span>
+            <span class="n">in_domain</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">pdata</span><span class="o">.</span><span class="n">domain</span> <span class="o">==</span> <span class="n">ii</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">in_domain_boundary</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                    <span class="p">[</span><span class="n">A</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">FindPoint</span><span class="p">(</span><span class="n">jj</span><span class="p">)</span> <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span>
+                     <span class="n">get_domain_boundary</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span> <span class="n">pdata</span><span class="p">,</span> <span class="n">ii</span><span class="p">)</span><span class="o">.</span><span class="n">points</span><span class="p">])</span>
+
+            <span class="c1">#np.intersect1d(in_domain,</span>
+                                  <span class="c1">#              get_boundary_points(A.mesh))</span>
+
+            <span class="n">boundary_neighbours</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">pdata</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">in_domain</span><span class="p">,</span> <span class="s1">&#39;neighs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">y</span><span class="p">])</span>
+            <span class="n">neighbouring_domains</span> <span class="o">=</span> <span class="n">pdata</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">boundary_neighbours</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pdata</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">boundary_neighbours</span><span class="p">,</span>
+                                                                 <span class="s1">&#39;domain&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">ii</span><span class="p">,</span> <span class="s1">&#39;domain&#39;</span><span class="p">]</span>
+            <span class="n">counts</span> <span class="o">=</span> <span class="n">neighbouring_domains</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+
+            <span class="c1"># TODO: So tired when I wrote this shit</span>
+            <span class="n">too_small</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="n">meristem</span> <span class="ow">in</span> <span class="n">counts</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+                 <span class="n">too_small</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">counts</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">meristem</span><span class="p">])</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">in_domain_boundary</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">threshold2</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">meristem</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">counts</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="ow">or</span> <span class="n">too_small</span><span class="p">:</span>
+                <span class="n">frac</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">counts</span><span class="o">.</span><span class="n">max</span><span class="p">())</span> <span class="o">/</span> <span class="p">(</span><span class="n">counts</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">in_domain_boundary</span><span class="p">))</span>
+
+                <span class="k">if</span> <span class="n">frac</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">:</span>
+                    <span class="n">new_domain</span> <span class="o">=</span> <span class="n">neighbouring_domains</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">idxmax</span><span class="p">()</span>
+                    <span class="n">pdata</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pdata</span><span class="o">.</span><span class="n">domain</span> <span class="o">==</span> <span class="n">ii</span><span class="p">,</span> <span class="s1">&#39;domain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_domain</span>
+                    <span class="n">changed</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="n">pdata</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;domain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">pdata</span><span class="o">.</span><span class="n">domain</span><span class="p">)</span><span class="o">.</span><span class="n">codes</span></div>
+    <span class="k">return</span> <span class="n">pdata</span>
 
 <div class="viewcode-block" id="merge_boas_depth"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.domain_processing.merge_boas_depth">[docs]</a><span class="k">def</span> <span class="nf">merge_boas_depth</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">pdata</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">exclude_boundary</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">min_points</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Merge domains based on their respective depths.</span>
+    <span class="sd">&quot;&quot;&quot;Merge domains based on their respective depths.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -210,14 +273,15 @@
 <span class="sd">    pdata :</span>
 
 <span class="sd">    threshold :</span>
-<span class="sd">         (Default value = 0.0)</span>
+<span class="sd">        (Default value = 0.0)</span>
 <span class="sd">    exclude_boundary :</span>
-<span class="sd">         (Default value = False)</span>
+<span class="sd">        (Default value = False)</span>
 <span class="sd">    min_points :</span>
-<span class="sd">         (Default value = 0)</span>
+<span class="sd">        (Default value = 0)</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
+
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">boundary</span> <span class="o">=</span> <span class="n">get_boundary_points</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span>
@@ -292,7 +356,7 @@
 
 <div class="viewcode-block" id="merge_boas_border_curv"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.domain_processing.merge_boas_border_curv">[docs]</a><span class="k">def</span> <span class="nf">merge_boas_border_curv</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">pdata</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">fct</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">min_points</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
                            <span class="n">exclude_boundary</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Merge neighbouring domains based on their border curvature.</span>
+    <span class="sd">&quot;&quot;&quot;Merge neighbouring domains based on their border curvature.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -301,16 +365,17 @@
 <span class="sd">    pdata :</span>
 
 <span class="sd">    threshold :</span>
-<span class="sd">         (Default value = 0.0)</span>
+<span class="sd">        (Default value = 0.0)</span>
 <span class="sd">    fct :</span>
-<span class="sd">         (Default value = np.mean)</span>
+<span class="sd">        (Default value = np.mean)</span>
 <span class="sd">    min_points :</span>
-<span class="sd">         (Default value = 4)</span>
+<span class="sd">        (Default value = 4)</span>
 <span class="sd">    exclude_boundary :</span>
-<span class="sd">         (Default value = False)</span>
+<span class="sd">        (Default value = False)</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
+
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">boundary</span> <span class="o">=</span> <span class="n">get_boundary_points</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span>
@@ -381,7 +446,7 @@
 
 
 <div class="viewcode-block" id="get_boundary_points"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.domain_processing.get_boundary_points">[docs]</a><span class="k">def</span> <span class="nf">get_boundary_points</span><span class="p">(</span><span class="n">mesh</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Get point indices of mesh boundary.</span>
+    <span class="sd">&quot;&quot;&quot;Get point indices of mesh boundary.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -390,6 +455,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
+
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">fe</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">ExtractEdges</span><span class="p">(</span><span class="n">feature_angle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">boundary_edges</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -409,7 +475,7 @@
 
 
 <div class="viewcode-block" id="set_boundary_curv"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.domain_processing.set_boundary_curv">[docs]</a><span class="k">def</span> <span class="nf">set_boundary_curv</span><span class="p">(</span><span class="n">curvs</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Set the curvature of the mesh boundary.</span>
+    <span class="sd">&quot;&quot;&quot;Set the curvature of the mesh boundary.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -423,6 +489,7 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">newcurvs</span> <span class="o">=</span> <span class="n">curvs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
@@ -432,7 +499,7 @@
 
 
 <div class="viewcode-block" id="filter_curvature"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.domain_processing.filter_curvature">[docs]</a><span class="k">def</span> <span class="nf">filter_curvature</span><span class="p">(</span><span class="n">curvs</span><span class="p">,</span> <span class="n">neighs</span><span class="p">,</span> <span class="n">fct</span><span class="p">,</span> <span class="n">iters</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="p">[]):</span>
-    <span class="sd">&quot;&quot;&quot; Filter curvature with a function. Exclude the list of indices if given.</span>
+    <span class="sd">&quot;&quot;&quot;Filter curvature with a function. Exclude the list of indices if given.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -445,10 +512,11 @@
 <span class="sd">    iters :</span>
 
 <span class="sd">    exclude :</span>
-<span class="sd">         (Default value = [])</span>
+<span class="sd">        (Default value = [])</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
+
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">iters</span><span class="p">):</span>
@@ -465,7 +533,7 @@
 
 
 <div class="viewcode-block" id="remove_boas_size"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.domain_processing.remove_boas_size">[docs]</a><span class="k">def</span> <span class="nf">remove_boas_size</span><span class="p">(</span><span class="n">pdata</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;points&quot;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Remove attractors mased on their size.</span>
+    <span class="sd">&quot;&quot;&quot;Remove attractors mased on their size.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -474,10 +542,11 @@
 <span class="sd">    threshold :</span>
 
 <span class="sd">    method :</span>
-<span class="sd">         (Default value = &quot;points&quot;)</span>
+<span class="sd">        (Default value = &quot;points&quot;)</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
+
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">domain_sizes</span> <span class="o">=</span> <span class="n">pdata</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;domain&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
@@ -493,7 +562,7 @@
 
 
 <div class="viewcode-block" id="nboas"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.domain_processing.nboas">[docs]</a><span class="k">def</span> <span class="nf">nboas</span><span class="p">(</span><span class="n">pdata</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Return the number of attractors.</span>
+    <span class="sd">&quot;&quot;&quot;Return the number of attractors.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -502,13 +571,14 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
+
 
 <span class="sd">    &quot;&quot;&quot;</span></div>
     <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pdata</span><span class="p">[</span><span class="s1">&#39;domain&#39;</span><span class="p">]))[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">size</span>
 
 
 <div class="viewcode-block" id="boas_npoints"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.domain_processing.boas_npoints">[docs]</a><span class="k">def</span> <span class="nf">boas_npoints</span><span class="p">(</span><span class="n">pdata</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Get the number of points per attractor.</span>
+    <span class="sd">&quot;&quot;&quot;Get the number of points per attractor.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -518,10 +588,11 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 
+
 <span class="sd">    &quot;&quot;&quot;</span></div>
     <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pdata</span><span class="p">[</span><span class="s1">&#39;domain&#39;</span><span class="p">]))[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
 
-<div class="viewcode-block" id="init_pdata"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.domain_processing.init_pdata">[docs]</a><span class="k">def</span> <span class="nf">init_pdata</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">curvs</span><span class="p">,</span> <span class="n">neighs</span><span class="p">):</span>
+<div class="viewcode-block" id="init_pointdata"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.domain_processing.init_pointdata">[docs]</a><span class="k">def</span> <span class="nf">init_pointdata</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">curvs</span><span class="p">,</span> <span class="n">neighs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    Parameters</span>
@@ -535,6 +606,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
+
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">coords</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">points</span>
@@ -550,7 +622,7 @@
     <span class="k">return</span> <span class="n">pdata</span>
 
 <div class="viewcode-block" id="get_domain"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.domain_processing.get_domain">[docs]</a><span class="k">def</span> <span class="nf">get_domain</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">pdata</span><span class="p">,</span> <span class="n">domain</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Get a domain from a labelled mesh.</span>
+    <span class="sd">&quot;&quot;&quot;Get a domain from a labelled mesh.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -563,6 +635,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
+
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">not_in_domain</span> <span class="o">=</span> <span class="n">pdata</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pdata</span><span class="o">.</span><span class="n">domain</span> <span class="o">!=</span> <span class="n">domain</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span>
@@ -571,7 +644,7 @@
     <span class="k">return</span> <span class="n">vi</span><span class="o">.</span><span class="n">PolyData</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">RemovePoints</span><span class="p">(</span><span class="n">mask</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
 
 <div class="viewcode-block" id="get_domain_boundary"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.domain_processing.get_domain_boundary">[docs]</a><span class="k">def</span> <span class="nf">get_domain_boundary</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">pdata</span><span class="p">,</span> <span class="n">domain</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Get the point indices for a specified domain in a labelled mesh.</span>
+    <span class="sd">&quot;&quot;&quot;Get the point indices for a specified domain in a labelled mesh.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -584,6 +657,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
+
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">dpoly</span> <span class="o">=</span> <span class="n">get_domain</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">pdata</span><span class="p">,</span> <span class="n">domain</span><span class="p">)</span>
@@ -593,7 +667,7 @@
 
 
 <div class="viewcode-block" id="define_meristem"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.domain_processing.define_meristem">[docs]</a><span class="k">def</span> <span class="nf">define_meristem</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">pdata</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;central_mass&#39;</span><span class="p">,</span> <span class="n">res</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">fluo</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Define which domain is the meristem.</span>
+    <span class="sd">&quot;&quot;&quot;Define which domain is the meristem.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -602,18 +676,19 @@
 <span class="sd">    pdata :</span>
 
 <span class="sd">    method :</span>
-<span class="sd">         (Default value = &#39;central_mass&#39;)</span>
+<span class="sd">        (Default value = &#39;central_mass&#39;)</span>
 <span class="sd">    res :</span>
-<span class="sd">         (Default value = (0)</span>
+<span class="sd">        (Default value = (0)</span>
 <span class="sd">    fluo : np.ndarray</span>
 <span class="sd">        Fluorescence data matrix. Needed for method == central_space.</span>
 <span class="sd">        TODO: Avoid needing this.</span>
+<span class="sd">    0 :</span>
+
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    meristem, coord : int, tuple</span>
-<span class="sd">        Meristem domain index and coordinate tuple specifying the center</span>
-<span class="sd">        coordinates.</span>
+
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">ccoord</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,))</span>
     <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;central_mass&#39;</span><span class="p">:</span>
@@ -631,21 +706,186 @@
     <span class="n">meristem</span> <span class="o">=</span> <span class="n">pdata</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">meristem</span><span class="p">,</span> <span class="s1">&#39;domain&#39;</span><span class="p">]</span></div>
     <span class="k">return</span> <span class="n">meristem</span><span class="p">,</span> <span class="n">ccoord</span>
 
+<div class="viewcode-block" id="extract_domaindata"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.domain_processing.extract_domaindata">[docs]</a><span class="k">def</span> <span class="nf">extract_domaindata</span><span class="p">(</span><span class="n">pdata</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">apex</span><span class="p">,</span> <span class="n">meristem</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pdata :</span>
+
+<span class="sd">    mesh :</span>
+
+<span class="sd">    apex :</span>
+
+<span class="sd">    meristem :</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">domains</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">pdata</span><span class="o">.</span><span class="n">domain</span><span class="p">)</span>
+    <span class="n">domains</span> <span class="o">=</span> <span class="n">domains</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">domains</span><span class="p">)]</span>
+    <span class="n">ddata</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="s1">&#39;dist_boundary&#39;</span><span class="p">,</span> <span class="s1">&#39;dist_com&#39;</span><span class="p">,</span> <span class="s1">&#39;angle&#39;</span><span class="p">,</span>
+                                  <span class="s1">&#39;area&#39;</span><span class="p">,</span> <span class="s1">&#39;maxdiam&#39;</span><span class="p">,</span> <span class="s1">&#39;maxdiam_xy&#39;</span><span class="p">,</span>  <span class="s1">&#39;com&#39;</span><span class="p">,</span> <span class="s1">&#39;ismeristem&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">object</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">domains</span><span class="p">:</span>
+        <span class="c1"># Get distance for closest boundary point to apex</span>
+        <span class="n">dom</span> <span class="o">=</span> <span class="n">get_domain</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">pdata</span><span class="p">,</span> <span class="n">ii</span><span class="p">)</span>
+        <span class="n">dom_boundary</span> <span class="o">=</span> <span class="n">get_boundary_points</span><span class="p">(</span><span class="n">dom</span><span class="p">)</span>
+        <span class="n">dom_boundary_coords</span> <span class="o">=</span> <span class="n">dom</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="n">dom_boundary</span><span class="p">]</span>
+        <span class="n">dom_boundary_dists</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">dom_boundary_coords</span> <span class="o">-</span> <span class="n">apex</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">d2boundary</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">dom_boundary_dists</span><span class="p">)</span>
+
+        <span class="c1"># Get distance for center of mass from apex</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="n">dom</span><span class="o">.</span><span class="n">CenterOfMass</span><span class="p">()</span>
+        <span class="n">d2com</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">center</span> <span class="o">-</span> <span class="n">apex</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+
+        <span class="c1"># Get domain size in terms of bounding boxes</span>
+<span class="c1">#        bounds = dom.GetBounds()</span>
+        <span class="n">domcoords</span> <span class="o">=</span> <span class="n">dom</span><span class="o">.</span><span class="n">points</span>
+        <span class="kn">from</span> <span class="nn">scipy.spatial.distance</span> <span class="k">import</span> <span class="n">cdist</span>
+        <span class="n">dists</span> <span class="o">=</span> <span class="n">cdist</span><span class="p">(</span><span class="n">domcoords</span><span class="p">,</span> <span class="n">domcoords</span><span class="p">)</span>
+        <span class="n">maxdiam</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dists</span><span class="p">)</span>
+        <span class="n">dists_xy</span> <span class="o">=</span> <span class="n">cdist</span><span class="p">(</span><span class="n">domcoords</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:],</span> <span class="n">domcoords</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:])</span>
+        <span class="n">maxdiam_xy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dists_xy</span><span class="p">)</span>
+
+        <span class="c1"># Get domain angle in relation to apex</span>
+        <span class="n">rel_pos</span> <span class="o">=</span> <span class="n">center</span> <span class="o">-</span> <span class="n">apex</span>
+        <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">rel_pos</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">rel_pos</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>  <span class="c1"># angle in yz-plane</span>
+        <span class="k">if</span> <span class="n">angle</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">angle</span> <span class="o">+=</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+        <span class="n">angle</span> <span class="o">*=</span> <span class="mi">360</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+
+        <span class="c1"># Get surface area</span>
+        <span class="n">area</span> <span class="o">=</span> <span class="n">dom</span><span class="o">.</span><span class="n">SurfaceArea</span><span class="p">()</span>
+
+        <span class="c1"># Define type</span>
+        <span class="n">ismeristem</span> <span class="o">=</span> <span class="n">ii</span> <span class="o">==</span> <span class="n">meristem</span>
+        <span class="k">if</span> <span class="n">ismeristem</span><span class="p">:</span>
+            <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+        <span class="c1"># Set data</span>
+        <span class="n">ddata</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">ii</span><span class="p">)]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">ii</span><span class="p">),</span> <span class="n">d2boundary</span><span class="p">,</span> <span class="n">d2com</span><span class="p">,</span> <span class="n">angle</span><span class="p">,</span> <span class="n">area</span><span class="p">,</span> <span class="n">maxdiam</span><span class="p">,</span>
+                  <span class="n">maxdiam_xy</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">center</span><span class="p">),</span> <span class="n">ismeristem</span><span class="p">]</span>
+    <span class="n">ddata</span> <span class="o">=</span> <span class="n">ddata</span><span class="o">.</span><span class="n">infer_objects</span><span class="p">()</span>
+    <span class="n">ddata</span> <span class="o">=</span> <span class="n">ddata</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;ismeristem&#39;</span><span class="p">,</span> <span class="s1">&#39;area&#39;</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">ddata</span>
+
+
+<div class="viewcode-block" id="merge_boas_angle"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.domain_processing.merge_boas_angle">[docs]</a><span class="k">def</span> <span class="nf">merge_boas_angle</span><span class="p">(</span><span class="n">pdata</span><span class="p">,</span> <span class="n">ddata</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">apex</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Merge domains based on the angles between them.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pdata :</span>
+
+<span class="sd">    ddata :</span>
+
+<span class="sd">    mesh :</span>
+
+<span class="sd">    threshold :</span>
+
+<span class="sd">    apex :</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<span class="c1">#    boundary = get_boundary_points(mesh)</span>
+    <span class="n">new_ddata</span> <span class="o">=</span> <span class="n">ddata</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">new_pdata</span> <span class="o">=</span> <span class="n">pdata</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">apex</span> <span class="o">=</span> <span class="n">apex</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="c1">#    meristem_index = copy.copy(meristem_index)</span>
+
+<span class="c1">#    meristem = new_ddata.loc[new_ddata.ismeristem].copy()</span>
+<span class="c1">#    new_ddata = new_ddata.loc[~np.isnan(new_ddata.angle)].copy()</span>
+
+    <span class="n">changed</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">while</span> <span class="n">changed</span><span class="p">:</span>
+        <span class="n">changed</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># new round</span>
+        <span class="n">new_ddata</span> <span class="o">=</span> <span class="n">new_ddata</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;angle&#39;</span><span class="p">,</span> <span class="n">na_position</span><span class="o">=</span><span class="s1">&#39;first&#39;</span><span class="p">)</span>
+        <span class="n">angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">new_ddata</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">angle</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+        <span class="n">domains</span> <span class="o">=</span> <span class="n">new_ddata</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">domain</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+
+        <span class="n">diffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">angles</span><span class="p">,</span> <span class="n">angles</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="n">diffs</span><span class="p">[</span><span class="n">diffs</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">360</span>
+
+        <span class="n">too_close</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">diffs</span> <span class="o">&lt;</span> <span class="n">threshold</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">too_close</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">changed</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">break</span>
+
+        <span class="n">to_merge</span> <span class="o">=</span> <span class="p">[[</span><span class="n">domains</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">domains</span><span class="p">[(</span><span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">domains</span><span class="p">)]]</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">too_close</span><span class="p">]</span>
+
+        <span class="n">flatten</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">l</span><span class="p">:</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">sublist</span> <span class="ow">in</span> <span class="n">l</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">]</span>
+        <span class="n">to_merge</span><span class="o">.</span><span class="n">extend</span><span class="p">([[</span><span class="n">ii</span><span class="p">]</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">domains</span> <span class="k">if</span> <span class="n">ii</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">flatten</span><span class="p">(</span><span class="n">to_merge</span><span class="p">)])</span>
+        <span class="n">to_merge</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="c1"># meristem</span>
+
+        <span class="n">doms</span> <span class="o">=</span> <span class="n">misc</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">to_merge</span><span class="p">)</span>
+        <span class="n">domains_overwrite</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">new_pdata</span><span class="o">.</span><span class="n">domain</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">doms</span><span class="p">)):</span>
+            <span class="n">domains_overwrite</span><span class="p">[</span><span class="n">new_pdata</span><span class="o">.</span><span class="n">domain</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">doms</span><span class="p">[</span><span class="n">ii</span><span class="p">]))]</span> <span class="o">=</span> <span class="n">ii</span>
+        <span class="n">new_pdata</span><span class="o">.</span><span class="n">domain</span> <span class="o">=</span> <span class="n">domains_overwrite</span>
+
+        <span class="n">new_ddata</span> <span class="o">=</span> <span class="n">extract_domaindata</span><span class="p">(</span><span class="n">new_pdata</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">apex</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">new_pdata</span><span class="p">,</span> <span class="n">new_ddata</span> <span class="o">=</span> <span class="n">relabel_domains</span><span class="p">(</span><span class="n">new_pdata</span><span class="p">,</span> <span class="n">new_ddata</span><span class="p">)</span>
+        <span class="n">new_ddata</span> <span class="o">=</span> <span class="n">new_ddata</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;ismeristem&#39;</span><span class="p">,</span> <span class="s1">&#39;area&#39;</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">new_ddata</span> <span class="o">=</span> <span class="n">new_ddata</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;ismeristem&#39;</span><span class="p">,</span> <span class="s1">&#39;area&#39;</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">new_pdata</span><span class="p">,</span> <span class="n">new_ddata</span>
+
+<div class="viewcode-block" id="relabel_domains"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.domain_processing.relabel_domains">[docs]</a><span class="k">def</span> <span class="nf">relabel_domains</span><span class="p">(</span><span class="n">pdata</span><span class="p">,</span> <span class="n">ddata</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;area&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pdata :</span>
+
+<span class="sd">    ddata :</span>
+
+<span class="sd">    order :</span>
+<span class="sd">         (Default value = &#39;area&#39;)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">new_pdata</span> <span class="o">=</span> <span class="n">pdata</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">new_ddata</span> <span class="o">=</span> <span class="n">ddata</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">order</span> <span class="o">==</span> <span class="s1">&#39;area&#39;</span><span class="p">:</span>
+        <span class="n">new_ddata</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;ismeristem&#39;</span><span class="p">,</span> <span class="s1">&#39;area&#39;</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">order</span> <span class="o">==</span> <span class="s1">&#39;maxdiam&#39;</span><span class="p">:</span>
+        <span class="n">new_ddata</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;ismeristem&#39;</span><span class="p">,</span> <span class="s1">&#39;maxdiam&#39;</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">order</span> <span class="o">==</span> <span class="s1">&#39;maxdiam_xy&#39;</span><span class="p">:</span>
+        <span class="n">new_ddata</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;ismeristem&#39;</span><span class="p">,</span> <span class="s1">&#39;maxdiam_xy&#39;</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">dmap</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">new_ddata</span><span class="p">)):</span>
+        <span class="n">old_dom</span> <span class="o">=</span> <span class="n">new_ddata</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="o">.</span><span class="n">domain</span>
+        <span class="n">dmap</span><span class="p">[</span><span class="n">old_dom</span><span class="p">]</span> <span class="o">=</span> <span class="n">ii</span>
+        <span class="n">new_ddata</span><span class="p">[</span><span class="s1">&#39;domain&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">ii</span>
+
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">dmap</span><span class="p">:</span>
+        <span class="n">new_pdata</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pdata</span><span class="o">.</span><span class="n">domain</span> <span class="o">==</span> <span class="n">ii</span><span class="p">,</span> <span class="s1">&#39;domain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dmap</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
+</div>
+    <span class="k">return</span> <span class="n">new_pdata</span><span class="p">,</span> <span class="n">new_ddata</span>
+
+
 </pre></div>
 
           </div>
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper"><div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="../../index.html">Documentation overview</a><ul>
-  <li><a href="../index.html">Module code</a><ul>
-  </ul></li>
-  </ul></li>
-</ul>
-</div>
+        <div class="sphinxsidebarwrapper">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <div class="searchformwrapper">
@@ -662,17 +902,22 @@
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
-      &copy;2018, Henrik Ahl.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
-      
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Phenotastic 0.1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
     </div>
-
-    
-
-    
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Henrik Ahl.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.1.
+    </div>
   </body>
 </html>

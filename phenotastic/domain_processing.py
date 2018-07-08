@@ -18,7 +18,7 @@ import misc
 
 # TODO: Documentation
 def domains_from_curvature(pdata):
-    """ Create domains based on a Steepest Descent approach on an
+    """Create domains based on a Steepest Descent approach on an
 
     Parameters
     ----------
@@ -28,8 +28,7 @@ def domains_from_curvature(pdata):
 
     Returns
     -------
-    new_pdata : pandas.DataFrame
-        DataFrame with domain label set.
+
 
     """
     new_pdata = pdata.copy()
@@ -55,7 +54,7 @@ def domains_from_curvature(pdata):
     return new_pdata
 
 def get_boas(pdata):
-    """ Returns which point indices in the input pdata are attractors, based on
+    """Returns which point indices in the input pdata are attractors, based on
     having the maximum curvature within the domain.
 
     Parameters
@@ -65,8 +64,7 @@ def get_boas(pdata):
 
     Returns
     -------
-    boas, bdata : np.ndarray, pandas.DataFrame
-        Indices of boas and their corresponding data.
+
 
     """
     doms = np.unique(pdata.domain.values)
@@ -79,7 +77,7 @@ def get_boas(pdata):
     return boas, bdata
 
 def merge_boas_distance(pdata, boas, bdata, distance):
-    """ Merge basins of attraction based on their euclidian distance from one
+    """Merge basins of attraction based on their euclidian distance from one
     another.
 
     Uses a KDTree to find closest points.
@@ -98,8 +96,7 @@ def merge_boas_distance(pdata, boas, bdata, distance):
 
     Returns
     -------
-    pdata : pandas.DataFrame
-        New pdata object.
+
 
     """
     # Find BoAs within certain distance of each other
@@ -119,7 +116,7 @@ def merge_boas_distance(pdata, boas, bdata, distance):
 
 # TODO: This piece of shit function
 def merge_boas_engulfing(A, pdata, threshold=.9):
-    """ Merge boas based on whether adjacent domains are encircling more than a
+    """Merge boas based on whether adjacent domains are encircling more than a
     certain fraction of the domain boundary.
 
     TODO: Unfinished function. Needs a rewrite.
@@ -135,7 +132,7 @@ def merge_boas_engulfing(A, pdata, threshold=.9):
 
     Returns
     -------
-    pdata : pandas.DataFrame
+
 
     """
     changed = True
@@ -165,10 +162,12 @@ def merge_boas_engulfing(A, pdata, threshold=.9):
     pdata.loc[:, 'domain'] = pd.Categorical(pdata.domain).codes
     return pdata
 
-def merge_boas_disconnected(A, pdata, meristem, threshold=.9):
-    """ Merge boas that are 1) not connected to the meristem, and 2) has a
-    neighbour which borders at least a fraction of _threshold_ of the domain's
-    border vertices.
+def merge_boas_disconnected(A, pdata, meristem, threshold=.9, threshold2=0.2):
+    """
+    TODO: REWRITE
+    Merge boas that have 1) less then threshold2 of a fraction of its boundary
+    points not connected to the meristem, and 2) has a neighbour which borders
+    at least a fraction of the given threshold of the domain's border vertices.
 
     Parameters
     ----------
@@ -178,10 +177,12 @@ def merge_boas_disconnected(A, pdata, meristem, threshold=.9):
 
     threshold : float
         Minimum fraction enclosure needed in order to merge. (Default value = .9)
+    meristem :
+
 
     Returns
     -------
-    pdata : pandas.DataFrame
+
 
     """
     changed = True
@@ -193,9 +194,14 @@ def merge_boas_disconnected(A, pdata, meristem, threshold=.9):
         # For every domain, find points facing other domains and domains facing
         # NaN
         for ii in domains:
+#            print ii
             in_domain = np.where(pdata.domain == ii)[0]
-            in_domain_boundary = np.intersect1d(in_domain,
-                                                get_boundary_points(A.mesh))
+            in_domain_boundary = np.array(
+                    [A.mesh.FindPoint(jj) for jj in
+                     get_domain_boundary(A.mesh, pdata, ii).points])
+
+            #np.intersect1d(in_domain,
+                                  #              get_boundary_points(A.mesh))
 
             boundary_neighbours = np.unique(
                 [x for y in pdata.loc[in_domain, 'neighs'].values for x in y])
@@ -203,7 +209,12 @@ def merge_boas_disconnected(A, pdata, meristem, threshold=.9):
                                                                  'domain'] != ii, 'domain']
             counts = neighbouring_domains.value_counts()
 
-            if meristem not in counts.index.values:
+            # TODO: So tired when I wrote this shit
+            too_small = False
+            if meristem in counts.index:
+                 too_small = float(counts.loc[meristem]) / len(in_domain_boundary) < threshold2
+
+            if (meristem not in counts.index.values) or too_small:
                 frac = float(counts.max()) / (counts.sum() + len(in_domain_boundary))
 
                 if frac > threshold:
@@ -215,7 +226,7 @@ def merge_boas_disconnected(A, pdata, meristem, threshold=.9):
     return pdata
 
 def merge_boas_depth(A, pdata, threshold=0.0, exclude_boundary=False, min_points=0):
-    """ Merge domains based on their respective depths.
+    """Merge domains based on their respective depths.
 
     Parameters
     ----------
@@ -224,14 +235,15 @@ def merge_boas_depth(A, pdata, threshold=0.0, exclude_boundary=False, min_points
     pdata :
 
     threshold :
-         (Default value = 0.0)
+        (Default value = 0.0)
     exclude_boundary :
-         (Default value = False)
+        (Default value = False)
     min_points :
-         (Default value = 0)
+        (Default value = 0)
 
     Returns
     -------
+
 
     """
     boundary = get_boundary_points(A.mesh)
@@ -306,7 +318,7 @@ def merge_boas_depth(A, pdata, threshold=0.0, exclude_boundary=False, min_points
 
 def merge_boas_border_curv(A, pdata, threshold=0.0, fct=np.mean, min_points=4,
                            exclude_boundary=False):
-    """ Merge neighbouring domains based on their border curvature.
+    """Merge neighbouring domains based on their border curvature.
 
     Parameters
     ----------
@@ -315,16 +327,17 @@ def merge_boas_border_curv(A, pdata, threshold=0.0, fct=np.mean, min_points=4,
     pdata :
 
     threshold :
-         (Default value = 0.0)
+        (Default value = 0.0)
     fct :
-         (Default value = np.mean)
+        (Default value = np.mean)
     min_points :
-         (Default value = 4)
+        (Default value = 4)
     exclude_boundary :
-         (Default value = False)
+        (Default value = False)
 
     Returns
     -------
+
 
     """
     boundary = get_boundary_points(A.mesh)
@@ -395,7 +408,7 @@ def merge_boas_border_curv(A, pdata, threshold=0.0, fct=np.mean, min_points=4,
 
 
 def get_boundary_points(mesh):
-    """ Get point indices of mesh boundary.
+    """Get point indices of mesh boundary.
 
     Parameters
     ----------
@@ -404,6 +417,7 @@ def get_boundary_points(mesh):
 
     Returns
     -------
+
 
     """
     fe = mesh.ExtractEdges(feature_angle=0, boundary_edges=True,
@@ -423,7 +437,7 @@ def get_boundary_points(mesh):
 
 
 def set_boundary_curv(curvs, mesh, value):
-    """ Set the curvature of the mesh boundary.
+    """Set the curvature of the mesh boundary.
 
     Parameters
     ----------
@@ -437,6 +451,7 @@ def set_boundary_curv(curvs, mesh, value):
     Returns
     -------
 
+
     """
     newcurvs = curvs.copy()
 
@@ -446,7 +461,7 @@ def set_boundary_curv(curvs, mesh, value):
 
 
 def filter_curvature(curvs, neighs, fct, iters, exclude=[]):
-    """ Filter curvature with a function. Exclude the list of indices if given.
+    """Filter curvature with a function. Exclude the list of indices if given.
 
     Parameters
     ----------
@@ -459,10 +474,11 @@ def filter_curvature(curvs, neighs, fct, iters, exclude=[]):
     iters :
 
     exclude :
-         (Default value = [])
+        (Default value = [])
 
     Returns
     -------
+
 
     """
     for ii in xrange(iters):
@@ -479,7 +495,7 @@ def filter_curvature(curvs, neighs, fct, iters, exclude=[]):
 
 
 def remove_boas_size(pdata, threshold, method="points"):
-    """ Remove attractors mased on their size.
+    """Remove attractors mased on their size.
 
     Parameters
     ----------
@@ -488,10 +504,11 @@ def remove_boas_size(pdata, threshold, method="points"):
     threshold :
 
     method :
-         (Default value = "points")
+        (Default value = "points")
 
     Returns
     -------
+
 
     """
     domain_sizes = pdata.loc[:, 'domain'].value_counts()
@@ -507,7 +524,7 @@ def remove_boas_size(pdata, threshold, method="points"):
 
 
 def nboas(pdata):
-    """ Return the number of attractors.
+    """Return the number of attractors.
 
     Parameters
     ----------
@@ -516,13 +533,14 @@ def nboas(pdata):
 
     Returns
     -------
+
 
     """
     return pd.DataFrame(np.array(pdata['domain']))[0].value_counts().size
 
 
 def boas_npoints(pdata):
-    """ Get the number of points per attractor.
+    """Get the number of points per attractor.
 
     Parameters
     ----------
@@ -531,6 +549,7 @@ def boas_npoints(pdata):
 
     Returns
     -------
+
 
     """
     return pd.DataFrame(np.array(pdata['domain']))[0].value_counts()
@@ -550,6 +569,7 @@ def init_pointdata(A, curvs, neighs):
     Returns
     -------
 
+
     """
     coords = A.mesh.points
     domains = np.full((len(A.mesh.points), ), np.nan, dtype=np.float)
@@ -564,7 +584,7 @@ def init_pointdata(A, curvs, neighs):
     return pdata
 
 def get_domain(mesh, pdata, domain):
-    """ Get a domain from a labelled mesh.
+    """Get a domain from a labelled mesh.
 
     Parameters
     ----------
@@ -577,6 +597,7 @@ def get_domain(mesh, pdata, domain):
 
     Returns
     -------
+
 
     """
     not_in_domain = pdata.loc[pdata.domain != domain].index.values
@@ -585,7 +606,7 @@ def get_domain(mesh, pdata, domain):
     return vi.PolyData(mesh.RemovePoints(mask)[0])
 
 def get_domain_boundary(mesh, pdata, domain):
-    """ Get the point indices for a specified domain in a labelled mesh.
+    """Get the point indices for a specified domain in a labelled mesh.
 
     Parameters
     ----------
@@ -598,6 +619,7 @@ def get_domain_boundary(mesh, pdata, domain):
 
     Returns
     -------
+
 
     """
     dpoly = get_domain(mesh, pdata, domain)
@@ -607,7 +629,7 @@ def get_domain_boundary(mesh, pdata, domain):
 
 
 def define_meristem(mesh, pdata, method='central_mass', res=(0, 0, 0), fluo=None):
-    """ Define which domain is the meristem.
+    """Define which domain is the meristem.
 
     Parameters
     ----------
@@ -616,18 +638,19 @@ def define_meristem(mesh, pdata, method='central_mass', res=(0, 0, 0), fluo=None
     pdata :
 
     method :
-         (Default value = 'central_mass')
+        (Default value = 'central_mass')
     res :
-         (Default value = (0)
+        (Default value = (0)
     fluo : np.ndarray
         Fluorescence data matrix. Needed for method == central_space.
         TODO: Avoid needing this.
+    0 :
+
 
     Returns
     -------
-    meristem, coord : int, tuple
-        Meristem domain index and coordinate tuple specifying the center
-        coordinates.
+
+
     """
     ccoord = np.zeros((3,))
     if method == 'central_mass':
@@ -646,6 +669,23 @@ def define_meristem(mesh, pdata, method='central_mass', res=(0, 0, 0), fluo=None
     return meristem, ccoord
 
 def extract_domaindata(pdata, mesh, apex, meristem):
+    """
+
+    Parameters
+    ----------
+    pdata :
+
+    mesh :
+
+    apex :
+
+    meristem :
+
+
+    Returns
+    -------
+
+    """
     domains = np.unique(pdata.domain)
     domains = domains[~np.isnan(domains)]
     ddata = pd.DataFrame(columns=['domain', 'dist_boundary', 'dist_com', 'angle',
@@ -665,9 +705,13 @@ def extract_domaindata(pdata, mesh, apex, meristem):
         d2com = np.sqrt(np.sum((center - apex)**2))
 
         # Get domain size in terms of bounding boxes
-        bounds = dom.GetBounds()
-        maxdiam = np.sqrt(np.sum(np.diff(bounds)**2))
-        maxdiam_xy = np.sqrt(np.sum(np.diff(bounds[1:])**2))
+#        bounds = dom.GetBounds()
+        domcoords = dom.points
+        from scipy.spatial.distance import cdist
+        dists = cdist(domcoords, domcoords)
+        maxdiam = np.max(dists)
+        dists_xy = cdist(domcoords[:, 1:], domcoords[:, 1:])
+        maxdiam_xy = np.max(dists_xy)
 
         # Get domain angle in relation to apex
         rel_pos = center - apex
@@ -693,12 +737,24 @@ def extract_domaindata(pdata, mesh, apex, meristem):
 
 
 def merge_boas_angle(pdata, ddata, mesh, threshold, apex):
-    """ Merge domains based on the angles between them.
+    """Merge domains based on the angles between them.
 
     Parameters
     ----------
+    pdata :
+
+    ddata :
+
+    mesh :
+
+    threshold :
+
+    apex :
+
+
     Returns
     -------
+
 
     """
 
@@ -748,11 +804,30 @@ def merge_boas_angle(pdata, ddata, mesh, threshold, apex):
     return new_pdata, new_ddata
 
 def relabel_domains(pdata, ddata, order='area'):
+    """
+
+    Parameters
+    ----------
+    pdata :
+
+    ddata :
+
+    order :
+         (Default value = 'area')
+
+    Returns
+    -------
+
+    """
     new_pdata = pdata.copy()
     new_ddata = ddata.copy()
 
     if order == 'area':
         new_ddata.sort_values(['ismeristem', 'area'], ascending=False)
+    elif order == 'maxdiam':
+        new_ddata.sort_values(['ismeristem', 'maxdiam'], ascending=False)
+    elif order == 'maxdiam_xy':
+        new_ddata.sort_values(['ismeristem', 'maxdiam_xy'], ascending=False)
 
     dmap = dict()
     for ii in xrange(len(new_ddata)):

@@ -76,6 +76,26 @@ def reject_outliers(data, n=2.):
     filtered_data = data[s < n]
     return filtered_data
 
+def angle_difference(ang1, ang2, period=360):
+    ''' Return the smallest angle difference on a template with periodic boundary conditions.
+
+    Returns
+    -------
+    angs : np.array of floats
+        The smallest angles.
+
+    '''
+    difference = np.subtract(ang1, ang2)
+    angs = np.array([np.abs(np.mod(difference, period)), np.abs(np.mod(difference, -period))])
+    angs = np.min(angs, axis=0)
+    return angs
+
+def divergence_angles(angles, period=360):
+    ''' Divergence angles between an ordered list of angles '''
+    div_angs = angle_difference(angles,
+                                       np.roll(angles, 1), period=period)[1:]
+
+    return div_angs
 
 def paraboloid(x, y, p):
     """ Return the z-value for a paraboloid given input xy-coordinates and

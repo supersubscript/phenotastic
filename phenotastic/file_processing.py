@@ -60,19 +60,59 @@ def tiffsave(fname, data, metadata=None, resolution=[1., 1., 1.], dtype=None,
         File metadata to store in file (ImageJ format). Default = None.
 
     resolution : 3-tuple, optional
-         Resolution of the file. Default value = [1,1,1].
+         Resolution of the file. Default value = [1,1,1]. Ordered as ZYX.
 
     Returns
     -------
     No return. Saves file to disk.
 
     """
-
     metadata = {} if not metadata else metadata.copy()
-    metadata.setdefault('spacing', resolution[0])
+
+    # TODO: Figure out what to do with this
+    if resolution[0] < 1e-4:
+        resolution[0] *= 1e6
+        metadata['spacing'] = resolution[0]
+    if 'voxelsizez' in metadata:
+        metadata['voxelsizez'] = resolution[0]
+
+    if resolution[1] < 1e-4:
+        resolution[1] *= 1e6
+    if 'voxelsizey' in metadata:
+        metadata['voxelsizey'] = resolution[1]
+
+    if resolution[2] < 1e-4:
+        resolution[2] *= 1e6
+    if 'voxelsizex' in metadata:
+        metadata['voxelsizex'] = resolution[2]
+
     metadata.setdefault('unit', unit)
     metadata.setdefault('slices', data.shape[0])
     metadata['segmented'] = segmented
+
+    if data.ndim == 4:
+        metadata['channels'] = data.shape[1]
+        if 'dimensionz' in metadata:
+            metadata['dimensionz'] = data.shape[0]
+        if 'dimensionchannels' in metadata:
+            metadata['dimensionchannels'] = data.shape[1]
+        if 'dimensiony' in metadata:
+            metadata['dimensiony'] = data.shape[2]
+        if 'dimensionx' in metadata:
+            metadata['dimensionx'] = data.shape[3]
+
+    elif data.ndim == 3:
+        metadata['channels'] = 1
+        if 'dimensionz' in metadata:
+            metadata['dimensionz'] = data.shape[0]
+        if 'dimensionchannels' in metadata:
+            metadata['dimensionchannels'] = 1
+        if 'dimensiony' in metadata:
+            metadata['dimensiony'] = data.shape[1]
+        if 'dimensionx' in metadata:
+            metadata['dimensionx'] = data.shape[2]
+    else:
+        raise Exception('Invalid data structure')
 
     if metadata['segmented']:
         metadata['backgroundlabel'] = segmented
@@ -85,9 +125,31 @@ def tiffsave(fname, data, metadata=None, resolution=[1., 1., 1.], dtype=None,
     for ii in extra_tags:
         metadata[ii] = extra_tags[ii]
 
-    imsave(fname, data=data, dtype=dtype,
-           resolution=resolution[-1:-3:-1], imagej=True, metadata=metadata,
-           **kwargs)
+#    tw = tifffile.TiffWriter(fname, byteorder=data.dtype.byteorder, imagej=True)
+#    tw.save(data=data, shape=data.shape, dtype=data.dtype, resolution=(resolution[2], resolution[1]), metadata=metadata)
+
+    imsave(fname, data=data, dtype=data.dtype, imagej=True,
+           resolution=[1./resolution[2], 1./resolution[1]],
+           metadata=metadata)
+
+
+    #           **kwargs)
+#            code : int
+#                The TIFF tag Id.
+#            dtype : str
+#                Data type of items in 'value' in Python struct format.
+#                One of B, s, H, I, 2I, b, h, i, 2i, f, d, Q, or q.
+#            count : int
+#                Number of data values. Not used for string or byte string
+#                values.
+#            value : sequence
+#                'Count' values compatible with 'dtype'.
+#                Byte strings must contain count values of dtype packed as
+#                binary data.
+#            writeonce : bool
+#                If True, the tag is written to the first page only.
+#    282: 'XResolution',
+#    283: 'YResolution',
 
 def tiffload(fname):
     """
@@ -102,7 +164,6 @@ def tiffload(fname):
     -------
     fobj : tvfile
         The file object.
-
 
     """
     fobj = tvfile(fname) #TiffFile(fname)
@@ -142,12 +203,21 @@ def tiffload(fname):
         nchannels = 1
 
     # Reduce the series to the part of the data we actually want.
-    newSeries = tifffile.TiffPageSeries(
-        pages[::nseries], (npages / nseries, nchannels, pages[0].imagelength,
-                           pages[0].imagewidth), dtype=ss.dtype, axes='ZCYX',
+    # TODO: Make sure this is OK for all cases! Unsure how channels/series etc are treated within the array of pages
+    if nseries > 1:
+        newSeries = tifffile.TiffPageSeries(
+            pages[::nseries], (npages / nseries, nchannels, pages[0].imagelength,
+                               pages[0].imagewidth), dtype=ss.dtype, axes='ZCYX',
         stype='ImageJ')
+    else:
+        newSeries = tifffile.TiffPageSeries(
+            pages[::nseries], (npages / nchannels, nchannels, pages[0].imagelength,
+                               pages[0].imagewidth), dtype=ss.dtype, axes='ZCYX',
+        stype='ImageJ')
+
     newSeries.offset = ss.offset
     newSeries.parent = ss.parent
+
     fobj.series = [newSeries]
 
     # Set pages according to new series

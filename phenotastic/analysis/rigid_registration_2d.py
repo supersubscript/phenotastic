@@ -9,46 +9,49 @@ import phenotastic.file_processing as fp
 import tifffile as tiff
 import scipy.optimize as opt
 import stackAlign.external.transformations as tf
+from scipy.ndimage.interpolation import affine_transform
+import numpy as np
+from math import pi
+from skimage.measure import compare_ssim
 
-im1_path = '/home/henrik/data/180129-pWUS-3X-VENUS-pCLV3-mCherry-Timelapse/on_NPA/pWUS-3X-VENUS-pCLV3-mCherry-on-NPA-1-0h-mCherry-0.7-Gain-800-5um.lsm'
-im2_path = '/home/henrik/data/180129-pWUS-3X-VENUS-pCLV3-mCherry-Timelapse/on_NPA/pWUS-3X-VENUS-pCLV3-mCherry-on-NPA-1-0h-mCherry-0.7-Gain-800.lsm'
-
-im1 = fp.tiffload(im1_path).data
-im2 = fp.tiffload(im2_path).data
-
-# 2d
-im1 = im1[5, 0, ...]
-im2 = im2[33, 0, ...]
-
-im1 = im1[:256]
+#im1_path = '/home/henrik/data/180129-pWUS-3X-VENUS-pCLV3-mCherry-Timelapse/on_NPA/pWUS-3X-VENUS-pCLV3-mCherry-on-NPA-1-0h-mCherry-0.7-Gain-800-5um.lsm'
+#im2_path = '/home/henrik/data/180129-pWUS-3X-VENUS-pCLV3-mCherry-Timelapse/on_NPA/pWUS-3X-VENUS-pCLV3-mCherry-on-NPA-1-0h-mCherry-0.7-Gain-800.lsm'
+#
+#im1 = fp.tiffload(im1_path).data
+#im2 = fp.tiffload(im2_path).data
+#
+## 2d
+#im1 = im1[5, 0, ...]
+#im2 = im2[33, 0, ...]
+#
+#im1 = im1[:256]
 
 # 3d
-im1 = im1[:, 0, ...]
-im2 = im1[:]
+#im1 = im1[:, 0, ...]
+#im2 = im1[:]
 #im2 = im2[:, 0, ...]
 
-from sklearn.metrics import mutual_info_score
-import numpy as np
-
-
 def mutual_information(x, y, bins):
+    from sklearn.metrics import mutual_info_score
     c_xy = np.histogram2d(x, y, bins)[0]
     mi = mutual_info_score(None, None, contingency=c_xy)
     return mi
 
 
 def rigid2D(moving, target, init=(0, 0, 0), method='Powell', verbose=True):
-    from skimage.transform import EuclideanTransform
-    from skimage.transform import warp
-    import numpy as np
-
-    moving = match_shape(moving, target.shape, side='both', val=0)
+    moving = match_shape(moving, np.maximum(moving.shape, target.shape), side='both', val=0)
+    target = match_shape(target, np.maximum(moving.shape, target.shape), side='both', val=0)
 
     def errfunc(p, moving_, verbose):
-        dx, dy, theta = p
-        mat = EuclideanTransform(translation=(dx, dy), rotation=theta)
-        warped = warp(moving_, mat, preserve_range=True)
+        dx, dy, alpha = p
+        mat = tf.compose_matrix(translate=[0, dx, dy], angles=[alpha, 0, 0])
+        warped = affine_transform(np.array([moving_]), mat)[0]
+#        cost = np.sum(np.absolute(moving_/np.max(warped) - target/np.max(target)))
+#        cost = -(compare_ssim(warped, target, win_size=3) + 1)
         cost = -np.corrcoef(warped.ravel(), target.ravel())[0, 1]
+
+        if abs(dx) > moving_.shape[0] or abs(dy) > moving_.shape[1] or abs(alpha) > pi/4.:
+            cost += 1
 
         if verbose:
             print(cost, warped.max(), target.max())
@@ -56,15 +59,11 @@ def rigid2D(moving, target, init=(0, 0, 0), method='Powell', verbose=True):
         return cost
 
     out = opt.minimize(errfunc, init, args=(moving, verbose), method=method,
-                       options=dict(disp=verbose),
-                       bounds=((-moving.shape[0], moving.shape[0]),
-                               (-moving.shape[1], moving.shape[1]),
-                               (-90, 90)))
-    dx, dy, theta = out.x
+                       options=dict(disp=verbose))
+    dx, dy, alpha = out.x
 
-    trsf_img = warp(moving,
-                    EuclideanTransform(translation=(dx, dy), rotation=theta),
-                    preserve_range=True)
+    trsf_img = affine_transform(np.array([moving]), tf.compose_matrix(translate=[0, dx, dy],
+                                                          angles=[alpha, 0, 0]))
 
     return trsf_img, out.x
 
@@ -92,8 +91,6 @@ def align_timeseries(img, target_slice=0, init=(0, 0, 0), method='Powell', verbo
 
 def match_shape(a, t, side='both', val=0):
     """
-    Forces an array to a t size by either padding it with a constant or
-    truncating it.
 
     Parameters
     ----------
@@ -160,8 +157,9 @@ def match_shape(a, t, side='both', val=0):
 
 ##############
 
+
+
 def rigid3D(moving, target, init=(0, 0, 0, 0, 0, 0), method='Powell', verbose=True):
-    from skimage.transform import warp
     from scipy.ndimage.interpolation import affine_transform
     import numpy as np
 

@@ -98,8 +98,8 @@ def correct_bad_mesh(mesh, verbose=True):
     verbose : bool, optional
         Flag to print out operation procedure.
 
-    Note
-    ----
+    Notes
+    -----
     - Assumes a triangulated mesh.
     - Recalculation of cell and point attributes will have to be redone
     - All points in non-manifold edges will be removed. This could in principle
@@ -168,8 +168,8 @@ def remove_bridges(mesh, verbose=True):
     verbose : bool, optional
         Flag to print processing steps.
 
-    Note
-    ----
+    Notes
+    -----
     Assumes triangulated mesh.
 
     Returns
@@ -255,8 +255,8 @@ def geodesic(mesh, ii, jj):
     jj : int
         Second point index.
 
-    Note
-    ----
+    Notes
+    -----
     Requires manifold mesh.
 
     Returns

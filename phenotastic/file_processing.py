@@ -89,6 +89,7 @@ def tiffsave(fname, data, metadata=None, resolution=[1., 1., 1.], dtype=None,
     metadata.setdefault('unit', unit)
     metadata.setdefault('slices', data.shape[0])
     metadata['segmented'] = segmented
+    metadata['axes'] = 'ZCYX'
 
     if data.ndim == 4:
         metadata['channels'] = data.shape[1]
@@ -125,11 +126,8 @@ def tiffsave(fname, data, metadata=None, resolution=[1., 1., 1.], dtype=None,
     for ii in extra_tags:
         metadata[ii] = extra_tags[ii]
 
-#    tw = tifffile.TiffWriter(fname, byteorder=data.dtype.byteorder, imagej=True)
-#    tw.save(data=data, shape=data.shape, dtype=data.dtype, resolution=(resolution[2], resolution[1]), metadata=metadata)
-
-    imsave(fname, data=data, dtype=data.dtype, imagej=True,
-           resolution=[1./resolution[2], 1./resolution[1]],
+    imsave(fname, data=data, shape=data.shape, dtype=data.dtype,
+           imagej=True, resolution=[1./resolution[2], 1./resolution[1]],
            metadata=metadata)
 
 

@@ -8,7 +8,7 @@ Created on Tue May 29 22:10:18 2018
 import numpy as np
 from vtk.util import numpy_support as nps
 import vtkInterface as vi
-import Meristem_Phenotyper_3D as ap
+import phenotastic.Meristem_Phenotyper_3D as ap
 from PyACVD import Clustering
 import vtk
 from scipy.ndimage.morphology import binary_fill_holes
@@ -63,10 +63,6 @@ def fill_contour(contour, fill_xy=False, inplace=False):
     for ii in xrange(new_contour.shape[2]):
         new_contour[:, :, ii] = binary_fill_holes(new_contour[:, :, ii])
 
-    if fill_xy:
-        for ii in xrange(new_contour.shape[0]):
-            new_contour[ii] = binary_fill_holes(new_contour[ii])
-
     # Remove edges again, also for top
     new_contour[0] = 0
     new_contour[-1] = 0
@@ -74,6 +70,10 @@ def fill_contour(contour, fill_xy=False, inplace=False):
     new_contour[:, -1] = 0
     new_contour[:, :, 0] = 0
     new_contour[:, :, -1] = 0
+
+    if fill_xy:
+        for ii in xrange(new_contour.shape[0]):
+            new_contour[ii] = binary_fill_holes(new_contour[ii])
 
     new_contour = binary_fill_holes(new_contour)
 
@@ -389,7 +389,7 @@ def remove_tongues(mesh, radius, threshold=6, threshold2=0.8,
 
     return mesh
 
-def drop_skirt(mesh, maxdist):
+def drop_skirt(mesh, maxdist, flip=False):
     """
     Downprojects the boundary to the lowest point in the z-direction.
 
@@ -407,7 +407,8 @@ def drop_skirt(mesh, maxdist):
         Mesh with boundary downprojected.
 
     """
-    lowest = mesh.GetBounds()[0]
+
+    lowest = mesh.GetBounds()[int(flip)]
     boundary = get_boundary_edges(mesh)
 
     mpts = mesh.points

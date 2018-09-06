@@ -30,12 +30,15 @@ from libtiff import TIFF
 # import handy_functions as hf
 from vtk.util import numpy_support
 import copy
-import domain_processing as boa
 import networkx as nx
 import tifffile as tiff
 import vtkInterface as vi
 from vtkInterface import PolyData
-import misc
+from phenotastic.misc import mkdir
+import phenotastic.misc as misc
+#import phenotastic.domain_processing as boa
+
+
 """
 ===================
 AutoPhenotype class
@@ -809,22 +812,9 @@ class AutoPhenotype(object):
         """
         self.data, _ = tiffread(where)
 
-    def save(self, where):
+    def save(self, where, sep='\t',otype='ply', mode='binary'):
         """
         Saves the all data stored in an AutoPhenotype Object.
-
-        Recognises whether or not data is available and saves only available.
-        Note: it is advised to create a new folder for every save, since
-        multiple files are created which always have the same name.
-        The following files are saved (if avaliable):
-            *data.tif : processed input data (e.g. reduced) as .tif stack
-            *contour.tif : contour of data as .tif stack
-            *mesh.vtp : mesh as vtk .vtp data (readable with
-                vtk.vtkXMLPolyDataReader() )
-            *featuresX.vtp : features in same format as mesh.vtp. Each feature
-                is a separate file and X is a running number starting from 0.
-            *results.csv : the results from e.g. the spherical fit as .csv
-                data generated with pandas DataFrame.to_csv().
 
         Parameters
         ----------
@@ -836,43 +826,22 @@ class AutoPhenotype(object):
 
 
         """
-        logfile = pd.DataFrame(np.zeros((1, 6)), columns=['data',
-                                                          'contour',
-                                                          'mesh',
-                                                          'features',
-                                                          'results',
-                                                          'tags'])
-        if not os.path.exists(where):  # checks if specified directory exists
-            os.makedirs(where)         # creates one if not
-        if type(self.data) != type(None):
-            logfile['data'] = 1
-            # TODO: Save metadata too
-            tiff.imsave(self.data.astype(np.uint16), where + '/data.tif')
-#            tiffsave(np.array(self.data, 'int16'), where + '/data.tif')
-        if type(self.contour) != type(None):
-            logfile['contour'] = 1
-            # TODO: Save metadata too
-            tiff.imsave(self.contour.astype(np.uint16), where + '/contour.tif')
-#            tiffsave(np.array(self.contour, 'int16'), where + '/contour.tif')
-        if type(self.mesh) != type(None):
-            logfile['mesh'] = 1
-            meshwriter = vtk.vtkXMLPolyDataWriter()
-            meshwriter.SetInput(self.mesh)
-            meshwriter.SetFileName(where + '/mesh.vtp')
-            meshwriter.Write()
-        if type(self.features) != type(None):
-            os.makedirs(where + '/features')
-            logfile['features'] = 1
-            for i in range(np.shape(self.features)[0]):
-                featurewriter = vtk.vtkXMLPolyDataWriter()
-                featurewriter.SetInput(self.features[i])
-                featurewriter.SetFileName(where + '/features/feature%s.vtp'
-                                          % str(i))
-                featurewriter.Write()
-        if self.results.shape[0] != 0:
-            logfile['results'] = 1
-            self.results.to_csv(where + '/results.csv')
-        logfile.to_csv(where + '/logfile.csv')
+        mkdir(where)
+
+        if self.pdata is not None:
+            self.pdata.to_csv(os.path.join(where, 'point_data.csv'), sep=sep, index=False)
+        if self.ddata is not None:
+            self.ddata.to_csv(os.path.join(where, 'domain_data.csv'), sep=sep, index=False)
+
+        if self.data is not None:
+            np.save(os.path.join(where, 'data.npy'), self.data)
+        if self.contour is not None:
+            np.save(os.path.join(where, 'contour.npy'), self.contour)
+
+        if self.mesh is not None:
+            self.mesh.Save(os.path.join(where, 'mesh.ply'), otype=otype, mode=mode)
+
+
 
     def save_results(self, where):
         """

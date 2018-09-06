@@ -7,7 +7,7 @@ Created on Tue May 29 21:53:06 2018
 """
 import numpy as np
 import vtkInterface as vi
-import domain_processing as boa
+import phenotastic.domain_processing as boa
 import vtk
 #import phenotastic.Meristem_Phenotyper_3D as ap
 

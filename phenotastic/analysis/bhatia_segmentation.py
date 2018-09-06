@@ -32,14 +32,13 @@ from phenotastic.misc import mkdir, listdir
 
 ''' FILE INPUT '''
 home = os.path.expanduser('~')
-dir_ = '/home/henrik/ross_hypo/'
-
+dir_ = '/home/henrik/data/from-marcus/'
 
 files = listdir(dir_, include='.tif')
 files.sort()
 #files = files[20:]
 
-file_ = files[0]
+file_ = files[1]
 import gc
 
 def autocrop(arr, threshold=8e7, fct=np.sum):
@@ -51,7 +50,7 @@ def autocrop(arr, threshold=8e7, fct=np.sum):
 
         vals = fct(sumarr, axis=tuple(summers))
         first = next((e[0] for e in enumerate(vals) if e[1] > threshold), 0)
-        last =  len(vals) - next((e[0] for e in enumerate(vals[::-1]) if e[1] > threshold), 0) - 1
+        last =  len(vals) - next((e[0] for e in enumerate(vals[::-1]) if e[1] > threshold), 0)
 
         cp[ii] = first, last
 
@@ -64,20 +63,23 @@ for file_ in files:
         meta = f.metadata
 #        resolution = np.array([meta['spacing'], meta['voxelsizey'], meta['voxelsizex']])
         data = f.data.astype(np.float)
-        data = data[..., :1024]
-
         del f
         data = autocrop(data, 10e7, fct=np.sum)
-        data = data[:140, :, :500]
-        resolution = (meta['spacing'], 0.7568361, 0.7568361)
-#        resolution = np.array((meta['spacing'], 0.3045961, 0.3045961))
+        data = data[::-1]
 
+        resolution = np.array((meta['spacing'], 0.3045961, 0.3045961))
 #        if resolution[0] < 2.:
 #            downfac = np.floor(2. / resolution[0]).astype(np.int)
 #            resolution[0] *= downfac
 #            data = data[::downfac]
 
-        fluo = data[:, 0]
+#        fluo = data[:, 0]
+        fluo = data.copy()
+        fluo[:,1] /= np.max(fluo[:,1])
+        fluo[:,0] /= np.max(fluo[:,0])
+
+        fluo = np.max(data[:,:2], axis=1)
+
 #        data = data[-200:]
 #        fluo = fluo[-200:]
 
@@ -97,11 +99,11 @@ for file_ in files:
 
         for ii in xrange(1):
             A.data = median_filter(A.data, size=1)
-        for ii in xrange(1):
-            A.data = gaussian_filter(
-                A.data, sigma=[3. / resolution[0] * 0.2,
-                               3. / resolution[1] * 0.25,
-                               3. / resolution[2] * 0.25])
+#        for ii in xrange(1):
+#            A.data = gaussian_filter(
+#                A.data, sigma=[3. / resolution[0] * 0.2,
+#                               3. / resolution[1] * 0.25,
+#                               3. / resolution[2] * 0.25])
 
         ''' Smooth the data (to fill holes) and create a contour. lambda2 > lambda1:
           more variable on inside. Smoothing might have to be corrected for different
@@ -111,15 +113,17 @@ for file_ in files:
         A.data = A.data * np.max(fluo)
 
         factor = .5
-        contour = morphological_chan_vese(A.data, iterations=1,
+        contour = morphological_chan_vese(A.data, iterations=5,
                                           init_level_set=A.data > factor *
                                           np.mean(A.data),
                                           smoothing=1, lambda1=1, lambda2=1)
 
+#        from skimage.morphology import binary_fill_holes
+        from scipy.ndimage.morphology import binary_fill_holes
         for ii in xrange(contour.shape[0]):
             contour[ii] = binary_fill_holes(contour[ii])
 
-#        contour = mp.fill_contour(contour, fill_xy=True)
+#        contour = mp.fill_contour(contour, fill_xy=False)
 
 #        pl.PlotImage(data, res=resolution)
 
@@ -149,8 +153,9 @@ for file_ in files:
 #        A.mesh = mp.ECFT(A.mesh, 100.)
         A.mesh = mp.correct_bad_mesh(A.mesh)
 
+
 #        A.mesh = mp.ECFT(A.mesh, 1000)
-        bottom_cut = 0
+        bottom_cut = 130
         A.mesh = A.mesh.ClipPlane([bottom_cut, 0, 0], [1, 0, 0], inplace=False)
         A.mesh = mp.ECFT(A.mesh, 100)
         A.mesh = A.mesh.GenerateNormals(inplace=False)
@@ -221,8 +226,8 @@ for file_ in files:
             curvs = boa.set_boundary_curv(curvs, A.mesh, np.min(curvs))
         except:
             pass
-        curvs = boa.filter_curvature(curvs, neighs, np.min, 2)
-        curvs = boa.filter_curvature(curvs, neighs, np.mean, 100)
+        curvs = boa.filter_curvature(curvs, neighs, np.min, 1)
+        curvs = boa.filter_curvature(curvs, neighs, np.mean, 50)
         A.mesh.Plot(scalars=curvs)
 
     ###############################################################################
@@ -261,8 +266,8 @@ for file_ in files:
         boas, boasData = boa.get_boas(pdata)
         boacoords = np.array([tuple(ii) for ii in boasData[['z', 'y', 'x']].values])
 
-#        pl.PlotPointData(A.mesh, pdata, 'domain',
-#                         boacoords=boacoords, show_boundaries=True)
+        pl.PlotPointData(A.mesh, pdata, 'domain',
+                         boacoords=boacoords, show_boundaries=True)
 
         d2 = data[:46, 1]
         md2 = data[:46, 2]

@@ -64,7 +64,7 @@ for file_ in files:
         meta = f.metadata
 #        resolution = np.array([meta['spacing'], meta['voxelsizey'], meta['voxelsizex']])
         data = f.data.astype(np.float)
-        data = data[..., :1024]
+        data = data[..., :600]
 
         del f
         data = autocrop(data, 10e7, fct=np.sum)
@@ -111,7 +111,7 @@ for file_ in files:
         A.data = A.data * np.max(fluo)
 
         factor = .5
-        contour = morphological_chan_vese(A.data, iterations=1,
+        contour = morphological_chan_vese(A.data, iterations=3,
                                           init_level_set=A.data > factor *
                                           np.mean(A.data),
                                           smoothing=1, lambda1=1, lambda2=1)
@@ -146,10 +146,10 @@ for file_ in files:
         A.mesh.ClipPlane([0, np.floor(bounds[3]), 0], [0, -(xyzres[1] + 0.0001), 0])
         A.mesh.ClipPlane([0, 0, np.ceil(bounds[4])], [0, 0, (xyzres[2] + 0.0001)])
         A.mesh.ClipPlane([0, 0, np.floor(bounds[5])], [0, 0, -(xyzres[2] + 0.0001)])
-#        A.mesh = mp.ECFT(A.mesh, 100.)
+        A.mesh = mp.ECFT(A.mesh, 100)
         A.mesh = mp.correct_bad_mesh(A.mesh)
 
-#        A.mesh = mp.ECFT(A.mesh, 1000)
+        A.mesh = mp.ECFT(A.mesh, 100)
         bottom_cut = 0
         A.mesh = A.mesh.ClipPlane([bottom_cut, 0, 0], [1, 0, 0], inplace=False)
         A.mesh = mp.ECFT(A.mesh, 100)
@@ -215,6 +215,9 @@ for file_ in files:
 #            A.mesh.FlipNormals()
         neighs = np.array([ap.get_connected_vertices(A.mesh, ii)
                            for ii in xrange(A.mesh.npoints)])
+
+        mc = A.mesh.Copy()
+#        mc = mp.drop_skirt(mc, 1000, flip=True)
 
         curvs = A.mesh.Curvature('mean')
         try:

@@ -95,6 +95,10 @@ def tiffsave(fname, data, metadata=None, resolution=[1., 1., 1.], dtype=None,
         metadata['channels'] = data.shape[1]
         if 'dimensionz' in metadata:
             metadata['dimensionz'] = data.shape[0]
+        if 'slices' in metadata:
+            metadata['slices'] = data.shape[0]
+        if 'images' in metadata:
+            metadata['images'] = data.shape[0] * data.shape[1]
         if 'dimensionchannels' in metadata:
             metadata['dimensionchannels'] = data.shape[1]
         if 'dimensiony' in metadata:
@@ -106,6 +110,10 @@ def tiffsave(fname, data, metadata=None, resolution=[1., 1., 1.], dtype=None,
         metadata['channels'] = 1
         if 'dimensionz' in metadata:
             metadata['dimensionz'] = data.shape[0]
+        if 'slices' in metadata:
+            metadata['slices'] = data.shape[0]
+        if 'images' in metadata:
+            metadata['images'] = data.shape[0]
         if 'dimensionchannels' in metadata:
             metadata['dimensionchannels'] = 1
         if 'dimensiony' in metadata:
@@ -130,6 +138,7 @@ def tiffsave(fname, data, metadata=None, resolution=[1., 1., 1.], dtype=None,
            imagej=True, resolution=[1./resolution[2], 1./resolution[1]],
            metadata=metadata)
 
+#f = fp.tiffload(fname + 'test')
 
     #           **kwargs)
 #            code : int
@@ -272,26 +281,38 @@ def get_resolution(fobj):
 
     """
 
+#    try:
+#        if isinstance(fobj.pages.pages[0].tags['XResolution'], tifffile.TiffTag):
+#            x = fobj.pages.pages[0].tags['XResolution'].value[0]
+#        else:
+#            x = fobj.pages.pages[0].tags['XResolution']
+#    except (KeyError, TypeError):
+#        try:
+#            x = fobj.metadata['voxelsizex']
+#        except (KeyError, TypeError):
+#            x = 1.0
+#    try:
+#        if isinstance(fobj.pages.pages[0].tags['YResolution'], tifffile.TiffTag):
+#            y = fobj.pages.pages[0].tags['YResolution'].value[0]
+#        else:
+#            y = fobj.pages.pages[0].tags['YResolution']
+#    except (KeyError, TypeError):
+#        try:
+#            y = fobj.metadata['voxelsizey']
+#        except (KeyError, TypeError):
+#            y = 1.0
     try:
-        if isinstance(fobj.pages.pages[0].tags['XResolution'], tifffile.TiffTag):
-            x = fobj.pages.pages[0].tags['XResolution'].value[0]
-        else:
-            x = fobj.pages.pages[0].tags['XResolution']
-    except (KeyError, TypeError):
-        try:
-            x = fobj.metadata['voxelsizex']
-        except (KeyError, TypeError):
-            x = 1.0
+        xindex = np.where(np.array(fobj.pages.pages[0].tags.keys()) == 'XResolution')[0][0]
+        x = fobj.pages.pages[0].tags.values()[xindex].value
+        x = float(x[1]) / x[0]
+    except:
+        x = 1.0
     try:
-        if isinstance(fobj.pages.pages[0].tags['YResolution'], tifffile.TiffTag):
-            y = fobj.pages.pages[0].tags['YResolution'].value[0]
-        else:
-            y = fobj.pages.pages[0].tags['YResolution']
-    except (KeyError, TypeError):
-        try:
-            y = fobj.metadata['voxelsizey']
-        except (KeyError, TypeError):
-            y = 1.0
+        yindex = np.where(np.array(fobj.pages.pages[0].tags.keys()) == 'YResolution')[0][0]
+        y = fobj.pages.pages[0].tags.values()[yindex].value
+        y = float(y[1]) / y[0]
+    except:
+        y = 1.0
     try:
         z = fobj.metadata['spacing']
     except (KeyError, TypeError):
@@ -304,96 +325,25 @@ def get_resolution(fobj):
 
     return res
 
-def set_xresolution(fobj, value):
-    """
-    Returns resolution of the image in ZYX format.
 
-    Parameters
-    ----------
-    fobj : tifffile.TiffFile
-        Input file.
-
-    value : float
-        New resolution.
-
-    Returns
-    -------
-
-
-    """
-    for ii in xrange(len(fobj.pages)):
-        if isinstance(fobj.pages.pages[ii], tifffile.TiffPage):
-            fobj.pages.pages[ii].tags['XResolution'] = value
-
-
-def set_yresolution(fobj, value):
-    """Sets resolution of image file.
-
-    Parameters
-    ----------
-    fobj : tifffile.TiffFile
-        Input file.
-
-    value : float
-        New resolution.
-
-    Returns
-    -------
-
-
-    """
-    for ii in xrange(len(fobj.pages)):
-        if isinstance(fobj.pages.pages[ii], tifffile.TiffPage):
-            fobj.pages.pages[ii].tags['YResolution'] = value
-
-
-def set_zresolution(fobj, value):
-    """
-    Sets resolution of image file.
-
-    Parameters
-    ----------
-    fobj : tifffile.TiffFile
-        Input file.
-
-    value : float
-        New resolution.
-
-    Returns
-    -------
-
-
-    """
-    fobj.imagej_metadata['spacing'] = value
-
-
-def set_resolution(fobj, values):
-    """
-    Sets resolution of image file.
-
-    Parameters
-    ----------
-    fobj : tifffile.TiffFile
-        Input file.
-
-    values : np.ndarray
-        New resolution.
-
-    Note
-    ----
-    Values are in order ZYX.
-
-    Returns
-    -------
-
-    """
-    if len(values) != 3:
-        # TODO: Should this be IOError?
-        raise IOError('Resolution must be of length 3.')
-
-    set_zresolution(fobj, values[0])
-    set_yresolution(fobj, values[1])
-    set_xresolution(fobj, values[2])
+#def set_zresolution(fobj, value):
+#    """
+#    Sets resolution of image file.
+#
+#    Parameters
+#    ----------
+#    fobj : tifffile.TiffFile
+#        Input file.
+#
+#    value : float
+#        New resolution.
+#
+#    Returns
+#    -------
+#
+#
+#    """
+#    fobj.imagej_metadata['spacing'] = value
 
 
 def get_metadata(fobj, mtype=''):
@@ -532,3 +482,5 @@ def si2tvf(fobj, **kwargs):
     tiffsave(tmpname, fobj.get_array(), metadata=metadata,
              resolution=resolution, **kwargs)
     return tiffload(tmpname)
+
+

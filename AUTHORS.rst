@@ -5,7 +5,7 @@ Credits
 Development Lead
 ----------------
 
-* Henrik Ahl <hpa22@cam.ac.uk>
+* Henrik Åhl <hpa22@cam.ac.uk>
 
 Contributors
 ------------

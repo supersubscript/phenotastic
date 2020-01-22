@@ -26,7 +26,7 @@ If you are reporting a bug, please include:
 Fix Bugs
 ~~~~~~~~
 
-Look through the GitHub issues for bugs. Anything tagged with "bug" and "help
+Look through the GitLab issues for bugs. Anything tagged with "bug" and "help
 wanted" is open to whoever wants to implement it.
 
 Implement Features
@@ -59,10 +59,10 @@ Get Started!
 
 Ready to contribute? Here's how to set up `phenotastic` for local development.
 
-1. Fork the `phenotastic` repo on GitHub.
+1. Fork the `phenotastic` repo on GitLab.
 2. Clone your fork locally::
 
-    $ git clone git@github.com:your_name_here/phenotastic.git
+    $ git clone git@gitlab.com:your_name_here/phenotastic.git
 
 3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development::
 

@@ -12,9 +12,11 @@ with open('README.rst') as readme_file:
     readme = readme_file.read()
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
+with open('requirements.txt') as reqs_file:
+    reqs = reqs_file.read()
 
 # Requirements & test
-requirements = [ ]
+requirements = reqs
 setup_requirements = ['pytest-runner', ]
 test_requirements = ['pytest', ]
 

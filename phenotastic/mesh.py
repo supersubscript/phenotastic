@@ -382,7 +382,7 @@ def remove_normals(mesh, threshold_angle=0, flip=False, angle='polar'):
         Mesh with the resulting vertices removed.
 
     """
-    from misc import car2sph
+    from phenotastic.misc import car2sph
 
     normals = mesh.point_normals.copy()
     if flip:
@@ -926,7 +926,7 @@ def fit_paraboloid(data, init=[1, 1, 1, 1, 1, 0, 0, 0]):
     """
     import scipy.optimize as opt
 #    from scipy.spatial.transform import Rotation as R
-    from misc import rotate
+    from phenotastic.misc import rotate
 
 
     def errfunc(p, coord):
@@ -1034,7 +1034,7 @@ def get_paraboloid_apex(p):
         Coordinates for the paraboloid apex.
 
     """
-    from misc import rotate
+    from phenotastic.misc import rotate
 
     p1, p2, p3, p4, p5, alpha, beta, gamma = p
     x = -p3 / (2. * p1)

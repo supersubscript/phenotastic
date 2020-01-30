@@ -16,7 +16,8 @@ import vtk
 import pyvista
 import copy
 #import phenotastic.Meristem_Phenotyper_3D as ap
-from phenotastic.misc import merge, flatten
+from imgmisc import merge, flatten
+#from phenotastic.misc import merge, flatten
 #import misc
 import mesh as mp
 
@@ -114,7 +115,7 @@ def merge_angles(mesh, domains, meristem_index, threshold=20, method='center_of_
         for ii in hits:
             to_merge.append([indices[ii-1], indices[(ii) % len(indices)]])
 
-        from misc import merge
+
         domain_labels = merge(to_merge)
         domain_labels = np.array([np.array(list(domain_labels[ii])) for ii in range(len(domain_labels))])
 

@@ -17,7 +17,8 @@ os.chdir('/home/henrik/projects/surface_extraction/code/phenotastic/phenotastic'
     ############################################################################
 import numpy as np
 import os
-from pycostanza.misc import mkdir
+#from pycostanza.misc import mkdir
+from imgmisc import mkdir
 
 class surface(object):
     """

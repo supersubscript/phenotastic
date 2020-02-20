@@ -64,7 +64,7 @@ def get_contour(fin, iterations=25, smoothing=1, masking=0.75, crop=True, resolu
                 data[:, ii] = sr.transform_stack(data[:, ii], tmats=trsf_mat)
         else:
             trsf_mat = sr.register_stack(data)
-            data = sr.transform(data, trsf_mat)
+            data = sr.transform_stack(data, tmats=trsf_mat)
         data[data < 0] = 0
         data = data.astype(pretype)
     if crop:

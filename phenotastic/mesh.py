@@ -5,11 +5,8 @@ Created on Tue May 29 22:10:18 2018
 @author: henrik
 """
 import sys, os
-os.chdir('/home/henrik/projects/surface_extraction/code/phenotastic/phenotastic')
-
 import numpy as np
 import pyvista
-from vtk.util import numpy_support as nps
 #from pyacvd import clustering
 import vtk
 import pyvista as pv
@@ -18,7 +15,15 @@ from skimage.measure import marching_cubes_lewiner
 #import mesh_processing as mp
 import phenotastic.plot as pl
 from scipy.spatial import cKDTree
-
+import tifffile as tiff
+from scipy.ndimage.filters import gaussian_filter
+from skimage.segmentation import morphological_chan_vese
+from clahe import clahe
+from imgmisc import autocrop, cut, get_resolution, to_uint8
+import mahotas as mh
+from skimage.transform import resize
+from scipy.signal import wiener
+import gc
 
 def create_mesh(contour, resolution=[1, 1, 1]):
     v, f, _, _ = marching_cubes_lewiner(
@@ -27,7 +32,91 @@ def create_mesh(contour, resolution=[1, 1, 1]):
     return mesh
 
 
-# Preprocessing
+def filter_curvature(mesh, curvature_threshold):
+    if isinstance(curvature_threshold, (int, float)):
+        curvature_threshold = (-curvature_threshold, curvature_threshold)
+    curvature = mesh.curvature()
+    to_remove = np.logical_or(curvature < curvature_threshold[0], 
+                              curvature > curvature_threshold[1])
+    mesh = mesh.remove_points(to_remove)[0] 
+    return mesh
+
+def get_contour(fin, iterations=25, smoothing=1, masking=0.75, crop=True, resolution=None, clahe_window=None, 
+                clahe_clip_limit=None, gaussian_sigma=None, gaussian_iterations=5, interpolate_slices=True,
+                fill_slices=True, lambda1=1, lambda2=1, stackreg=True):
+    
+    if isinstance(fin, str):
+        data = tiff.imread(fin)
+        data = np.squeeze(data)
+    
+    if resolution is None:
+        resolution = get_resolution(fin)
+        
+    if stackreg:
+        from pystackreg import StackReg
+        sr = StackReg(StackReg.RIGID_BODY)
+        if data.ndim > 3:
+            trsf_mat = sr.register_stack(np.max(data, 1))
+            for ii in range(data.shape[1]):
+                data[:, ii] = sr.transform(data[:, ii], trsf_mat)
+        else:
+            trsf_mat = sr.register_stack(data)
+            data = sr.transform(data, trsf_mat)
+    if crop:
+        offset = np.full((3, 2), 5)
+        offset[0] = (10, 10)
+        
+        if data.ndim > 3:
+            _, cuts = autocrop(np.max(data, 1), 2 * mh.otsu(np.max(data, 1)), n=10, 
+                               offset=offset, return_cuts=True)
+            data = cut(data, cuts)
+        else:
+            data = autocrop(data, 2 * mh.otsu(data), n=10, offset=offset)
+
+    data = data.astype('float')
+    if data.ndim > 3:
+        for ii in range(data.shape[1]):
+            data[:, ii] = wiener(data[:, ii])
+        data = np.max(data, 1)
+    else: 
+        data = wiener(data)
+    data = to_uint8(data, False)
+    gc.collect()
+    
+    if clahe_window is None:
+        clahe_window = (np.array(data.shape) + 4) // 8
+    if clahe_clip_limit is None:
+        clahe_clip_limit = mh.otsu(data)
+    data = clahe(data,
+                   win_shape=clahe_window,
+                   clip_limit=clahe_clip_limit)
+    gc.collect()
+
+    if gaussian_sigma is None:
+        # A good reference unit is ~.25 micron for smoothing
+        gaussian_sigma = [1. * .25 / resolution[0],
+                          1. * .25 / resolution[1],
+                          1. * .25 / resolution[2]]
+    for ii in range(gaussian_iterations):
+            data = gaussian_filter(data, sigma=gaussian_sigma)
+
+    if interpolate_slices:
+        resolution = np.array(resolution)
+        data = resize(data, np.round(data.shape * resolution / np.min(resolution)).astype('int'), order=2)
+    gc.collect()
+
+    if isinstance(masking, (float, int)):
+        masking = to_uint8(data, False) > masking * mh.otsu(to_uint8(data, False))
+
+    contour = morphological_chan_vese(data, iterations=iterations,
+                                      init_level_set=masking,
+                                      smoothing=smoothing, lambda1=lambda1, lambda2=lambda2)
+    
+    contour = fill_contour(contour, fill_xy=fill_slices, fill_zx_zy=False)
+    
+    return contour
+
+
 def fill_contour(contour, fill_xy=False, fill_zx_zy=False, inplace=False):
     """
     Fill contour by closing all the edges (except for the top one), and applying
@@ -106,15 +195,25 @@ def fill_contour(contour, fill_xy=False, fill_zx_zy=False, inplace=False):
 
 def label_mesh(mesh, segm_img, resolution=[1,1,1], bg=0, mode='point', inplace=False):
     ''' Label a mesh using the closest (by euclidean distance) voxel in a segmented image. '''
-    coords = pl.coord_array(segm_img, resolution)
+    # coords = pl.coord_array(segm_img, resolution)
+    I, J, K = segm_img.shape
+    i_coords, j_coords, k_coords = np.meshgrid(range(I),
+                                               range(J),
+                                               range(K),
+                                               indexing='ij')
+    coordinate_grid = np.array([i_coords, j_coords, k_coords])
+    coordinate_grid = np.multiply(coordinate_grid, resolution)
     img_raveled = segm_img.ravel()
     coords = coords[img_raveled != bg]
     img_raveled = img_raveled[img_raveled != bg]
 
     tree = cKDTree(coords)
-    if mode.lower() in ['point', 'p', 'vertices', 'v', 'vertex', 'vert', 'verts', 'pts', 'pt']:
+    if mode.lower() in ['point', 'points', 'pts', 'pt', 'p',  
+                        'vertex', 'vertices', 'vert', 'verts', 'v']:
         closest = tree.query(mesh.points, k=1)[1]
-    elif mode.lower() in ['cell', 'c', 'tri', 'triangle', 'poly', 'polygon']:
+    elif mode.lower() in ['cell', 'cells', 'c', 
+                          'triangle', 'triangles', 'tri', 'tris',
+                          'polygon', 'polygons', 'poly', 'polys']:
         centers = mesh.cell_centers().points
         closest = tree.query(centers, k=1)[1]
 
@@ -218,7 +317,8 @@ def remove_inland_under(mesh, contour, threshold, resolution=[1,1,1], invert=Fal
             under_indices.append(ii)
     under_indices = np.array(under_indices)
     under = np.zeros(mesh.n_points, 'bool')
-    under[under_indices] = True
+    if len(under_indices) > 0:
+        under[under_indices] = True
     mesh['under'] = under
 #    mesh.plot(notebook=False, scalars='under')
     mesh = mesh.remove_points(under)[0]
@@ -462,8 +562,45 @@ def smooth_boundary(mesh, iterations=20, sigma=.1, inplace=False):
     return None if inplace else mesh
 
 
+def process_mesh(mesh, hole_repair_threshold=100, downscaling=.05, upscaling=2, 
+                 threshold_angle=60, top_cut='center', tongues_lambda=(20, 4), 
+                 smooth_iter=200, smooth_relax=0.01, curvature_threshold=0.4, 
+                 inland_threshold=None):
+
+    if top_cut is 'center':
+        top_cut = (mesh.center[0], 0, 0)
+    
+    mesh = repair_small(mesh, hole_repair_threshold)
+    mesh = remesh(mesh, int(mesh.n_points * downscaling), sub=0)
+
+    if threshold_angle:
+        mesh.rotate_y(-90)
+        mesh = remove_normals(mesh, threshold_angle=threshold_angle, angle='polar')
+        mesh.rotate_y(90)
+        mesh = make_manifold(mesh, hole_repair_threshold)
+        mesh = mesh.extract_largest()
+        mesh.clear_arrays()
+        mesh = correct_normal_orientation_topcut(mesh, top_cut)
+
+    if inland_threshold is not None:
+        mesh = remove_inland_under(mesh, contour, threshold=inland_threshold)
+        mesh = mesh.extract_largest()
+        mesh = repair_small(mesh, hole_repair_threshold)
+
+    mesh = remove_tongues(mesh, *tongues_lambda, hole_repair_threshold)
+    mesh = mesh.extract_largest()
+    mesh = repair_small(mesh, hole_repair_threshold)
+    
+    mesh = mesh.smooth(smooth_iter, smooth_relax)
+    mesh = remesh(mesh, upscaling * mesh.n_points)
+    
+    mesh = smooth_boundary(mesh, smooth_iter, smooth_relax)
+    
+    return mesh
+
+
 # TODO: Add inplace argument
-def remove_tongues(mesh, radius, threshold=6,
+def remove_tongues(mesh, radius, threshold=6, hole_edges=100,
                    verbose=True):
 
     """
@@ -565,9 +702,10 @@ def remove_tongues(mesh, radius, threshold=6,
         # Remove points
         mesh = mesh.remove_points(to_remove, keep_scalars=False)[0]
 #        mesh = remove_bridges(mesh)
-        mesh = ECFT(mesh, 0)
-        mesh = correct_bad_mesh(mesh)
-        mesh = ECFT(mesh, 0)
+        mesh = repair_small(mesh, hole_edges)
+        # mesh = make_manifold(mesh, #ECFT(mesh, 0)
+        # mesh = correct_bad_mesh(mesh)
+        # mesh = ECFT(mesh, 0)
 
     return mesh
 
@@ -585,7 +723,7 @@ def remesh(mesh, n, sub=3):
     output = clus.create_mesh()
     return output
 
-def make_manifold(mesh, hole_size=100):
+def make_manifold(mesh, hole_edges=300):
     mesh = mesh.copy()
     edges = mesh.extract_edges(boundary_edges=False,
                                feature_edges=False,
@@ -596,7 +734,7 @@ def make_manifold(mesh, hole_size=100):
         print('Removing {} points'.format(len(to_remove)))
         mesh = mesh.remove_points(to_remove)[0]
         mesh = mesh.extract_largest()
-        mesh = mesh.fill_holes(hole_size)
+        mesh = repair_small(mesh, nbe=hole_edges)
         mesh = mesh.clean()
         edges = mesh.extract_edges(boundary_edges=False,
                                    feature_edges=False,
@@ -815,9 +953,13 @@ def get_connected_vertices_all(mesh, include_self=True):
 
     return connectivities
 
+def correct_normal_orientation_topcut(mesh, origin):
+    mesh.clear_arrays()
+    if mesh.clip(normal='-x', origin=origin).point_normals[:, 0].sum() > 0:
+        mesh.flip_normals()
+    return mesh
 
-
-def ECFT(mesh, hole_size=100.0, inplace=False):
+def ECFT(mesh, hole_edges=300, inplace=False):
     """
     Perform ExtractLargest, Clean, FillHoles, and TriFilter
     operations in sequence.
@@ -846,7 +988,7 @@ def ECFT(mesh, hole_size=100.0, inplace=False):
 
     new_mesh = new_mesh.extract_largest()
     new_mesh = new_mesh.clean()
-    new_mesh = new_mesh.fill_holes(hole_size)
+    new_mesh = repair_small(mesh, nbe=hole_edges)
     new_mesh = new_mesh.triangulate()
 
     return None if inplace else new_mesh

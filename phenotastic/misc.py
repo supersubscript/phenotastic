@@ -17,7 +17,7 @@ import pickle
 import vtk
 import sys
 import os
-os.chdir('/home/henrik/projects/surface_extraction/code/phenotastic/phenotastic')
+# os.chdir('/home/henrik/projects/surface_extraction/code/phenotastic/phenotastic')
 
 
 #import phenotastic.Meristem_Phenotyper_3D as ap

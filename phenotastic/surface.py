@@ -12,7 +12,7 @@
 #
 
 import sys, os
-os.chdir('/home/henrik/projects/surface_extraction/code/phenotastic/phenotastic')
+# os.chdir('/home/henrik/projects/surface_extraction/code/phenotastic/phenotastic')
 
     ############################################################################
 import numpy as np

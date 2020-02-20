@@ -6,7 +6,7 @@ Created on Sun Jan 14 14:38:43 2018
 @author: henrik
 """
 import sys, os
-os.chdir('/home/henrik/projects/surface_extraction/code/phenotastic/phenotastic')
+# os.chdir('/home/henrik/projects/surface_extraction/code/phenotastic/phenotastic')
 
 import numpy as np
 import pandas as pd
@@ -19,7 +19,7 @@ import copy
 from imgmisc import merge, flatten
 #from phenotastic.misc import merge, flatten
 #import misc
-import mesh as mp
+import phenotastic.mesh as mp
 
 
 # TODO: Documentation

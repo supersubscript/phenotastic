@@ -6,7 +6,7 @@ Created on Mon Jun  4 13:56:10 2018
 @author: henrik
 """
 import sys, os
-os.chdir('/home/henrik/projects/surface_extraction/code/phenotastic/phenotastic')
+# os.chdir('/home/henrik/projects/surface_extraction/code/phenotastic/phenotastic')
 
 import numpy as np
 from tifffile import TiffFile, imsave, tifffile

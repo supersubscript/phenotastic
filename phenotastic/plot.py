@@ -39,10 +39,16 @@ def coord_array(arr, res=(1, 1, 1), offset=(0, 0, 0)):
     xv = offset[0] + np.arange(0, arr.shape[0] * res[0] - 0.000001, res[0])
     yv = offset[1] + np.arange(0, arr.shape[1] * res[1]- 0.000001, res[1])
     zv = offset[2] + np.arange(0, arr.shape[2] * res[2]- 0.000001, res[2])
-    xx, yy, zz = np.array(np.meshgrid(xv, yv, zv)).transpose(0, 2, 1, 3)
+    grid = np.meshgrid(xv, yv, zv)
+    grid = np.array(grid)
+    grid = grid.transpose(0, 2, 1, 3)
+    xx, yy, zz = grid
+    xx = xx.ravel()
+    yy = yy.ravel()
+    zz = zz.ravel()
 
     # Make compatible lists
-    coords = np.vstack((xx.ravel(), yy.ravel(), zz.ravel())).T
+    coords = np.vstack((xx.ravel(), yy.ravel(), zz.ravel()))
     return coords
 
 def PlotImage(arr, res=(1, 1, 1), offset=(0, 0, 0), mask=None, mesh=None, mopacity=1,

@@ -13,3 +13,4 @@ pyacvd>=0.2.3
 pytest==3.4.2
 pytest-runner==2.11.1
 pystackreg==0.2.2
+clahe==0.1

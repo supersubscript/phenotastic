@@ -12,12 +12,11 @@ with open('README.rst') as readme_file:
     readme = readme_file.read()
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
-with open('requirements.txt') as reqs_file:
+with open('requirements_dev.txt') as reqs_file:
     reqs = reqs_file.read()
 
 # Requirements & test
-requirements = reqs
-setup_requirements = ['pytest-runner', ]
+setup_requirements = reqs
 test_requirements = ['pytest', ]
 
 # Actual setup
@@ -32,7 +31,7 @@ setup(
         'Programming Language :: Python :: 3.7',
     ],
     description="3D plant phenotyping.",
-    install_requires=requirements,
+    install_requires=setup_requirements,
     license="GNU General Public License v3",
     long_description=readme + '\n\n' + history,
     include_package_data=True,

@@ -6,10 +6,10 @@ Created on Tue May 29 21:53:06 2018
 @author: henrik
 """
 import sys, os
-os.chdir('/home/henrik/projects/surface_extraction/code/phenotastic/phenotastic')
+# os.chdir('/home/henrik/projects/surface_extraction/code/phenotastic/phenotastic')
 
 import numpy as np
-import domains as boa
+import phenotastic.domains as boa
 import pyvista
 #import phenotastic.Meristem_Phenotyper_3D as ap
 
@@ -104,7 +104,7 @@ def PlotImage(arr, res=(1, 1, 1), offset=(0, 0, 0), mask=None, mesh=None, mopaci
         vals = vals[mask]
 
     # Plot
-    pobj = vista.Plotter(notebook=False)
+    pobj = pyvista.Plotter(notebook=False)
     pobj.add_points(coords, color=pcolor, psize=psize, scalars=vals, rng=prng, name=pname,
                    opacity=popacity, stitle=pstitle, flipscalars=pflipscalars, colormap=pcolormap,
                    ncolors=pncolors)
@@ -152,7 +152,7 @@ def PlotPointData(mesh, pdata, var='domain', boacoords=[], show_boundaries=False
     No return. Plots input.
 
     '''
-    pobj = vista.Plotter()
+    pobj = pyvista.Plotter()
     pobj.add_mesh(mesh, scalars=pdata[var].values, **kwargs)
 
     if len(boacoords) > 0:
@@ -224,10 +224,10 @@ def PlotParaboloid(mesh, p, sampleDim=(200, 200, 200),
     transformFilter.SetInputData(contour.GetOutput())
     transformFilter.SetTransform(transMat)
     transformFilter.Update()
-    tpoly = vista.pointset.PolyData(transformFilter.GetOutput())
+    tpoly = pyvista.pointset.PolyData(transformFilter.GetOutput())
     tpoly.clip_with_plane([mesh.bounds[0] - 20, 0, 0], [1, 0, 0])
 
-    pobj = vista.Plotter()
+    pobj = pyvista.Plotter()
     pobj.add_mesh(tpoly, opacity=.5, showedges=False, color='orange')
     pobj.add_mesh(mesh, opcaity=.9, color='green')
     pobj.plot()

@@ -53,15 +53,20 @@ def get_contour(fin, iterations=25, smoothing=1, masking=0.75, crop=True, resolu
         resolution = get_resolution(fin)
         
     if stackreg:
+        pretype = data.dtype
+        data = data.astype(float)
+        
         from pystackreg import StackReg
         sr = StackReg(StackReg.RIGID_BODY)
         if data.ndim > 3:
             trsf_mat = sr.register_stack(np.max(data, 1))
             for ii in range(data.shape[1]):
-                data[:, ii] = sr.transform(data[:, ii], trsf_mat)
+                data[:, ii] = sr.transform_stack(data[:, ii], tmats=trsf_mat)
         else:
             trsf_mat = sr.register_stack(data)
             data = sr.transform(data, trsf_mat)
+        data[data < 0] = 0
+        data = data.astype(pretype)
     if crop:
         offset = np.full((3, 2), 5)
         offset[0] = (10, 10)

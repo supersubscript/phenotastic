@@ -330,6 +330,33 @@ def remove_inland_under(mesh, contour, threshold, resolution=[1,1,1], invert=Fal
 
     return mesh
 
+def fill_inland(contour, threshold=0):
+    from scipy.ndimage.morphology import distance_transform_edt
+    cont2d = np.max(contour, 0)
+    cont2d = np.pad(cont2d, pad_width=1, constant_values=0, mode='constant')
+    distance_map = distance_transform_edt(cont2d)
+    distance_map = distance_map[1:-1, 1:-1]
+    larger = np.array(np.where(distance_map > threshold)).T
+    c = cont2d.astype(int)
+    c[larger[:,0], larger[:,1]] = 2
+    
+    first_occurence = np.argmax(contour.astype('int'), 0)
+    last_occurence = contour.shape[0] - np.argmax(contour[::-1].astype('int'), 0) - 1
+    last_occurence[last_occurence == contour.shape[0] - 1] = 0
+    
+    mask = np.zeros_like(contour)
+    for ii in range(mask.shape[1]):
+        for jj in range(mask.shape[2]):
+            mask[first_occurence[ii, jj]:last_occurence[ii, jj], ii, jj] = True
+    
+    mask = np.logical_and(mask, c[1:-1, 1:-1]==2)
+    
+    contour[mask] = True
+    contour = mp.fill_contour(contour, True)
+    
+    return contour
+
+
 def repair_small(mesh, nbe=100, refine=True):
     from pymeshfix._meshfix import PyTMesh
     mfix = PyTMesh(False)

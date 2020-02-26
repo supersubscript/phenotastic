@@ -43,7 +43,7 @@ def filter_curvature(mesh, curvature_threshold):
 
 def get_contour(fin, iterations=25, smoothing=1, masking=0.75, crop=True, resolution=None, clahe_window=None, 
                 clahe_clip_limit=None, gaussian_sigma=None, gaussian_iterations=5, interpolate_slices=True,
-                fill_slices=True, lambda1=1, lambda2=1, stackreg=True):
+                fill_slices=True, lambda1=1, lambda2=1, stackreg=True, fill_inland_threshold=None, return_resolution=False):
     
     if isinstance(fin, str):
         data = tiff.imread(fin)
@@ -119,6 +119,11 @@ def get_contour(fin, iterations=25, smoothing=1, masking=0.75, crop=True, resolu
     
     contour = fill_contour(contour, fill_xy=fill_slices, fill_zx_zy=False)
     
+    if fill_inland_threshold is not None:
+        contour = fill_inland(contour, fill_inland_threshold)
+
+    if return_resolution:
+        return contour, resolution
     return contour
 
 
@@ -340,8 +345,8 @@ def fill_inland(contour, threshold=0):
     c = cont2d.astype(int)
     c[larger[:,0], larger[:,1]] = 2
     
-    first_occurence = np.argmax(contour.astype('int'), 0)
-    last_occurence = contour.shape[0] - np.argmax(contour[::-1].astype('int'), 0) - 1
+    first_occurence = np.argmax(contour, 0)
+    last_occurence = contour.shape[0] - np.argmax(contour[::-1], 0) - 1
     last_occurence[last_occurence == contour.shape[0] - 1] = 0
     
     mask = np.zeros_like(contour)
@@ -349,10 +354,10 @@ def fill_inland(contour, threshold=0):
         for jj in range(mask.shape[2]):
             mask[first_occurence[ii, jj]:last_occurence[ii, jj], ii, jj] = True
     
-    mask = np.logical_and(mask, c[1:-1, 1:-1]==2)
+    mask = np.logical_and(mask, c[1:-1, 1:-1] == 2)
     
     contour[mask] = True
-    contour = mp.fill_contour(contour, True)
+    contour = fill_contour(contour, True)
     
     return contour
 

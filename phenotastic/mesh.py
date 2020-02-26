@@ -43,16 +43,23 @@ def filter_curvature(mesh, curvature_threshold):
 
 def get_contour(fin, iterations=25, smoothing=1, masking=0.75, crop=True, resolution=None, clahe_window=None, 
                 clahe_clip_limit=None, gaussian_sigma=None, gaussian_iterations=5, interpolate_slices=True,
-                fill_slices=True, lambda1=1, lambda2=1, stackreg=True, fill_inland_threshold=None, return_resolution=False):
+                fill_slices=True, lambda1=1, lambda2=1, stackreg=True, fill_inland_threshold=None, return_resolution=False, verbose=False):
     
+    if verbose:
+        print(f'Reading in data for {fin}')
     if isinstance(fin, str):
         data = tiff.imread(fin)
         data = np.squeeze(data)
     
     if resolution is None:
         resolution = get_resolution(fin)
+    if verbose:
+        print(f'Resolution for {fin} is {resolution}')
         
+
     if stackreg:
+        if verbose:
+            print(f'Running stackreg for {fin}')
         pretype = data.dtype
         data = data.astype(float)
         
@@ -67,7 +74,10 @@ def get_contour(fin, iterations=25, smoothing=1, masking=0.75, crop=True, resolu
             data = sr.transform_stack(data, tmats=trsf_mat)
         data[data < 0] = 0
         data = data.astype(pretype)
+        
     if crop:
+        if verbose:
+            print(f'Running autocrop for {fin}')
         offset = np.full((3, 2), 5)
         offset[0] = (10, 10)
         
@@ -78,6 +88,8 @@ def get_contour(fin, iterations=25, smoothing=1, masking=0.75, crop=True, resolu
         else:
             data = autocrop(data, 2 * mh.otsu(data), n=10, offset=offset)
 
+    if verbose:
+        print(f'Running wiener filtering for {fin}')
     data = data.astype('float')
     if data.ndim > 3:
         for ii in range(data.shape[1]):
@@ -88,6 +100,9 @@ def get_contour(fin, iterations=25, smoothing=1, masking=0.75, crop=True, resolu
     data = to_uint8(data, False)
     gc.collect()
     
+
+    if verbose:
+        print(f'Running CLAHE for {fin}')
     if clahe_window is None:
         clahe_window = (np.array(data.shape) + 4) // 8
     if clahe_clip_limit is None:
@@ -103,9 +118,13 @@ def get_contour(fin, iterations=25, smoothing=1, masking=0.75, crop=True, resolu
                           1. * .25 / resolution[1],
                           1. * .25 / resolution[2]]
     for ii in range(gaussian_iterations):
+        if verbose:
+            print(f'Smoothing out {fin} with gaussian smoothing')
             data = gaussian_filter(data, sigma=gaussian_sigma)
 
     if interpolate_slices:
+        if verbose:
+            print(f'Interpolating slices for {fin}')
         resolution = np.array(resolution)
         data = resize(data, np.round(data.shape * resolution / np.min(resolution)).astype('int'), order=2)
         resolution = resolution / (np.round(data.shape * resolution / np.min(resolution)) / data.shape)
@@ -114,6 +133,8 @@ def get_contour(fin, iterations=25, smoothing=1, masking=0.75, crop=True, resolu
     if isinstance(masking, (float, int)):
         masking = to_uint8(data, False) > masking * mh.otsu(to_uint8(data, False))
 
+    if verbose:
+        print(f'Running morphological chan-vese for {fin}')
     contour = morphological_chan_vese(data, iterations=iterations,
                                       init_level_set=masking,
                                       smoothing=smoothing, lambda1=lambda1, lambda2=lambda2)
@@ -121,6 +142,8 @@ def get_contour(fin, iterations=25, smoothing=1, masking=0.75, crop=True, resolu
     contour = fill_contour(contour, fill_xy=fill_slices, fill_zx_zy=False)
     
     if fill_inland_threshold is not None:
+        if verbose:
+            print(f'Filling inland for {fin}')
         contour = fill_inland(contour, fill_inland_threshold)
 
     if return_resolution:

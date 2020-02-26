@@ -43,7 +43,7 @@ def filter_curvature(mesh, curvature_threshold):
 
 def get_contour(fin, iterations=25, smoothing=1, masking=0.75, crop=True, resolution=None, clahe_window=None, 
                 clahe_clip_limit=None, gaussian_sigma=None, gaussian_iterations=5, interpolate_slices=True,
-                fill_slices=True, lambda1=1, lambda2=1, stackreg=True, fill_inland_threshold=None, return_resolution=False, verbose=False):
+                fill_slices=True, lambda1=1, lambda2=1, stackreg=True, fill_inland_threshold=None, return_resolution=False, verbose=True):
     
     if verbose:
         print(f'Reading in data for {fin}')

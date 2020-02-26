@@ -766,6 +766,7 @@ def define_meristem(mesh, domains, method='central_mass', return_coordinates=Fal
         coord = np.mean(np.reshape(mesh.bounds, (3, -1)), axis=1)
 
     meristem = domains[mesh.FindPoint(coord)]
+    meristem = int(meristem)
 
     if return_coordinates:
         return meristem, coord

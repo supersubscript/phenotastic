@@ -53,6 +53,9 @@ def get_contour(fin, iterations=25, smoothing=1, masking=0.75, crop=True, resolu
     
     if resolution is None:
         resolution = get_resolution(fin)
+        
+    if any(np.less(resolution, 1e-3)):
+        resolution = np.multiply(resolution, 1e6)
     if verbose:
         print(f'Resolution for {fin} is {resolution}')
         

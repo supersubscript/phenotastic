@@ -108,6 +108,7 @@ def get_contour(fin, iterations=25, smoothing=1, masking=0.75, crop=True, resolu
     if interpolate_slices:
         resolution = np.array(resolution)
         data = resize(data, np.round(data.shape * resolution / np.min(resolution)).astype('int'), order=2)
+        resolution = resolution / (np.round(data.shape * resolution / np.min(resolution)) / data.shape)
     gc.collect()
 
     if isinstance(masking, (float, int)):

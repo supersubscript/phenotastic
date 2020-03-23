@@ -41,6 +41,40 @@ def filter_curvature(mesh, curvature_threshold):
     mesh = mesh.remove_points(to_remove)[0] 
     return mesh
 
+def label_cellular_mesh(mesh, values, value_tag='values', id_tag='cell_id'):
+    mesh[value_tag] = np.zeros(mesh.n_points)
+    for ii in np.unique(mesh[id_tag]):
+        mesh[value_tag][mesh[id_tag] == ii] = values[ii]
+    return mesh
+
+def create_cellular_mesh(seg_img, resolution=[1,1,1], verbose=True):
+    cells = []
+    n_cells = len(np.unique(seg_img)) - 1
+    for cell_id in np.unique(seg_img)[1:]:
+        if verbose:
+            print(f'Now meshing cell {cell_id} out of {n_cells}')
+        cell_img, cell_cuts = autocrop(seg_img == cell_id, threshold=0, n=1, return_cuts=True, offset=[[2,2], [2,2], [2,2]])
+        cell_volume = np.sum(cell_img > 0) * np.product(resolution)
+        
+        v, f, _, _ = marching_cubes_lewiner(cell_img, 0, allow_degenerate=False, 
+                                            step_size=1, spacing=resolution)
+        v[:, 0] += cell_cuts[0, 0] * resolution[0]
+        v[:, 1] += cell_cuts[1, 0] * resolution[1]
+        v[:, 2] += cell_cuts[2, 0] * resolution[2]
+        
+        cell_mesh = pv.PolyData(v, np.ravel(np.c_[[[3]]*len(f), f]))
+        cell_mesh['cell_id'] = np.full(fill_value=cell_id, shape=cell_mesh.n_points)
+        cell_mesh['volume'] = np.full(fill_value=cell_volume, shape=cell_mesh.n_points)
+    
+        cells.append(cell_mesh)
+    
+    multi = pv.MultiBlock(cells)
+    poly = pv.PolyData()
+    for ii in range(multi.n_blocks):
+        poly += multi.get(ii)
+    return poly
+
+
 def get_contour(fin, iterations=25, smoothing=1, masking=0.75, crop=True, resolution=None, clahe_window=None, 
                 clahe_clip_limit=None, gaussian_sigma=None, gaussian_iterations=5, interpolate_slices=True,
                 fill_slices=True, lambda1=1, lambda2=1, stackreg=True, fill_inland_threshold=None, return_resolution=False, verbose=True):
@@ -232,14 +266,14 @@ def fill_contour(contour, fill_xy=False, fill_zx_zy=False, inplace=False):
 
 def label_mesh(mesh, segm_img, resolution=[1,1,1], bg=0, mode='point', inplace=False):
     ''' Label a mesh using the closest (by euclidean distance) voxel in a segmented image. '''
-    # coords = pl.coord_array(segm_img, resolution)
-    I, J, K = segm_img.shape
-    i_coords, j_coords, k_coords = np.meshgrid(range(I),
-                                               range(J),
-                                               range(K),
-                                               indexing='ij')
-    coordinate_grid = np.array([i_coords, j_coords, k_coords])
-    coordinate_grid = np.multiply(coordinate_grid, resolution)
+    coords = pl.coord_array(segm_img, resolution).T
+    # I, J, K = segm_img.shape
+    # i_coords, j_coords, k_coords = np.meshgrid(range(I),
+    #                                            range(J),
+    #                                            range(K),
+    #                                            indexing='ij')
+    # coordinate_grid = np.array([i_coords, j_coords, k_coords])
+    # coordinate_grid = np.multiply(coordinate_grid, resolution)
     img_raveled = segm_img.ravel()
     coords = coords[img_raveled != bg]
     img_raveled = img_raveled[img_raveled != bg]

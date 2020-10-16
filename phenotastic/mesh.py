@@ -50,9 +50,9 @@ def label_cellular_mesh(mesh, values, value_tag='values', id_tag='cell_id'):
 def create_cellular_mesh(seg_img, resolution=[1,1,1], verbose=True):
     cells = []
     n_cells = len(np.unique(seg_img)) - 1
-    for cell_id in np.unique(seg_img)[1:]:
+    for c_idx, cell_id in enumerate(np.unique(seg_img)[1:]):
         if verbose:
-            print(f'Now meshing cell {cell_id} out of {n_cells}')
+            print(f'Now meshing cell {c_idx} (label: {cell_id}) out of {n_cells}')
         cell_img, cell_cuts = autocrop(seg_img == cell_id, threshold=0, n=1, return_cuts=True, offset=[[2,2], [2,2], [2,2]])
         cell_volume = np.sum(cell_img > 0) * np.product(resolution)
         

@@ -611,7 +611,7 @@ def get_boundary_points(mesh, **kwargs):
 
 
     """
-    fe = mesh.extract_edges(feature_angle=0, boundary_edges=True,
+    fe = mesh.extract_feature_edges(feature_angle=0, boundary_edges=True,
                            non_manifold_edges=False, manifold_edges=False,
                            feature_edges=False)
 
@@ -745,7 +745,7 @@ def get_domain_boundary(mesh, domains, index, return_indices=False):
     """Get the point indices for a specified domain in a labelled mesh.
     """
     dpoly = extract_domain(mesh, domains, index)
-    edges = dpoly.extract_edges(boundary_edges=True, manifold_edges=False,
+    edges = dpoly.extract_feature_edges(boundary_edges=True, manifold_edges=False,
                                 feature_edges=False, non_manifold_edges=False)
 
     if return_indices:

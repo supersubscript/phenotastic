@@ -92,7 +92,9 @@ def get_contour(fin, iterations=25, smoothing=1, masking=0.75, crop=True, resolu
         resolution = np.multiply(resolution, 1e6)
     if verbose:
         print(f'Resolution for {fin} is {resolution}')
-        
+
+    from scipy.ndimage import zoom
+    data = zoom(data, resolution / np.array([.25, .25, .25]), order=3)
 
     if stackreg:
         if verbose:
@@ -151,21 +153,22 @@ def get_contour(fin, iterations=25, smoothing=1, masking=0.75, crop=True, resolu
 
     if gaussian_sigma is None:
         # A good reference unit is ~.25 micron for smoothing
-        gaussian_sigma = [1. * .25 / resolution[0],
-                          1. * .25 / resolution[1],
-                          1. * .25 / resolution[2]]
+        gaussian_sigma = [1,1,1]
+        # gaussian_sigma = [1. * .25 / resolution[0],
+        #                   1. * .25 / resolution[1],
+        #                   1. * .25 / resolution[2]]
     for ii in range(gaussian_iterations):
         if verbose:
             print(f'Smoothing out {fin} with gaussian smoothing')
             data = gaussian_filter(data, sigma=gaussian_sigma)
 
-    if interpolate_slices:
-        if verbose:
-            print(f'Interpolating slices for {fin}')
-        resolution = np.array(resolution)
-        data = resize(data, np.round(data.shape * resolution / np.min(resolution)).astype('int'), order=2)
-        resolution = resolution / (np.round(data.shape * resolution / np.min(resolution)) / data.shape)
-    gc.collect()
+    # if interpolate_slices:
+    #     if verbose:
+    #         print(f'Interpolating slices for {fin}')
+    #     resolution = np.array(resolution)
+    #     data = resize(data, np.round(data.shape * resolution / np.min(resolution)).astype('int'), order=2)
+    #     resolution = resolution / (np.round(data.shape * resolution / np.min(resolution)) / data.shape)
+    # gc.collect()
 
     if isinstance(masking, (float, int)):
         masking = to_uint8(data, False) > masking * mh.otsu(to_uint8(data, False))
@@ -663,7 +666,7 @@ def smooth_boundary(mesh, iterations=20, sigma=.1, inplace=False):
 def process_mesh(mesh, hole_repair_threshold=100, downscaling=.05, upscaling=2, 
                  threshold_angle=60, top_cut='center', tongues_lambda=(20, 4), 
                  smooth_iter=200, smooth_relax=0.01, curvature_threshold=0.4, 
-                 inland_threshold=None):
+                 inland_threshold=None, contour=None):
 
     if top_cut is 'center':
         top_cut = (mesh.center[0], 0, 0)
@@ -743,11 +746,14 @@ def remove_tongues(mesh, radius, threshold=6, hole_edges=100,
             for jj in range(pt_neighs.shape[0]):
                 neighs.append((ii, pt_neighs[jj]))
 
-        net = nx.Graph(neighs)
+        weighted_neighs = np.c_[np.array(neighs), np.sum((bdpts[np.array(neighs)[:,0]] - bdpts[np.array(neighs)[:,1]])**2, 1)**.5]
+        net = nx.Graph()
+        net.add_weighted_edges_from(weighted_neighs)        
+        
         cycles = nx.cycle_basis(net)
         cycles.sort(key=lambda x: len(x), reverse=True)
-        cycles = np.array([np.array(ii) for ii in cycles])
-#        boundary.plot(notebook=False, scalars=np.isin(np.arange(boundary.n_points), cycles[-1]).astype('int'), line_width=3)
+        cycles = np.array([np.array(ii, dtype=int) for ii in cycles], dtype=object)
+        # boundary.plot(notebook=False, scalars=np.isin(np.arange(boundary.n_points), cycles[-1]).astype('int'), line_width=3)
 
         # Loop over the cycles and find boundary points within radius
         to_remove = []
@@ -763,13 +769,14 @@ def remove_tongues(mesh, radius, threshold=6, hole_edges=100,
 
             # Get and compare the euclidean and geodesic distance
             eucdists = np.array([np.sqrt(np.sum((cpts[jj] - cpts[neighs[jj]])**2, axis=1)) for jj in range(len(neighs))])
-
+            
             geodists = []
             for jj in range(len(cpts)):
-                geodists.append(np.array([
-                        boundary.geodesic_distance(cycles[ii][jj],
-                                                   cycles[ii][neighs[jj][kk]])
-                        for kk in range(len(neighs[jj]))]))
+                geodists.append(np.array([nx.shortest_path_length(net, source=cycles[ii][jj], target=cycles[ii][neighs[jj][kk]], weight='weight') for kk in range(len(neighs[jj]))]))
+                # geodists.append(np.array([
+                #         boundary.geodesic_distance(cycles[ii][jj],
+                #                                    cycles[ii][neighs[jj][kk]])
+                #         for kk in range(len(neighs[jj]))]))
             geodists = np.array(geodists)
 
             frac = np.array([geodists[jj] / eucdists[jj] for jj in range(len(neighs))])
@@ -786,12 +793,9 @@ def remove_tongues(mesh, radius, threshold=6, hole_edges=100,
             removal_geodists = np.array(removal_geodists)
 
             for jj in range(len(removal_anchors)):
-#                gd = boundary.geodesic(from_[cycles[ii][removal_anchors[jj][0]]], from_[cycles[ii][removal_anchors[jj][1]]])
-                gd = boundary.geodesic(cycles[ii][removal_anchors[jj][0]], cycles[ii][removal_anchors[jj][1]])
-#                shortest_geo = gd.GetLength()
-#                if shortest_geo / removal_geodists[jj] < threshold2:
-                gdpts = gd.points
-                to_remove.extend([mesh.FindPoint(kk) for kk in gdpts])
+                gdpts = np.array(nx.shortest_path(net, cycles[ii][removal_anchors[jj][0]], cycles[ii][removal_anchors[jj][1]], weight='weight'),dtype='int')
+                to_remove.extend(gdpts)
+                
         to_remove = np.unique(to_remove)
 
         if len(to_remove) == 0:
@@ -823,7 +827,7 @@ def remesh(mesh, n, sub=3):
 
 def make_manifold(mesh, hole_edges=300):
     mesh = mesh.copy()
-    edges = mesh.extract_edges(boundary_edges=False,
+    edges = mesh.extract_feature_edges(boundary_edges=False,
                                feature_edges=False,
                                manifold_edges=False,
                                non_manifold_edges=True)
@@ -834,7 +838,7 @@ def make_manifold(mesh, hole_edges=300):
         mesh = mesh.extract_largest()
         mesh = repair_small(mesh, nbe=hole_edges)
         mesh = mesh.clean()
-        edges = mesh.extract_edges(boundary_edges=False,
+        edges = mesh.extract_feature_edges(boundary_edges=False,
                                    feature_edges=False,
                                    manifold_edges=False,
                                    non_manifold_edges=True)
@@ -983,28 +987,28 @@ def remesh_decimate(mesh, iters, upfactor=2, downfactor=.5, verbose=True):
 
 def get_non_manifold_edges(mesh):
     """ Get non-manifold edges. """
-    edges = mesh.extract_edges(boundary_edges=False,
+    edges = mesh.extract_feature_edges(boundary_edges=False,
                            non_manifold_edges=True, feature_edges=False,
                            manifold_edges=False)
     return edges
 
 def get_boundary_edges(mesh):
     """ Get boundary edges. """
-    edges = mesh.extract_edges(boundary_edges=True,
+    edges = mesh.extract_feature_edges(boundary_edges=True,
                            non_manifold_edges=False, feature_edges=False,
                            manifold_edges=False)
     return edges
 
 def get_manifold_edges(mesh):
     """ Get manifold edges. """
-    edges = mesh.extract_edges(boundary_edges=False,
+    edges = mesh.extract_feature_edges(boundary_edges=False,
                               non_manifold_edges=False, feature_edges=False,
                               manifold_edges=True)
     return edges
 
 def get_feature_edges(mesh, angle=30):
     """ Get feature edges defined by given angle. """
-    edges = mesh.extract_edges(feature_angle=angle, boundary_edges=False,
+    edges = mesh.extract_feature_edges(feature_angle=angle, boundary_edges=False,
                               non_manifold_edges=False, feature_edges=True,
                               manifold_edges=False)
     return edges
@@ -1192,7 +1196,7 @@ def get_cycles(mesh):
     return cycles
 
 def connect_bottom(mesh, offset=0, invert=False, inplace=False):
-    boundary = mesh.extract_edges(0, 1, 0,0,0).extract_largest()
+    boundary = mesh.extract_feature_edges(0, 1, 0,0,0).extract_largest()
 
     cycles = get_cycles(boundary)
     cycle = np.array(cycles[0])

@@ -25,10 +25,87 @@ from skimage.transform import resize
 from scipy.signal import wiener
 import gc
 
-def create_mesh(contour, resolution=[1, 1, 1]):
+def rot_matrix_44(angles, invert=False):
+    alpha, beta, gamma = angles
+    Rx = np.array([[1, 0, 0, 0],
+                    [0, np.cos(alpha), -np.sin(alpha), 0],
+                    [0, np.sin(alpha), np.cos(alpha), 0],
+                    [0, 0, 0, 1]])
+    Ry = np.array([[np.cos(beta), 0, np.sin(beta), 0],
+                    [0, 1, 0, 0],
+                    [-np.sin(beta), 0, np.cos(beta), 0],
+                    [0, 0, 0, 1]])
+    Rz = np.array([[np.cos(gamma), -np.sin(gamma), 0, 0],
+                    [np.sin(gamma), np.cos(gamma), 0, 0],
+                    [0, 0, 1, 0],
+                    [0, 0, 0, 1]])
+
+    if invert == True:
+        R = np.linalg.inv(np.matmul(np.matmul(Rz, Ry), Rx))
+    elif invert == False:
+        R = np.matmul(np.matmul(Rz, Ry), Rx)
+
+    return R
+
+def paraboloid(p, sampling=(200, 200, 200), bounds=None):
+    from phenotastic.misc import rotate    
+    import vtk
+    p1, p2, p3, p4, p5, alpha, beta, gamma = p
+    
+    if bounds is None:
+        bounds = [-2000, 2000] * 3
+    elif isinstance(bounds, (float, int)):
+        bounds = [-bounds, bounds] * 3
+    if isinstance(sampling, (int, float)):
+        sampling = [sampling] * 3
+    bounds = np.array(bounds)
+    corners = [[bounds[0], bounds[2], bounds[4]],
+               [bounds[0], bounds[2], bounds[5]],
+               [bounds[0], bounds[3], bounds[4]],
+               [bounds[0], bounds[3], bounds[5]],
+               [bounds[1], bounds[2], bounds[4]],
+               [bounds[1], bounds[2], bounds[5]],
+               [bounds[1], bounds[3], bounds[4]],
+               [bounds[1], bounds[3], bounds[5]]
+               ]
+    corners = rotate(np.array(corners), [alpha,beta,gamma], invert=False)
+    bounds = [min(corners[:, 0]), max(corners[:, 0]), 
+              min(corners[:, 1]), max(corners[:, 1]), 
+              min(corners[:, 2]), max(corners[:, 2])]
+
+    # Generate the paraboloid mesh along the z-axis
+    # vtkQuadric evaluates the quadric function F(x,y,z) = a0*x^2 + a1*y^2 + a2*z^2 + a3*x*y + a4*y*z + a5*x*z + a6*x + a7*y + a8*z + a9. 
+    quadric = vtk.vtkQuadric()
+    quadric.SetCoefficients(p1, p2, 0, 0, 0, 0, p3, p4, -1, p5)
+    sample = vtk.vtkSampleFunction()
+    sample.SetSampleDimensions(sampling)
+    sample.SetImplicitFunction(quadric)
+    sample.SetModelBounds(bounds)
+    sample.Update()
+    contour = vtk.vtkContourFilter()
+    contour.SetInputData(sample.GetOutput())
+    contour.Update()
+
+    # Rotate the mesh so that it is in the optimised orientation
+    rotmat = rot_matrix_44([alpha, beta, gamma], invert=True)
+    trans = vtk.vtkMatrix4x4()
+    for ii in range(rotmat.shape[0]):
+        for jj in range(rotmat.shape[1]):
+            trans.SetElement(ii, jj, rotmat[ii][jj])
+    transmat = vtk.vtkMatrixToHomogeneousTransform()
+    transmat.SetInput(trans)
+    transfilter = vtk.vtkTransformPolyDataFilter()
+    transfilter.SetInputData(contour.GetOutput())
+    transfilter.SetTransform(transmat)
+    transfilter.Update()
+    transpoly = pv.PolyData(transfilter.GetOutput())
+
+    return transpoly
+
+def create_mesh(mask, resolution=[1, 1, 1], step_size=1):
     v, f, _, _ = marching_cubes_lewiner(
-        contour > 0, 0, spacing=list(resolution), step_size=1, allow_degenerate=False)
-    mesh = pv.PolyData(v, np.hstack(np.c_[np.full(f.shape[0], 3), f]))
+        mask, 0, spacing=list(resolution), step_size=step_size, allow_degenerate=False)
+    mesh = pv.PolyData(v, np.c_[[3] * len(f), f].ravel())
     return mesh
 
 
@@ -299,7 +376,7 @@ def label_mesh(mesh, segm_img, resolution=[1,1,1], bg=0, mode='point', inplace=F
         return values
 
 def project2surface(mesh, int_img, distance, mask=None, resolution=[1, 1, 1], fct=np.mean):
-    coords = pl.coord_array(int_img, resolution)
+    coords = pl.coord_array(int_img, resolution).T
     if mask is not None:
         int_img[np.logical_not(mask)] = 0
 
@@ -323,7 +400,7 @@ def project2surface(mesh, int_img, distance, mask=None, resolution=[1, 1, 1], fc
     pts = np.zeros((len(coords), 3))
     for ii in range(len(coords)):
         dists[ii] = ipd.EvaluateFunctionAndGetClosestPoint(coords[ii], pts[ii])
-
+        
     # Filter out
     # internal
     mesh = mesh.compute_normals()
@@ -341,19 +418,24 @@ def project2surface(mesh, int_img, distance, mask=None, resolution=[1, 1, 1], fc
     l1_coords = coords[l1_filter]
     l1_vals = img_raveled[l1_filter]
 
-#    l1_dists = dists[l1_filter]
-#    pobj = pv.Plotter(notebook=False)
-##    pobj.add_mesh(mesh, opacity=.9)
-##    pobj.add_points(internal_coords, scalars=internal_vals, opacity=.5)
-#    pobj.add_points(l1_coords, scalars=l1_vals, opacity=.1)
-###    pobj.AddPoints(non_l1_coords, scalars=non_l1_vals, opacity=1)
-#    pobj.show()
+    l1_dists = dists[l1_filter]
 
+    # if mode.lower() == 'closest':
     tree = cKDTree(mesh.points)
     closest = tree.query(l1_coords, k=1)[1]
     values = np.zeros(mesh.n_points)
-    for ii in range(len(l1_coords)):
-        values[closest[ii]] += l1_vals[ii]
+    for ii, val in enumerate(l1_vals):
+        values[closest[ii]] += val
+
+    pobj = pv.Plotter(notebook=False)
+    pobj.add_mesh(mesh, opacity=1, scalars=values)
+#    pobj.add_points(internal_coords, scalars=internal_vals, opacity=.5)
+    pobj.add_points(l1_coords, scalars=l1_vals, opacity='sigmoid')
+##    pobj.AddPoints(non_l1_coords, scalars=non_l1_vals, opacity=1)
+    pobj.show()        
+        
+        
+
     return values
 
 ### Actual mesh processing
@@ -663,16 +745,17 @@ def smooth_boundary(mesh, iterations=20, sigma=.1, inplace=False):
     return None if inplace else mesh
 
 
-def process_mesh(mesh, hole_repair_threshold=100, downscaling=.05, upscaling=2, 
-                 threshold_angle=60, top_cut='center', tongues_lambda=(20, 4), 
+def process_mesh(mesh, hole_repair_threshold=100, downscaling=.01, upscaling=2, 
+                 threshold_angle=60, top_cut='center', tongues_radius=None, tongues_ratio=4, 
                  smooth_iter=200, smooth_relax=0.01, curvature_threshold=0.4, 
                  inland_threshold=None, contour=None):
 
     if top_cut is 'center':
         top_cut = (mesh.center[0], 0, 0)
     
-    mesh = repair_small(mesh, hole_repair_threshold)
+#    mesh = repair_small(mesh, hole_repair_threshold)
     mesh = remesh(mesh, int(mesh.n_points * downscaling), sub=0)
+    mesh = repair_small(mesh, hole_repair_threshold)
 
     if threshold_angle:
         mesh.rotate_y(-90)
@@ -687,8 +770,9 @@ def process_mesh(mesh, hole_repair_threshold=100, downscaling=.05, upscaling=2,
         mesh = remove_inland_under(mesh, contour, threshold=inland_threshold)
         mesh = mesh.extract_largest()
         mesh = repair_small(mesh, hole_repair_threshold)
-
-    mesh = remove_tongues(mesh, *tongues_lambda, hole_repair_threshold)
+    mesh = ECFT(mesh, hole_repair_threshold)        
+    if tongues_radius is not None:
+        mesh = remove_tongues(mesh, radius=tongues_radius, threshold=tongues_ratio, hole_edges=hole_repair_threshold)
     mesh = mesh.extract_largest()
     mesh = repair_small(mesh, hole_repair_threshold)
     
@@ -732,56 +816,92 @@ def remove_tongues(mesh, radius, threshold=6, hole_edges=100,
     import networkx as nx
     from scipy.spatial import KDTree
 
+    # mesh = make_manifold(mesh, hole_edges)
+    # mesh = correct_bad_mesh(mesh)
+    # mesh = ECFT(mesh, 0)
+
     while True:
         # Get boundary information and index correspondences
         boundary = get_boundary_edges(mesh)
         bdpts = boundary.points
         from_ = np.array([mesh.FindPoint(ii) for ii in bdpts])
 
+        all_neighs = list(get_connected_vertices_all(mesh, include_self=False))
+        all_edges = []
+        for ii, pt_neighs in enumerate(all_neighs):
+            for jj, neigh in enumerate(pt_neighs):
+                all_edges.append((ii, neigh))
+        all_edges = np.array(all_edges)
+        
+        poly = pv.PolyData(mesh.points, np.c_[[2] * len(all_edges), all_edges].ravel())
+        # p = pv.Plotter(notebook=False)
+        # p.add_mesh(mesh, color='green')
+        # p.add_mesh(poly, color='red', line_width=1)
+        # p.show()        
+        
+        weighted_all_edges = np.c_[all_edges, np.sum((mesh.points[all_edges[:,0]] - mesh.points[all_edges[:,1]])**2, 1)**.5]
+        all_net = nx.Graph()
+        all_net.add_weighted_edges_from(weighted_all_edges)
+
         # Find the cycles, i.e. the different boundaries we have
-#        neighs = []
         neighs = [] #list(get_connected_vertices_all(boundary, include_self=False))
         for ii in range(boundary.n_points):
             pt_neighs = get_connected_vertices(boundary, ii, include_self=False)
             for jj in range(pt_neighs.shape[0]):
                 neighs.append((ii, pt_neighs[jj]))
+        neighs = np.array(neighs)
 
-        weighted_neighs = np.c_[np.array(neighs), np.sum((bdpts[np.array(neighs)[:,0]] - bdpts[np.array(neighs)[:,1]])**2, 1)**.5]
-        net = nx.Graph()
-        net.add_weighted_edges_from(weighted_neighs)        
+        weighted_edges = np.c_[neighs, np.sum((bdpts[neighs[:,0]] - bdpts[neighs[:,1]])**2, 1)**.5]
+        bdnet = nx.Graph()
+        bdnet.add_weighted_edges_from(weighted_edges)
         
-        cycles = nx.cycle_basis(net)
+        cycles = nx.cycle_basis(bdnet)
         cycles.sort(key=lambda x: len(x), reverse=True)
-        cycles = np.array([np.array(ii, dtype=int) for ii in cycles], dtype=object)
+        cycles = np.array([np.array(ii, dtype=int) for ii in cycles])
         # boundary.plot(notebook=False, scalars=np.isin(np.arange(boundary.n_points), cycles[-1]).astype('int'), line_width=3)
 
         # Loop over the cycles and find boundary points within radius
         to_remove = []
-        for ii in range(len(cycles)):
-            print('Running cycle {} with {} points'.format(ii, len(cycles[ii])))
-            cpts = bdpts[cycles[ii]]
+        for ii, cycle in enumerate(cycles):
+            print('Running cycle {} with {} points'.format(ii, len(cycle)))
+            cpts = bdpts[cycle]
 
             # Get the boundary points (in same loop) within a certain radius
             tree = KDTree(cpts)
             neighs = tree.query_ball_point(cpts, radius)
-            neighs = np.array([np.array(neighs[jj]) for jj in range(len(neighs))])
-            neighs = np.array([neighs[jj][neighs[jj] != jj] for jj in range(len(neighs))])
+            neighs = np.array([np.array(neigh) for neigh in neighs])
+            neighs = np.array([neigh[neigh != idx] for idx, neigh in enumerate(neighs)])
 
             # Get and compare the euclidean and geodesic distance
-            eucdists = np.array([np.sqrt(np.sum((cpts[jj] - cpts[neighs[jj]])**2, axis=1)) for jj in range(len(neighs))])
+            eucdists = np.array([np.sqrt(np.sum((cpts[jj] - cpts[neigh])**2, axis=1)) for jj, neigh in enumerate(neighs)])
             
             geodists = []
+            # 
+            # p = pv.Plotter(notebook=False)
+            # p.add_mesh(mesh)
+            # p.add_points(mesh.points[from_[cycles[ii][neighs[jj][kk]]]], render_points_as_spheres=True, point_size=20, color='red')
+            # p.add_points(mesh.points[from_[cycles[ii][jj]]], render_points_as_spheres=True, point_size=20, color='green')
+            # p.show()
+            
             for jj in range(len(cpts)):
-                geodists.append(np.array([nx.shortest_path_length(net, source=cycles[ii][jj], target=cycles[ii][neighs[jj][kk]], weight='weight') for kk in range(len(neighs[jj]))]))
-                # geodists.append(np.array([
-                #         boundary.geodesic_distance(cycles[ii][jj],
-                #                                    cycles[ii][neighs[jj][kk]])
-                #         for kk in range(len(neighs[jj]))]))
+                path_lengths = []
+                for kk in range(len(neighs[jj])):
+                    length = nx.shortest_path_length(all_net, 
+                                                     source=from_[cycle[jj]],
+                                                     target=from_[cycle[neighs[jj][kk]]], 
+                                                     weight='weight')
+                    path_lengths.append(length)
+                    
+                # path_lengths = [nx.shortest_path_length(all_net, 
+                #                                         source=from_[cycle[jj]], 
+                #                                         target=from_[cycle[neighs[jj][kk]]], weight='weight') for kk in range(len(neighs[jj]))]
+                path_lengths = np.array(path_lengths)
+                geodists.append(path_lengths)
             geodists = np.array(geodists)
 
             frac = np.array([geodists[jj] / eucdists[jj] for jj in range(len(neighs))])
 
-            # Find which ones to (possibly remove)
+            # Find which ones to (possibly) remove
             removal_anchors = []
             removal_geodists = []
             for kk in range(len(frac)):
@@ -792,11 +912,24 @@ def remove_tongues(mesh, radius, threshold=6, hole_edges=100,
             removal_anchors = np.array(removal_anchors)
             removal_geodists = np.array(removal_geodists)
 
+            # Recalculate the geodesic path between two points
             for jj in range(len(removal_anchors)):
-                gdpts = np.array(nx.shortest_path(net, cycles[ii][removal_anchors[jj][0]], cycles[ii][removal_anchors[jj][1]], weight='weight'),dtype='int')
+                gdpts = nx.shortest_path(all_net, 
+                                         source=from_[cycles[ii][removal_anchors[jj][0]]], 
+                                         target=from_[cycles[ii][removal_anchors[jj][1]]], 
+                                         weight='weight')
+                gdpts = np.array(gdpts, dtype='int')
                 to_remove.extend(gdpts)
                 
         to_remove = np.unique(to_remove)
+        
+        # if len(to_remove) > 0:
+        #     break
+        # p = pv.Plotter(notebook=False)
+        # p.add_mesh(mesh)
+        # p.add_points(mesh.points[to_remove], render_points_as_spheres=True, point_size=20, color='red')
+        # p.show()
+    
 
         if len(to_remove) == 0:
             break
@@ -804,8 +937,8 @@ def remove_tongues(mesh, radius, threshold=6, hole_edges=100,
         # Remove points
         mesh = mesh.remove_points(to_remove, keep_scalars=False)[0]
 #        mesh = remove_bridges(mesh)
-        mesh = repair_small(mesh, hole_edges)
-        # mesh = make_manifold(mesh, #ECFT(mesh, 0)
+        # mesh = repair_small(mesh, hole_edges)
+        # mesh = make_manifold(mesh, hole_edges)
         # mesh = correct_bad_mesh(mesh)
         # mesh = ECFT(mesh, 0)
 

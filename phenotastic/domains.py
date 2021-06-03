@@ -22,19 +22,29 @@ from imgmisc import merge, flatten
 import phenotastic.mesh as mp
 
 
+def median(scalars, neighs=None, iterations=1):
+    scalars = scalars.copy()
+    for ii in range(iterations):
+        scalars = filter_curvature(scalars, neighs, np.median, 1)
+    return scalars
+
+def minmax(scalars, neighs=None, iterations=1):
+    scalars = scalars.copy()
+    for ii in range(iterations):
+        scalars = filter_curvature(scalars, neighs, np.min, 1)
+        scalars = filter_curvature(scalars, neighs, np.max, 1)
+    return scalars
+
+def maxmin(scalars, neighs=None, iterations=1):
+    scalars = scalars.copy()
+    for ii in range(iterations):
+        scalars = filter_curvature(scalars, neighs, np.max, 1)
+        scalars = filter_curvature(scalars, neighs, np.min, 1)
+    return scalars
+
 # TODO: Documentation
 def steepest_ascent(mesh, scalars, neighbours=None):
-    """Create domains based on a Steepest Descent approach on an
-
-    Parameters
-    ----------
-    pdata : pandas.DataFrame
-        DataFrame containing information about mesh points, their curvature, and
-        neighbourhood.
-
-    Returns
-    -------
-
+    """Create domains based on a Steepest Descent approach
     """
     # Make checks and calculate neighbours if we don't have them.
     if len(scalars) != mesh.n_points or scalars.ndim > 1:
@@ -49,12 +59,11 @@ def steepest_ascent(mesh, scalars, neighbours=None):
         differences = neighbour_values - scalars[key]
         indices = neighbours[key][np.argmax(differences)]
         connections[key] = [key, indices]
-
     domains = merge(connections)
-    domains = np.array([np.array(list(domains[ii])) for ii in range(len(domains))])
+    domains = [np.array(list(domain)) for domain in domains]
 
     # Set domain values
-    output = np.zeros(mesh.n_points, 'float')
+    output = np.zeros(mesh.n_points, 'int')
     for ii, domain_members in enumerate(domains):
         output[domain_members] = ii
 
@@ -195,7 +204,7 @@ def neighbouring_domains(mesh, domains, seed, neighbours=None):
 
     in_domain = np.where(domains == seed)[0]
 
-    neighs_to_domain_boundary = np.unique(flatten(neighbours[in_domain]))
+    neighs_to_domain_boundary = np.unique(flatten(np.take(neighbours, in_domain)))
     neighbouring_domains = domains[neighs_to_domain_boundary][domains[neighs_to_domain_boundary] != seed]
     neighbouring_domains = np.unique(neighbouring_domains)
 
@@ -214,14 +223,18 @@ def border(mesh, domains, index1, index2, neighbours=None):
 
     _, in_1 = get_domain_boundary(mesh, domains, index1, return_indices=True)
     _, in_2 = get_domain_boundary(mesh, domains, index2, return_indices=True)
-    neighs_1 = flatten(neighbours[in_1])
-    neighs_2 = flatten(neighbours[in_2])
+    
+    if in_1.shape[0] == 0 or in_2.shape[0] == 0:
+        return []
+    
+    neighs_1 = flatten(np.take(neighbours, in_1))
+    neighs_2 = flatten(np.take(neighbours, in_2))
     border = np.union1d(np.intersect1d(neighs_1, in_2),
                         np.intersect1d(neighs_2, in_1))
 
     return border
 
-def merge_engulfing(mesh, domains, percentage=.9, neighbours=None, verbose=False):
+def merge_engulfing(mesh, domains, threshold=.9, neighbours=None, verbose=False):
     """Merge boas based on whether adjacent domains are encircling more than a
     certain fraction of the domain boundary.
     """
@@ -236,30 +249,29 @@ def merge_engulfing(mesh, domains, percentage=.9, neighbours=None, verbose=False
 
     changed = True
     while changed:
-        changed = False  # new round
+        changed = False 
 
-        # For every domain, find points facing other domains and domains facing
-        # NaN
-        for ii in np.unique(domains):
-            in_domain = np.where(domains == ii)[0]
+        # For every domain, find points facing other domains and domains facing NaN
+        for domain in np.unique(domains):
+            in_domain = np.where(domains == domain)[0]
             in_domain_global_boundary = np.intersect1d(in_domain,
-                                                get_boundary_points(mesh))
+                                                boundary_indices(mesh))
 
-            neighs_to_domain_boundary = np.unique(flatten(neighbours[in_domain]))
-            neighbouring_domains = domains[neighs_to_domain_boundary][domains[neighs_to_domain_boundary] != ii]
+            neighs_to_domain_boundary = np.unique(flatten(np.take(neighbours, in_domain)))
+            neighbouring_domains = domains[neighs_to_domain_boundary][domains[neighs_to_domain_boundary] != domain]
             neighbouring_domains, counts = np.unique(neighbouring_domains, return_counts=True)
 
             # calculate fraction of whole circumference bordering this neighbour
-            fraction = float(counts.max()) / (counts.sum() + len(in_domain_global_boundary))
+            border_frac = float(counts.max()) / (counts.sum() + len(in_domain_global_boundary))
 
             # merge if appropriate
-            if fraction > percentage:
+            if border_frac > threshold:
                 new_domain = neighbouring_domains[np.argmax(counts)]
-                domains[domains == ii] = new_domain
+                domains[domains == domain] = new_domain
                 changed = True
 
     if verbose:
-        print('Merging {} domains to {}.'.format(n_domains_initial, len(np.unique(domains))))
+        print(f'Merging {n_domains_initial} domains to {len(np.unique(domains))}')
     output = np.zeros(mesh.n_points, 'float')
     for new_domain, old_domain in enumerate(np.unique(domains)):
         output[domains == old_domain] = new_domain
@@ -418,8 +430,8 @@ def merge_disconnected(mesh, domains, meristem_index, threshold, neighbours=None
 #    pdata.loc[:, 'domain'] = pd.Categorical(pdata.domain).codes
 #    return pdata
 
-def merge_depth(mesh, domains, scalars, neighbours=None, threshold=0.0,
-                     exclude_boundary=False, min_points=0, verbose=False):
+def merge_depth(mesh, domains, scalars, threshold=0.0, neighbours=None,
+                     exclude_boundary=False, min_points=0, mode='min', verbose=False):
     """Merge domains based on their respective depths.
     """
 #mesh, domains=mesh['domains'], scalars=mesh['curvature'], neighbours=neighs, threshold=0.02, verbose=True
@@ -430,50 +442,54 @@ def merge_depth(mesh, domains, scalars, neighbours=None, threshold=0.0,
     if neighbours is None:
         neighbours = mp.get_connected_vertices_all(mesh)
 
-    boundary = get_boundary_points(mesh)
     domains = domains.copy()
-    n_domains_initial = len(np.unique(domains))
-#    domains = np.sort(domains)
+    boundary = boundary_indices(mesh)
+    n_domains_initial = np.unique(domains).shape[0]
+    
+    if mode == 'mean':
+        fct = np.mean
+    elif mode == 'min':
+        fct = np.min
+    elif mode == 'median':
+        fct = np.median
 
     changed = True
     while changed:
         changed = False
         to_merge = []
 
-        for ii in np.unique(domains):
-            in_domain = np.where(domains == ii)[0]
+        for dom in np.unique(domains):
+            in_domain = np.where(domains == dom)[0]
             max_value = np.max(scalars[in_domain])
 
             # get the points that are in neighbouring domains
-            neighs_pts = np.array([x for y in neighbours[in_domain] for x in y])
-            neighs_pts = np.array([x for x in neighs_pts if x not in in_domain])
+            neighs_pts = [x for y in np.take(neighbours, in_domain) for x in y]
+            neighs_pts = [x for x in neighs_pts if x not in in_domain]
 
             if exclude_boundary:
-                in_domain = np.array(
-                    [x for x in in_domain if x not in boundary])
-                neighs_pts = np.array(
-                    [x for x in neighs_pts if x not in boundary])
+                in_domain = [x for x in in_domain if x not in boundary]
+                neighs_pts = [x for x in neighs_pts if x not in boundary]
 
             # neighbouring domains, in order
             neighs_doms = np.unique(domains[neighs_pts])
             neighs_doms = np.sort(neighs_doms)
 
-            ''' Calculate average border curvature '''
-            for jj in neighs_doms:
+            for neigh_dom in neighs_doms:
                 # all the points in the neighbouring domain which has a neighbour in
                 # the current domain
-                border_pts = np.where(domains == jj)[0]
+                border_pts = np.where(domains == neigh_dom)[0]
                 border_pts = np.array([x for x in border_pts if x in neighs_pts])
 
                 # get neighbours of the neighbour's neighbours that are in the current
                 # domain. Merge.
                 border_pts_neighs = np.unique(
-                    np.array([x for y in neighbours[border_pts] for x in y]))
+                    np.array([x for y in np.take(neighbours, border_pts) for x in y]))
                 border_pts = np.append(
                     border_pts, [pt for pt in border_pts_neighs if pt in in_domain])
                 border_pts = np.unique(border_pts)
 
-                border_max_value = np.max(scalars[border_pts])
+
+                border_max_value = fct(scalars[border_pts])
 
                 # Only do if enough border
                 if len(border_pts) < min_points:
@@ -481,26 +497,26 @@ def merge_depth(mesh, domains, scalars, neighbours=None, threshold=0.0,
 
                 # Merge
                 if max_value - border_max_value < threshold:
-                    to_merge.append([ii, jj])
+                    to_merge.append([dom, neigh_dom])
                     changed = True
                 else:
-                    to_merge.append([ii])
-                    to_merge.append([jj])
+                    to_merge.append([dom])
+                    to_merge.append([neigh_dom])
 
         # Update domains
         doms = merge(to_merge)
         domains_overwrite = domains.copy()
-        for ii in range(len(doms)):
-            domains_overwrite[np.isin(domains, list(doms[ii]))] = ii
+        for ii, dom in enumerate(doms):
+            domains_overwrite[np.isin(domains, list(dom))] = ii
         domains = domains_overwrite
 
         if len(np.unique(domains)):
             break
 
     # Relabel between 0 and len(domains)
-    new_domains = domains.copy()
     if verbose:
-        print('Merging {} domains to {}.'.format(n_domains_initial, len(np.unique(domains))))
+        print(f'Merging {n_domains_initial} domains to {len(np.unique(domains))} domains')
+    new_domains = domains.copy()
     for ii, domain in enumerate(np.unique(domains)):
         new_domains[domains == domain] = ii
 
@@ -531,7 +547,7 @@ def merge_boas_border_curv(A, pdata, threshold=0.0, fct=np.mean, min_points=4,
 
 
     """
-    boundary = get_boundary_points(A.mesh)
+    boundary = boundary_indices(A.mesh)
     changed = True
     while changed:
         changed = False  # new round
@@ -598,19 +614,8 @@ def merge_boas_border_curv(A, pdata, threshold=0.0, fct=np.mean, min_points=4,
     return pdata
 
 
-def get_boundary_points(mesh, **kwargs):
-    """Get point indices of mesh boundary.
-
-    Parameters
-    ----------
-    mesh :
-
-
-    Returns
-    -------
-
-
-    """
+def boundary_indices(mesh, **kwargs):
+    """Get point indices of mesh boundary."""
     fe = mesh.extract_feature_edges(feature_angle=0, boundary_edges=True,
                            non_manifold_edges=False, manifold_edges=False,
                            feature_edges=False)
@@ -627,46 +632,17 @@ def get_boundary_points(mesh, **kwargs):
     return indices
 
 
-def set_boundary_curv(curvs, mesh, value, **kwargs):
+def set_boundary_values(mesh, scalars, values):
     """Set the curvature of the mesh boundary.
-
-    Parameters
-    ----------
-    curvs :
-
-    mesh :
-
-    value :
-
-
-    Returns
-    -------
-
-
     """
-    newcurvs = curvs.copy()
-
-    boundary = get_boundary_points(mesh)
-    newcurvs[boundary] = value
-    return newcurvs
+    new_scalars = scalars.copy()
+    boundary = boundary_indices(mesh)
+    new_scalars[boundary] = values
+    return new_scalars
 
 
 def filter_curvature(curvs, neighs, fct, iters, exclude=[], **kwargs):
     """Filter curvature with a function. Exclude the list of indices if given.
-
-    Parameters
-    ----------
-    curvs :
-
-    neighs :
-
-    fct :
-
-    iters :
-
-    exclude :
-        (Default value = [])
-
     Returns
     -------
 
@@ -684,6 +660,22 @@ def filter_curvature(curvs, neighs, fct, iters, exclude=[], **kwargs):
         curvs = new_curvs
     return curvs
 
+def mean(scalars, neighs, iters, exclude=[]):
+    return filter(scalars, neighs, np.mean, iters, exclude)
+
+def filter(scalars, neighs, fct, iters, exclude=[], **kwargs):
+    """Filter curvature with a function. Exclude the list of indices if given."""
+    for ii in range(iters):
+        new_scalars = copy.deepcopy(scalars)
+        for jj in range(len(scalars)):
+            val = np.nan
+            to_proc = scalars[[kk for kk in neighs[jj] if kk not in exclude]]
+            if len(to_proc) > 0:
+                val = fct(to_proc)
+            if not np.isnan(val):
+                new_scalars[jj] = val
+        scalars = new_scalars
+    return scalars
 
 def remove_size(mesh, domains, threshold, method='points', relative='largest'):
     """Remove attractors based on their size.
@@ -754,8 +746,23 @@ def get_domain_boundary(mesh, domains, index, return_indices=False):
     else:
         return edges
 
+def domain_neighbors(mesh, domains, neighs):
+    doms = [extract_domain(mesh, domains, dd) for dd in np.unique(domains)]
+    dom_boundaries = [boundary_indices(dd) for dd in doms]
+    doms_orig_indices = []
+    for ii, dom in enumerate(doms):
+        orig = [mesh.FindPoint(pt) for pt in dom.points[dom_boundaries[ii]]]
+        doms_orig_indices.append(orig)
+    
+    n_neighs = []
+    for dom_orig_indices in doms_orig_indices:
+        dom_neighs = flatten([domains[dd] for dd in neighs[dom_orig_indices]])
+        dom_neighs = np.unique(dom_neighs)
+        n_neighs.append(len(dom_neighs) - 1)
+    return n_neighs
+    # dom_boundaries = [[dom.FindPoint(pt) for pt in dom.points[dd]] for dd in ]
 
-def define_meristem(mesh, domains, method='central_mass', return_coordinates=False):
+def define_meristem(mesh, domains, method='central_mass', return_coordinates=False, neighs=None):
     """Define which domain is the meristem.
     """
     method = method.lower()
@@ -764,15 +771,18 @@ def define_meristem(mesh, domains, method='central_mass', return_coordinates=Fal
         coord = mesh.center_of_mass()
     elif method in ['center', 'c', 'bounds']:
         coord = np.mean(np.reshape(mesh.bounds, (3, -1)), axis=1)
+    elif method in ['n_neighs', 'neighbors', 'neighs', 'n_neighbors']:
+        doms = np.unique(domains)
+        n_neighs = domain_neighbors(mesh, domains, neighs)
+        meristem = doms[np.argmax(n_neighs)]
+        coord = extract_domain(mesh, domains, meristem).center_of_mass()
 
-    meristem = domains[mesh.FindPoint(coord)]
-    meristem = int(meristem)
+    meristem = int(domains[mesh.FindPoint(coord)])
 
     if return_coordinates:
         return meristem, coord
     else:
         return meristem
-
 
 def extract_domaindata(pdata, mesh, apex, meristem, **kwargs):
     """
@@ -800,7 +810,7 @@ def extract_domaindata(pdata, mesh, apex, meristem, **kwargs):
     for ii in domains:
         # Get distance for closest boundary point to apex
         dom = get_domain(mesh, pdata, ii)
-        dom_boundary = get_boundary_points(dom)
+        dom_boundary = boundary_indices(dom)
         dom_boundary_coords = dom.points[dom_boundary]
         dom_boundary_dists = np.sqrt(
             np.sum((dom_boundary_coords - apex)**2, axis=1))

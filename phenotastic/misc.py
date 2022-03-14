@@ -614,11 +614,15 @@ def car2sph(xyz):
 
 
     """
+    x = xyz[:, 0]
+    y = xyz[:, 1]
+    z = xyz[:, 2]
+    
     rtp = np.zeros(xyz.shape)
-    xy = xyz[:, 0] ** 2 + xyz[:, 1] ** 2
-    rtp[:, 0] = np.sqrt(xy + xyz[:, 2] ** 2)
-    rtp[:, 1] = np.arctan2(np.sqrt(xy), xyz[:, 2])
-    rtp[:, 2] = np.arctan2(xyz[:, 1], xyz[:, 0])
+    xy = x**2 + y**2
+    rtp[:, 0] = np.sqrt(xy + z**2)
+    rtp[:, 1] = np.arctan2(np.sqrt(xy), z)
+    rtp[:, 2] = np.arctan2(y, x)
     return rtp
 
 

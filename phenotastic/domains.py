@@ -43,7 +43,7 @@ def maxmin(scalars, neighs=None, iterations=1):
     return scalars
 
 # TODO: Documentation
-def steepest_ascent(mesh, scalars, neighbours=None):
+def steepest_ascent(mesh, scalars, neighbours=None, verbose=False):
     """Create domains based on a Steepest Descent approach
     """
     # Make checks and calculate neighbours if we don't have them.
@@ -66,7 +66,9 @@ def steepest_ascent(mesh, scalars, neighbours=None):
     output = np.zeros(mesh.n_points, 'int')
     for ii, domain_members in enumerate(domains):
         output[domain_members] = ii
-
+    if verbose:
+        print(f'Found {len(domains)} domains')
+    
     return output
 
 def relabel(domains, order):
@@ -93,8 +95,11 @@ def merge_angles(mesh, domains, meristem_index, threshold=20, method='center_of_
 #    method='center_of_mass'
 #    verbose=False
 
+
     domains = domains.copy()
     n_domains_initial = len(np.unique(domains))
+    if n_domains_initial == 1:
+        return domains
 
     changed = True
     while changed:
@@ -252,11 +257,16 @@ def merge_engulfing(mesh, domains, threshold=.9, neighbours=None, verbose=False)
         changed = False 
 
         # For every domain, find points facing other domains and domains facing NaN
+        bidxs = boundary_indices(mesh)
+        if len(bidxs) == 0:
+            break
+        
         for domain in np.unique(domains):
             in_domain = np.where(domains == domain)[0]
+            
             in_domain_global_boundary = np.intersect1d(in_domain,
-                                                boundary_indices(mesh))
-
+                                                bidxs)
+            
             neighs_to_domain_boundary = np.unique(flatten(np.take(neighbours, in_domain)))
             neighbouring_domains = domains[neighs_to_domain_boundary][domains[neighs_to_domain_boundary] != domain]
             neighbouring_domains, counts = np.unique(neighbouring_domains, return_counts=True)
@@ -337,6 +347,8 @@ def merge_disconnected(mesh, domains, meristem_index, threshold, neighbours=None
         raise RuntimeError('Invalid domains array.')
     if neighbours is None:
         neighbours = mp.get_connected_vertices_all(mesh)
+    if threshold is None:
+        return domains
 
     meristem_index = int(meristem_index)
     domains = domains.copy()
@@ -357,6 +369,7 @@ def merge_disconnected(mesh, domains, meristem_index, threshold, neighbours=None
         probes = d_labels[d_labels != meristem_index][mask]
         meristem_index = 0.0
 
+        # Merge with neighbours with most vertices in the corresponding border
         for probe in np.sort(probes):
             probe_borders = [border(mesh, domains, probe, jj, neighbours=neighbours) for jj in d_labels[d_labels != probe]]
             border_sizes = [len(jj) for jj in probe_borders]
@@ -372,7 +385,6 @@ def merge_disconnected(mesh, domains, meristem_index, threshold, neighbours=None
                 domains_overwrite[np.isin(domains, list(doms[ii]))] = ii
 
             domains = domains_overwrite
-
 
     if verbose:
         print('Merging {} domains to {}.'.format(n_domains_initial, len(np.unique(domains))))
@@ -431,7 +443,7 @@ def merge_disconnected(mesh, domains, meristem_index, threshold, neighbours=None
 #    return pdata
 
 def merge_depth(mesh, domains, scalars, threshold=0.0, neighbours=None,
-                     exclude_boundary=False, min_points=0, mode='min', verbose=False):
+                     exclude_boundary=False, min_points=0, mode='max', verbose=False):
     """Merge domains based on their respective depths.
     """
 #mesh, domains=mesh['domains'], scalars=mesh['curvature'], neighbours=neighs, threshold=0.02, verbose=True
@@ -446,12 +458,14 @@ def merge_depth(mesh, domains, scalars, threshold=0.0, neighbours=None,
     boundary = boundary_indices(mesh)
     n_domains_initial = np.unique(domains).shape[0]
     
-    if mode == 'mean':
-        fct = np.mean
-    elif mode == 'min':
+    if mode == 'min':
         fct = np.min
     elif mode == 'median':
         fct = np.median
+    elif mode == 'max':
+        fct = np.max
+    else:
+        fct = np.mean
 
     changed = True
     while changed:
@@ -488,8 +502,17 @@ def merge_depth(mesh, domains, scalars, threshold=0.0, neighbours=None,
                     border_pts, [pt for pt in border_pts_neighs if pt in in_domain])
                 border_pts = np.unique(border_pts)
 
-
                 border_max_value = fct(scalars[border_pts])
+
+                # p = pv.Plotter(notebook=False)
+                # p.add_mesh(mesh, scalars='domains', categories=True, cmap='glasbey', interpolate_before_map=False)
+                # p.add_points(mesh.points[border_pts], color='red')
+                # p.add_points(mesh.points[border_pts[[np.argmax(scalars[border_pts])]]], color='blue', point_size=10)
+                # p.add_points(mesh.points[border_pts[[np.argmax(scalars[border_pts])]]], color='blue', point_size=10)
+                # p.add_points(mesh.points[in_domain[[np.argmax(scalars[in_domain])]]], color='blue', point_size=10)
+                # scalars[in_domain]
+                # p.show()
+
 
                 # Only do if enough border
                 if len(border_pts) < min_points:
@@ -521,6 +544,90 @@ def merge_depth(mesh, domains, scalars, threshold=0.0, neighbours=None,
         new_domains[domains == domain] = ii
 
     return new_domains
+
+def merge_border_length(mesh, domains, threshold=0.0, neighbours=None, verbose=False):
+    """Merge domains based on their respective border lengths.
+    """
+#mesh, domains=mesh['domains'], scalars=mesh['curvature'], neighbours=neighs, threshold=0.02, verbose=True
+    if len(domains) != mesh.n_points or domains.ndim > 1:
+        raise RuntimeError('Invalid domain array.')
+    if neighbours is None:
+        neighbours = mp.get_connected_vertices_all(mesh)
+
+    domains = domains.copy()
+    boundary = boundary_indices(mesh)
+    n_domains_initial = np.unique(domains).shape[0]
+    
+    changed = True
+    while changed:
+        changed = False
+        to_merge = []
+
+        for dom in np.unique(domains):
+            in_domain = np.where(domains == dom)[0]
+
+            # get the points that are in neighbouring domains
+            neighs_pts = [x for y in np.take(neighbours, in_domain) for x in y]
+            neighs_pts = [x for x in neighs_pts if x not in in_domain]
+
+            # neighbouring domains, in order
+            neighs_doms = np.unique(domains[neighs_pts])
+            neighs_doms = np.sort(neighs_doms)
+
+            for neigh_dom in neighs_doms:
+                # all the points in the neighbouring domain which has a neighbour in
+                # the current domain
+                border_pts = np.where(domains == neigh_dom)[0]
+                border_pts = np.array([x for x in border_pts if x in neighs_pts])
+
+                # get neighbours of the neighbour's neighbours that are in the current
+                # domain. Merge.
+                border_pts_neighs = np.unique(
+                    np.array([x for y in np.take(neighbours, border_pts) for x in y]))
+                border_pts = np.append(
+                    border_pts, [pt for pt in border_pts_neighs if pt in in_domain])
+                border_pts = np.unique(border_pts)
+
+                # p = pv.Plotter(notebook=False)
+                # p.add_mesh(mesh, scalars='domains', categories=True, cmap='glasbey', interpolate_before_map=False)
+                # p.add_points(mesh.points[border_pts], color='red')
+                # p.add_points(mesh.points[border_pts[[np.argmax(scalars[border_pts])]]], color='blue', point_size=10)
+                # p.add_points(mesh.points[border_pts[[np.argmax(scalars[border_pts])]]], color='blue', point_size=10)
+                # p.add_points(mesh.points[in_domain[[np.argmax(scalars[in_domain])]]], color='blue', point_size=10)
+                # scalars[in_domain]
+                # p.show()
+                
+
+                # Merge
+                if len(border_pts) > threshold:
+                    to_merge.append([dom, neigh_dom])
+                    changed = True
+                else:
+                    to_merge.append([dom])
+                    to_merge.append([neigh_dom])
+
+        # Update domains
+        doms = merge(to_merge)
+        domains_overwrite = domains.copy()
+        for ii, dom in enumerate(doms):
+            domains_overwrite[np.isin(domains, list(dom))] = ii
+        domains = domains_overwrite
+
+        if len(np.unique(domains)):
+            break
+
+    # Relabel between 0 and len(domains)
+    if verbose:
+        print(f'Merging {n_domains_initial} domains to {len(np.unique(domains))} domains')
+    new_domains = domains.copy()
+    for ii, domain in enumerate(np.unique(domains)):
+        new_domains[domains == domain] = ii
+
+    return new_domains
+
+
+
+
 
 # TODO: Should be in a "misc" file
 def merge_boas_border_curv(A, pdata, threshold=0.0, fct=np.mean, min_points=4,
@@ -637,7 +744,8 @@ def set_boundary_values(mesh, scalars, values):
     """
     new_scalars = scalars.copy()
     boundary = boundary_indices(mesh)
-    new_scalars[boundary] = values
+    if len(boundary) > 0:
+        new_scalars[boundary] = values
     return new_scalars
 
 
@@ -754,6 +862,7 @@ def domain_neighbors(mesh, domains, neighs):
         orig = [mesh.FindPoint(pt) for pt in dom.points[dom_boundaries[ii]]]
         doms_orig_indices.append(orig)
     
+    neighs = np.array(neighs.copy())
     n_neighs = []
     for dom_orig_indices in doms_orig_indices:
         dom_neighs = flatten([domains[dd] for dd in neighs[dom_orig_indices]])
@@ -762,7 +871,7 @@ def domain_neighbors(mesh, domains, neighs):
     return n_neighs
     # dom_boundaries = [[dom.FindPoint(pt) for pt in dom.points[dd]] for dd in ]
 
-def define_meristem(mesh, domains, method='central_mass', return_coordinates=False, neighs=None):
+def define_meristem(mesh, domains, method='center_of_mass', return_coordinates=False, neighs=None):
     """Define which domain is the meristem.
     """
     method = method.lower()

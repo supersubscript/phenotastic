@@ -294,7 +294,7 @@ def fill_beneath(contour, mode='bottom'):
     return contour
 
 
-def fill_contour(contour, fill_xy=False, fill_zx_zy=False, inplace=False):
+def fill_contour(contour, fill_xy=False, fill_zx_zy=False, inplace=False, zrange=None, xrange=None, yrange=None):
     """
     Fill contour by closing all the edges (except for the top one), and applying
     a binary fill-holes operation. Note that this causes some errors if there is
@@ -333,21 +333,31 @@ def fill_contour(contour, fill_xy=False, fill_zx_zy=False, inplace=False):
         new_contour = contour
 
     new_contour = np.pad(new_contour, 1, 'constant', constant_values=1)
+    if xrange is None:
+        xrange = [0, new_contour.shape[2]]
+    else:
+        xrange = list(xrange)
+        xrange[0] = xrange[0] - 1
+    if yrange is None:
+        yrange = [0, new_contour.shape[1]]
+    else:
+        yrange = list(yrange)
+        yrange[0] = yrange[0] - 1
+    if zrange is None:
+        zrange = [0, new_contour.shape[0]]
+    else:
+        zrange = list(zrange)
+        zrange[0] = zrange[0] - 1
 
     # Close all sides but top
-#    new_contour[0] = 1
     new_contour[-1] = 0  # top
-#    new_contour[:, 0] = 1
-#    new_contour[:, -1] = 1
-#    new_contour[:, :, 0] = 1
-#    new_contour[:, :, -1] = 1
 
     # Fill holes form in xz & yz planes.
     if fill_zx_zy:
-        for ii in range(new_contour.shape[1]):
-            new_contour[:, ii] = binary_fill_holes(new_contour[:, ii])
-        for ii in range(new_contour.shape[2]):
-            new_contour[:, :, ii] = binary_fill_holes(new_contour[:, :, ii])
+        for ii in range(*yrange):
+            new_contour[zrange[0]:zrange[1], ii, xrange[0]:xrange[1]] = binary_fill_holes(new_contour[zrange[0]:zrange[1], ii, xrange[0]:xrange[1]])
+        for ii in range(*xrange):
+            new_contour[zrange[0]:zrange[1], yrange[0]:yrange[1], ii] = binary_fill_holes(new_contour[zrange[0]:zrange[1], yrange[0]:yrange[1], ii])
 
     # Remove edges again, also for top
     new_contour[0] = 0
@@ -358,8 +368,8 @@ def fill_contour(contour, fill_xy=False, fill_zx_zy=False, inplace=False):
     new_contour[:, :, -1] = 0
 
     if fill_xy:
-        for ii in range(new_contour.shape[0]):
-            new_contour[ii] = binary_fill_holes(new_contour[ii])
+        for ii in range(*zrange):
+            new_contour[ii, yrange[0]:yrange[1], xrange[0]:xrange[1]] = binary_fill_holes(new_contour[ii, yrange[0]:yrange[1], xrange[0]:xrange[1]])
 
     new_contour = binary_fill_holes(new_contour)
     new_contour = new_contour[1:-1, 1:-1, 1:-1]
@@ -541,7 +551,8 @@ def repair_small(mesh, nbe=100, refine=True):
     from pymeshfix._meshfix import PyTMesh
     mfix = PyTMesh(False)
     mfix.load_array(mesh.points, mesh.faces.reshape(-1, 4)[:, 1:])
-
+    if nbe is None:
+        nbe = -1
     mfix.fill_small_boundaries(nbe=nbe, refine=refine)
     vert, faces = mfix.return_arrays()
     mesh = pv.PolyData(vert, np.ravel(np.c_[[[3]]*len(faces), faces]))
@@ -1190,6 +1201,7 @@ def vertex_neighbors_all(mesh, include_self=True):
 
 def correct_normal_orientation_topcut(mesh, origin):
     mesh.clear_arrays()
+    # mesh = mesh.compute_normals(auto_orient_normals=True)
     if mesh.clip(normal='-x', origin=origin).point_normals[:, 0].sum() > 0:
         mesh.flip_normals()
     return mesh
@@ -1231,7 +1243,7 @@ def ECFT(mesh, hole_edges=300, inplace=False):
     return None if inplace else new_mesh
 
 
-def define_meristem(mesh, pdata, method='central_mass', res=(1, 1, 1), fluo=None):
+def define_meristem(mesh, method='central_mass', res=(1, 1, 1), return_coord=False):
     """
     Determine which domain in the segmentation that corresponds to the meristem.
     Some methods are deprecated and should not be used.
@@ -1267,18 +1279,25 @@ def define_meristem(mesh, pdata, method='central_mass', res=(1, 1, 1), fluo=None
         com.SetInputData(mesh)
         com.Update()
         ccoord = np.array(com.GetCenter())
-    elif method == "central_space":
-        ccoord = np.multiply(np.array(fluo.shape), np.array(res)) / 2
     elif method == 'central_bounds':
         ccoord = np.mean(np.reshape(mesh.GetBounds(), (3, 2)), axis=1)
 
-    meristem = np.argmin(np.sqrt(np.sum((pdata[['z', 'y', 'x']] -
-                                         ccoord)**2, axis=1)))
-    meristem = pdata.loc[meristem, 'domain']
-    return meristem, ccoord
+    m_idx = np.argmin(((mesh.points - ccoord)**2).sum(1)**.5)
+    meristem = mesh['domains'][m_idx]
+    if return_coord:
+        return meristem, ccoord
+    else:
+        return meristem
 
+def erode(mesh, iterations=1):
+    mesh = mesh.copy()
+    for iter_ in range(iterations):
+        if mesh.n_points == 0:
+            break
+        mesh = mesh.remove_points(boundary_points(mesh))[0]
+    return mesh
 
-def fit_paraboloid(data, init=[1, 1, 1, 1, 1, 0, 0, 0]):
+def fit_paraboloid(data, init=[1, 1, 1, 1, 1, 0, 0, 0], return_success=False):
     """
     Fit a paraboloid to arbitrarily oriented 3D data.
 
@@ -1315,8 +1334,9 @@ def fit_paraboloid(data, init=[1, 1, 1, 1, 1, 0, 0, 0]):
 
         x, y, z = np.array(coord).T
         return abs(p1 * x**2. + p2 * y**2. + p3 * x + p4 * y + p5 - z)
-    popt, _ = opt.leastsq(errfunc, init, args=(data,))
-
+    popt, _1, _2, _3, _4 = opt.leastsq(errfunc, init, args=(data,), full_output=True)
+    if return_success:
+        return popt, _4 in [1,2,3,4]
     return popt
 
 
@@ -1379,7 +1399,7 @@ def correct_normal_orientation(mesh, relative='x', inplace=False):
     return None if inplace else mesh
 
 
-def fit_paraboloid_mesh(mesh):
+def fit_paraboloid_mesh(mesh, return_coord=False):
     """
     Fit a paraboloid to a mesh.
 
@@ -1396,8 +1416,11 @@ def fit_paraboloid_mesh(mesh):
 
     """
     popt = fit_paraboloid(mesh.points, )
-    apex = paraboloid_apex(popt)
-    return popt, apex
+    if return_coord:
+        apex = paraboloid_apex(popt)
+        return popt, apex
+    else:
+        return popt
 
 
 def paraboloid_apex(p):
@@ -1427,5 +1450,5 @@ def paraboloid_apex(p):
     z = p1 * x**2. + p2 * y**2. + p3 * x + p4 * y + p5
 
     coords = rotate(np.array([[x, y, z], ]), [alpha, beta, gamma], True)[0]
-
+    
     return coords

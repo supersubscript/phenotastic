@@ -464,12 +464,12 @@ def project2surface(mesh, int_img, distance, mask=None, resolution=[1, 1, 1], fc
     for ii, val in enumerate(l1_vals):
         values[closest[ii]] += val
 
-    pobj = pv.Plotter(notebook=False)
-    pobj.add_mesh(mesh, opacity=1, scalars=values)
-#    pobj.add_points(internal_coords, scalars=internal_vals, opacity=.5)
-    pobj.add_points(l1_coords, scalars=l1_vals, opacity='sigmoid')
-##    pobj.AddPoints(non_l1_coords, scalars=non_l1_vals, opacity=1)
-    pobj.show()
+    # pobj = pv.Plotter(notebook=False)
+    # pobj.add_mesh(mesh, opacity=1, scalars=values, clim=[np.quantile(values, .01), np.quantile(values, .99)])
+    # # pobj.add_points(internal_coords, scalars=internal_vals, opacity='sigmoid')
+    # # pobj.add_points(l1_coords, scalars=l1_vals, opacity='sigmoid')
+    # # pobj.add_points(non_l1_coords, scalars=non_l1_vals, opacity=1)
+    # pobj.show()
 
     return values
 

@@ -10,4 +10,4 @@ import numpy as np
 
 __author__ = """Henrik Ahl"""
 __email__ = 'hpa22@cam.ac.uk'
-__version__ = '0.1.4'
+__version__ = '0.1.5'

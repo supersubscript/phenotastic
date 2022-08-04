@@ -13,7 +13,7 @@ import tifffile as tiff
 from scipy.spatial import cKDTree
 from scipy.ndimage.filters import gaussian_filter
 from skimage.segmentation import morphological_chan_vese
-from skimage.measure import marching_cubes_lewiner
+from skimage.measure import marching_cubes
 from clahe import clahe
 from imgmisc import autocrop
 from imgmisc import cut
@@ -106,7 +106,7 @@ def paraboloid(p, sampling=(200, 200, 200), bounds=None):
 
 
 def create_mesh(contour, resolution=[1, 1, 1], step_size=1):
-    v, f, _, _ = marching_cubes_lewiner(
+    v, f, _, _ = marching_cubes(
         contour, 0, spacing=list(resolution), step_size=step_size, allow_degenerate=False)
     mesh = pv.PolyData(v, np.c_[[3] * len(f), f].ravel())
     return mesh
@@ -140,7 +140,7 @@ def create_cellular_mesh(seg_img, resolution=[1, 1, 1], verbose=True):
             seg_img == cell_id, threshold=0, n=1, return_cuts=True, offset=[[2, 2], [2, 2], [2, 2]])
         cell_volume = np.sum(cell_img > 0) * np.product(resolution)
 
-        v, f, _, _ = marching_cubes_lewiner(cell_img, 0, allow_degenerate=False,
+        v, f, _, _ = marching_cubes(cell_img, 0, allow_degenerate=False,
                                             step_size=1, spacing=resolution)
         v[:, 0] += cell_cuts[0, 0] * resolution[0]
         v[:, 1] += cell_cuts[1, 0] * resolution[1]

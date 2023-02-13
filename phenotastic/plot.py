@@ -12,7 +12,6 @@ import pyvista
 import phenotastic.domains as boa
 
 
-
 def coord_array(arr, res=(1, 1, 1), offset=(0, 0, 0)):
     """
     Create a coordinate array (of e.g. same dimensionality as intensity array) of the same dimensions as another array. Only defined for 3D.
@@ -61,11 +60,11 @@ def PlotImage(
     mopacity=1,
     popacity=1,
     psize=5,
-    bg=[0.5, 0.5, 0.5],
+    background=[0.5, 0.5, 0.5],
     pcolor=None,
     prng=None,
-    pname="",
-    pstitle="",
+    pname='',
+    pstitle='',
     pflipscalars=False,
     pcolormap=None,
     pncolors=256,
@@ -145,7 +144,7 @@ def PlotImage(
         colormap=pcolormap,
         ncolors=pncolors,
     )
-    pobj.set_background(bg)
+    pobj.set_background(background)
 
     if mesh is not None:
         pobj.add_mesh(
@@ -176,10 +175,10 @@ def PlotImage(
 def PlotPointData(
     mesh,
     pdata,
-    var="domain",
+    var='domain',
     boacoords=[],
     show_boundaries=False,
-    bcolor="black",
+    bcolor='black',
     bpsize=10,
     blinewidth=10,
     *args,
@@ -221,8 +220,8 @@ def PlotPointData(
             np.array(boacoords),
             np.array([str(ii) for ii in range(len(boacoords))]),
             font_size=30,
-            point_color="w",
-            text_color="w",
+            point_color='w',
+            text_color='w',
         )
 
     if show_boundaries:
@@ -312,6 +311,6 @@ def PlotParaboloid(mesh, p, sampleDim=(200, 200, 200), bounds=[-2000, 2000] * 3)
     tpoly.clip_with_plane([mesh.bounds[0] - 20, 0, 0], [1, 0, 0])
 
     pobj = pyvista.Plotter()
-    pobj.add_mesh(tpoly, opacity=0.5, showedges=False, color="orange")
-    pobj.add_mesh(mesh, opcaity=0.9, color="green")
+    pobj.add_mesh(tpoly, opacity=0.5, showedges=False, color='orange')
+    pobj.add_mesh(mesh, opcaity=0.9, color='green')
     pobj.plot()

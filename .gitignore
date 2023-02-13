@@ -26,6 +26,12 @@
 *.sql
 *.sqlite
 
+# Swap files #
+######################
+*.swp
+.*.swp
+
+
 # OS generated files #
 ######################
 .DS_Store

@@ -4,38 +4,38 @@ Created on Tue May 29 22:10:18 2018
 @author: henrik
 """
 from __future__ import annotations
-import pymeshfix as pmf
 
 import gc
-import networkx as nx
-from scipy.spatial import KDTree
+
 import mahotas as mh
+import networkx as nx
 import numpy as np
+import pymeshfix as pmf
 import pyvista as pv
+import scipy.optimize as opt
 import tifffile as tiff
 import vtk
-
-import scipy.optimize as opt
-from phenotastic.misc import rotate
-
 from clahe import clahe
 from imgmisc import autocrop
 from imgmisc import cut
 from imgmisc import get_resolution
 from imgmisc import to_uint8
-from scipy.ndimage.filters import gaussian_filter
-from scipy.ndimage.morphology import binary_fill_holes
-from scipy.signal import wiener
-from scipy.spatial import cKDTree
-from skimage.measure import marching_cubes
-from skimage.segmentation import morphological_chan_vese
-import phenotastic.plot as pl
+from pyacvd import clustering
+from pymeshfix._meshfix import PyTMesh
 from pystackreg import StackReg
 from scipy.ndimage import zoom
+from scipy.ndimage.filters import gaussian_filter
+from scipy.ndimage.morphology import binary_fill_holes
 from scipy.ndimage.morphology import distance_transform_edt
-from pymeshfix._meshfix import PyTMesh
+from scipy.signal import wiener
+from scipy.spatial import cKDTree
+from scipy.spatial import KDTree
+from skimage.measure import marching_cubes
+from skimage.segmentation import morphological_chan_vese
+
+import phenotastic.plot as pl
 from phenotastic.misc import car2sph
-from pyacvd import clustering
+from phenotastic.misc import rotate
 
 
 def rot_matrix_44(angles, invert=False):
@@ -91,8 +91,31 @@ def rot_matrix_44(angles, invert=False):
 
 
 def paraboloid(p, sampling=(200, 200, 200), bounds=None):
-    p1, p2, p3, p4, p5, alpha, beta, gamma = p
+    """
+    Generate a meshed paraboloid object
 
+    Parameters
+    ----------
+    p : 5-tuple of the paraboloid parameters
+        Parameters satisfying the equation
+
+        .. math::
+        z = p_0 x^2 + p_1 y^2 + p_2 x + p_3 y + p_4
+
+    sampling : 3-tuple of ints, optional
+        The sampling in XYZ. The default is (200, 200, 200).
+    bounds : float or 6-tuple, optional
+        The cut-off bounds for the paraboloid in format [X0,X1, Y0,Y1, Z0,Z1]. The default is None.
+
+    Returns
+    -------
+    output : pyvista.PolyData
+        The rotated polydata mesh.
+
+    """
+
+    # Input checks
+    p1, p2, p3, p4, p5, alpha, beta, gamma = p
     if bounds is None:
         bounds = [-2000, 2000] * 3
     elif isinstance(bounds, (float, int)):
@@ -100,7 +123,9 @@ def paraboloid(p, sampling=(200, 200, 200), bounds=None):
     if isinstance(sampling, (int, float)):
         sampling = [sampling] * 3
     bounds = np.array(bounds)
-    corners = [
+
+    # Get the bounding box corners in the transformed space
+    corners = np.array([
         [bounds[0], bounds[2], bounds[4]],
         [bounds[0], bounds[2], bounds[5]],
         [bounds[0], bounds[3], bounds[4]],
@@ -109,19 +134,18 @@ def paraboloid(p, sampling=(200, 200, 200), bounds=None):
         [bounds[1], bounds[2], bounds[5]],
         [bounds[1], bounds[3], bounds[4]],
         [bounds[1], bounds[3], bounds[5]],
-    ]
-    corners = rotate(np.array(corners), [alpha, beta, gamma], invert=False)
+    ])
+    corners = rotate(corners, [alpha, beta, gamma], invert=False)
+
     bounds = [
-        min(corners[:, 0]),
-        max(corners[:, 0]),
-        min(corners[:, 1]),
-        max(corners[:, 1]),
-        min(corners[:, 2]),
-        max(corners[:, 2]),
+        min(corners[:, 0]), max(corners[:, 0]),
+        min(corners[:, 1]), max(corners[:, 1]),
+        min(corners[:, 2]), max(corners[:, 2]),
     ]
 
     # Generate the paraboloid mesh along the z-axis
-    # vtkQuadric evaluates the quadric function F(x,y,z) = a0*x^2 + a1*y^2 + a2*z^2 + a3*x*y + a4*y*z + a5*x*z + a6*x + a7*y + a8*z + a9.
+    # vtkQuadric evaluates the quadric function:
+    # F(x,y,z) = a0*x^2 + a1*y^2 + a2*z^2 + a3*x*y + a4*y*z + a5*x*z + a6*x + a7*y + a8*z + a9.
     quadric = vtk.vtkQuadric()
     quadric.SetCoefficients(p1, p2, 0, 0, 0, 0, p3, p4, -1, p5)
     sample = vtk.vtkSampleFunction()
@@ -145,9 +169,10 @@ def paraboloid(p, sampling=(200, 200, 200), bounds=None):
     transfilter.SetInputData(contour.GetOutput())
     transfilter.SetTransform(transmat)
     transfilter.Update()
-    transpoly = pv.PolyData(transfilter.GetOutput())
 
-    return transpoly
+    output = pv.PolyData(transfilter.GetOutput())
+
+    return output
 
 
 def create_mesh(contour, resolution=[1, 1, 1], step_size=1):
@@ -186,7 +211,8 @@ def create_cellular_mesh(seg_img, resolution=[1, 1, 1], verbose=True):
     for c_idx, cell_id in enumerate(np.unique(seg_img)[1:]):
         if verbose:
             print(
-                f'Now meshing cell {c_idx} (label: {cell_id}) out of {n_cells}')
+                f'Now meshing cell {c_idx} (label: {cell_id}) out of {n_cells}',
+            )
         cell_img, cell_cuts = autocrop(
             seg_img == cell_id,
             threshold=0,
@@ -205,9 +231,11 @@ def create_cellular_mesh(seg_img, resolution=[1, 1, 1], verbose=True):
 
         cell_mesh = pv.PolyData(v, np.ravel(np.c_[[[3]] * len(f), f]))
         cell_mesh['cell_id'] = np.full(
-            fill_value=cell_id, shape=cell_mesh.n_points)
+            fill_value=cell_id, shape=cell_mesh.n_points,
+        )
         cell_mesh['volume'] = np.full(
-            fill_value=cell_volume, shape=cell_mesh.n_points)
+            fill_value=cell_volume, shape=cell_mesh.n_points,
+        )
 
         cells.append(cell_mesh)
 
@@ -723,7 +751,8 @@ def correct_bad_mesh(mesh, verbose=True):
         from pymeshfix import _meshfix
     except ImportError:
         raise ImportError(
-            'Package pymeshfix not found. Install to use this function.')
+            'Package pymeshfix not found. Install to use this function.',
+        )
 
     new_poly = ECFT(mesh, 0)
     nm = non_manifold_edges(new_poly)
@@ -750,8 +779,10 @@ def correct_bad_mesh(mesh, verbose=True):
         nm = non_manifold_edges(new_poly)
         nmpts = nm.points
         mpts = new_poly.points
-        ptidx = np.array([np.where((mpts == ii).all(axis=1))[0][0]
-                         for ii in nmpts])
+        ptidx = np.array([
+            np.where((mpts == ii).all(axis=1))[0][0]
+            for ii in nmpts
+        ])
 
         mask = np.zeros((mpts.shape[0],), dtype=bool)
         if ptidx.shape[0] > 0:
@@ -798,12 +829,17 @@ def remove_bridges(mesh, verbose=True):
         faces = new_mesh.faces.reshape(-1, 4)[:, 1:]
         f_flat = faces.ravel()
         boundary = boundary_points(new_mesh)
-        border_faces = faces[np.unique(
-            np.where(np.in1d(f_flat, boundary))[0] // 3)]
+        border_faces = faces[
+            np.unique(
+                np.where(np.in1d(f_flat, boundary))[0] // 3,
+            )
+        ]
 
         # Find pts to remove
-        all_boundary = np.array([np.all(np.in1d(ii, boundary))
-                                for ii in border_faces])
+        all_boundary = np.array([
+            np.all(np.in1d(ii, boundary))
+            for ii in border_faces
+        ])
         remove_pts = np.unique(border_faces[all_boundary].flatten())
 
         if verbose:
@@ -899,8 +935,10 @@ def smooth_boundary(mesh, iterations=20, sigma=0.1, inplace=False):
                             [
                                 new_pts_prev[cycles[ii][jj]],
                                 new_pts_prev[cycles[ii][jj - 1]],
-                                new_pts_prev[cycles[ii]
-                                             [(jj + 1) % len(cycles[ii])]],
+                                new_pts_prev[
+                                    cycles[ii]
+                                    [(jj + 1) % len(cycles[ii])]
+                                ],
                             ],
                         ),
                         axis=0,
@@ -940,7 +978,8 @@ def process_mesh(
     if threshold_angle:
         mesh.rotate_y(-90)
         mesh = remove_normals(
-            mesh, threshold_angle=threshold_angle, angle='polar')
+            mesh, threshold_angle=threshold_angle, angle='polar',
+        )
         mesh.rotate_y(90)
         mesh = make_manifold(mesh, hole_repair_threshold)
         mesh = mesh.extract_largest()
@@ -1013,8 +1052,10 @@ def remove_tongues(mesh, radius, threshold=6, hole_edges=100, verbose=True):
         weighted_all_edges = np.c_[
             all_edges,
             np.sum(
-                (mesh.points[all_edges[:, 0]] -
-                 mesh.points[all_edges[:, 1]]) ** 2, 1,
+                (
+                    mesh.points[all_edges[:, 0]] -
+                    mesh.points[all_edges[:, 1]]
+                ) ** 2, 1,
             )
             ** 0.5,
         ]
@@ -1032,7 +1073,8 @@ def remove_tongues(mesh, radius, threshold=6, hole_edges=100, verbose=True):
 
         weighted_edges = np.c_[
             neighs, np.sum(
-                (bdpts[neighs[:, 0]] - bdpts[neighs[:, 1]]) ** 2, 1) ** 0.5,
+                (bdpts[neighs[:, 0]] - bdpts[neighs[:, 1]]) ** 2, 1,
+            ) ** 0.5,
         ]
         bdnet = nx.Graph()
         bdnet.add_weighted_edges_from(weighted_edges)
@@ -1282,8 +1324,10 @@ def remesh_decimate(mesh, iters, upfactor=2, downfactor=0.5, verbose=True):
 
         mesh = remesh(mesh, mesh.GetNumberOfPoints() * 2)
         mesh = mesh.compute_normals(inplace=False)
-        mesh = mesh.decimate(0.5, volume_preservation=True,
-                             normals=True, inplace=False)
+        mesh = mesh.decimate(
+            0.5, volume_preservation=True,
+            normals=True, inplace=False,
+        )
         mesh = ECFT(mesh, 0)
 
     return mesh
@@ -1518,7 +1562,8 @@ def fit_paraboloid(data, init=[1, 1, 1, 1, 1, 0, 0, 0], return_success=False):
         return abs(p1 * x**2.0 + p2 * y**2.0 + p3 * x + p4 * y + p5 - z)
 
     popt, _1, _2, _3, _4 = opt.leastsq(
-        errfunc, init, args=(data,), full_output=True)
+        errfunc, init, args=(data,), full_output=True,
+    )
     if return_success:
         return popt, _4 in [1, 2, 3, 4]
     return popt
@@ -1542,8 +1587,10 @@ def connect_bottom(mesh, offset=0, invert=False, inplace=False):
     cycles = vertex_cycles(boundary)
     cycle = np.array(cycles[0])
 
-    corresp_in_orig = np.array([mesh.FindPoint(pp)
-                               for pp in boundary.points[cycle]])
+    corresp_in_orig = np.array([
+        mesh.FindPoint(pp)
+        for pp in boundary.points[cycle]
+    ])
 
     pts = mesh.points
     faces = mesh.faces.reshape((-1, 4))[:, 1:]

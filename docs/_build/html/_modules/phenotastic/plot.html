@@ -1,20 +1,20 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>phenotastic.plot &#8212; Phenotastic 0.1.0 documentation</title>
-    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>phenotastic.plot &#8212; Phenotastic 0.2.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css" />
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+
     <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" /> 
+    <link rel="search" title="Search" href="../../search.html" />
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -25,16 +25,17 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">Phenotastic 0.1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../../index.html">Phenotastic 0.2.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">phenotastic.plot</a></li>
       </ul>
-    </div>  
+    </div>
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body" role="main">
-            
+
   <h1>Source code for phenotastic.plot</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python2</span>
 <span class="c1"># -*- coding: utf-8 -*-</span>
@@ -43,12 +44,16 @@
 
 <span class="sd">@author: henrik</span>
 <span class="sd">&quot;&quot;&quot;</span>
+
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">vtkInterface</span> <span class="k">as</span> <span class="nn">vi</span>
-<span class="kn">import</span> <span class="nn">domain_processing</span> <span class="k">as</span> <span class="nn">boa</span>
+<span class="kn">import</span> <span class="nn">pyvista</span>
+
+<span class="kn">import</span> <span class="nn">phenotastic.domains</span> <span class="k">as</span> <span class="nn">boa</span>
+
+
 
 <div class="viewcode-block" id="coord_array"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.plot.coord_array">[docs]</a><span class="k">def</span> <span class="nf">coord_array</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">res</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">offset</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a coordinate array (of e.g. same dimensionality as intensity array) of the same dimensions as another array. Only defined for 3D.</span>
 
 <span class="sd">    Parameters</span>
@@ -68,20 +73,60 @@
 <span class="sd">    -------</span>
 <span class="sd">    coords : np.ndarray</span>
 <span class="sd">        Vertically stacked coordinate array for the input data.</span>
-<span class="sd">    &#39;&#39;&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">xv</span> <span class="o">=</span> <span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="n">yv</span> <span class="o">=</span> <span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-    <span class="n">zv</span> <span class="o">=</span> <span class="n">offset</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">res</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">res</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
-    <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">zz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">zv</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">xv</span> <span class="o">=</span> <span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.000001</span><span class="p">,</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">yv</span> <span class="o">=</span> <span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.000001</span><span class="p">,</span> <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">zv</span> <span class="o">=</span> <span class="n">offset</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">res</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.000001</span><span class="p">,</span> <span class="n">res</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">zv</span><span class="p">)</span>
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">zz</span> <span class="o">=</span> <span class="n">grid</span>
+    <span class="n">xx</span> <span class="o">=</span> <span class="n">xx</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    <span class="n">yy</span> <span class="o">=</span> <span class="n">yy</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    <span class="n">zz</span> <span class="o">=</span> <span class="n">zz</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
 
     <span class="c1"># Make compatible lists</span>
-    <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">xx</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">yy</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">zz</span><span class="o">.</span><span class="n">ravel</span><span class="p">()))</span><span class="o">.</span><span class="n">T</span></div>
-    <span class="k">return</span> <span class="n">coords</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">xx</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">yy</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">zz</span><span class="o">.</span><span class="n">ravel</span><span class="p">()))</span>
+    <span class="k">return</span> <span class="n">coords</span></div>
 
-<div class="viewcode-block" id="PlotImage"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.plot.PlotImage">[docs]</a><span class="k">def</span> <span class="nf">PlotImage</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">res</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">offset</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">meshopacity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
+
+<div class="viewcode-block" id="PlotImage"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.plot.PlotImage">[docs]</a><span class="k">def</span> <span class="nf">PlotImage</span><span class="p">(</span>
+    <span class="n">arr</span><span class="p">,</span>
+    <span class="n">res</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="n">offset</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+    <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">mesh</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">mopacity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">popacity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">psize</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">bg</span><span class="o">=</span><span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>
+    <span class="n">pcolor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">prng</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">pname</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">pstitle</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">pflipscalars</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">pcolormap</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">pncolors</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
+    <span class="n">mcolor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">mstyle</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">mscalars</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">mrng</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">mstitle</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">mshowedges</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">mpsize</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
+    <span class="n">mlinethick</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">mflipscalars</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">mlighting</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">mncolors</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
+    <span class="n">minterpolatebeforemap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">mcolormap</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">mkwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(),</span>
+    <span class="n">return_pobj</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Plot an intensity image with its mesh (optional).</span>
+<span class="sd">    TODO: Rewrite documentation</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -94,7 +139,7 @@
 <span class="sd">    mask : np.ndarray, optional</span>
 <span class="sd">        Array of same dimension as arr. Specifies what values should (True) or</span>
 <span class="sd">        shouldn&#39;t be plotted. Default = None.</span>
-<span class="sd">    mesh : vi.PolyData, optional</span>
+<span class="sd">    mesh : vista.PolyData, optional</span>
 <span class="sd">        PolyData mesh to plot along with the intensity array. Default = None.</span>
 <span class="sd">    meshopacity : float, optional</span>
 <span class="sd">        Opacity of the mesh.</span>
@@ -107,7 +152,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    No return. Plots input array and mesh if given.</span>
 
-<span class="sd">    &#39;&#39;&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Create coordinate matrix</span>
     <span class="n">xv</span> <span class="o">=</span> <span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">yv</span> <span class="o">=</span> <span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
@@ -125,22 +170,66 @@
         <span class="n">vals</span> <span class="o">=</span> <span class="n">vals</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
 
     <span class="c1"># Plot</span>
-    <span class="n">pobj</span> <span class="o">=</span> <span class="n">vi</span><span class="o">.</span><span class="n">PlotClass</span><span class="p">()</span>
-    <span class="n">pobj</span><span class="o">.</span><span class="n">AddPoints</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">scalars</span><span class="o">=</span><span class="n">vals</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">pobj</span> <span class="o">=</span> <span class="n">pyvista</span><span class="o">.</span><span class="n">Plotter</span><span class="p">(</span><span class="n">notebook</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">pobj</span><span class="o">.</span><span class="n">add_points</span><span class="p">(</span>
+        <span class="n">coords</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="n">pcolor</span><span class="p">,</span>
+        <span class="n">psize</span><span class="o">=</span><span class="n">psize</span><span class="p">,</span>
+        <span class="n">scalars</span><span class="o">=</span><span class="n">vals</span><span class="p">,</span>
+        <span class="n">rng</span><span class="o">=</span><span class="n">prng</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">pname</span><span class="p">,</span>
+        <span class="n">opacity</span><span class="o">=</span><span class="n">popacity</span><span class="p">,</span>
+        <span class="n">stitle</span><span class="o">=</span><span class="n">pstitle</span><span class="p">,</span>
+        <span class="n">flipscalars</span><span class="o">=</span><span class="n">pflipscalars</span><span class="p">,</span>
+        <span class="n">colormap</span><span class="o">=</span><span class="n">pcolormap</span><span class="p">,</span>
+        <span class="n">ncolors</span><span class="o">=</span><span class="n">pncolors</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">pobj</span><span class="o">.</span><span class="n">set_background</span><span class="p">(</span><span class="n">bg</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">mesh</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">pobj</span><span class="o">.</span><span class="n">AddMesh</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">opacity</span><span class="o">=</span><span class="n">meshopacity</span><span class="p">)</span>
-</div>
-    <span class="n">pobj</span><span class="o">.</span><span class="n">Plot</span><span class="p">()</span>
+        <span class="n">pobj</span><span class="o">.</span><span class="n">add_mesh</span><span class="p">(</span>
+            <span class="n">mesh</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="n">mcolor</span><span class="p">,</span>
+            <span class="n">style</span><span class="o">=</span><span class="n">mstyle</span><span class="p">,</span>
+            <span class="n">scalars</span><span class="o">=</span><span class="n">mscalars</span><span class="p">,</span>
+            <span class="n">rng</span><span class="o">=</span><span class="n">mrng</span><span class="p">,</span>
+            <span class="n">stitle</span><span class="o">=</span><span class="n">mstitle</span><span class="p">,</span>
+            <span class="n">showedges</span><span class="o">=</span><span class="n">mshowedges</span><span class="p">,</span>
+            <span class="n">psize</span><span class="o">=</span><span class="n">mpsize</span><span class="p">,</span>
+            <span class="n">opacity</span><span class="o">=</span><span class="n">mopacity</span><span class="p">,</span>
+            <span class="n">linethick</span><span class="o">=</span><span class="n">mlinethick</span><span class="p">,</span>
+            <span class="n">flipscalars</span><span class="o">=</span><span class="n">mflipscalars</span><span class="p">,</span>
+            <span class="n">lighting</span><span class="o">=</span><span class="n">mlighting</span><span class="p">,</span>
+            <span class="n">interpolatebeforemap</span><span class="o">=</span><span class="n">minterpolatebeforemap</span><span class="p">,</span>
+            <span class="n">ncolors</span><span class="o">=</span><span class="n">mncolors</span><span class="p">,</span>
+            <span class="n">colormap</span><span class="o">=</span><span class="n">mcolormap</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">mkwargs</span>
+        <span class="p">)</span>
 
-<div class="viewcode-block" id="PlotPointData"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.plot.PlotPointData">[docs]</a><span class="k">def</span> <span class="nf">PlotPointData</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">pdata</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="n">boacoords</span><span class="o">=</span><span class="p">[],</span> <span class="n">show_boundaries</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                <span class="n">bcolor</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">bpsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">blinewidth</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">return_pobj</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">pobj</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">pobj</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="PlotPointData"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.plot.PlotPointData">[docs]</a><span class="k">def</span> <span class="nf">PlotPointData</span><span class="p">(</span>
+    <span class="n">mesh</span><span class="p">,</span>
+    <span class="n">pdata</span><span class="p">,</span>
+    <span class="n">var</span><span class="o">=</span><span class="s2">&quot;domain&quot;</span><span class="p">,</span>
+    <span class="n">boacoords</span><span class="o">=</span><span class="p">[],</span>
+    <span class="n">show_boundaries</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">bcolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+    <span class="n">bpsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">blinewidth</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Plot point data of mesh, with eventual domain boundaries and attractor maxima.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    mesh : vi.PolyData</span>
+<span class="sd">    mesh : vista.PolyData</span>
 <span class="sd">        Mesh to plot.</span>
 <span class="sd">    pdata : pd.DataFrame</span>
 <span class="sd">        DataFrame containing the point data of the mesh.</span>
@@ -162,39 +251,127 @@
 <span class="sd">    -------</span>
 <span class="sd">    No return. Plots input.</span>
 
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">pobj</span> <span class="o">=</span> <span class="n">vi</span><span class="o">.</span><span class="n">PlotClass</span><span class="p">()</span>
-    <span class="n">pobj</span><span class="o">.</span><span class="n">AddMesh</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">scalars</span><span class="o">=</span><span class="n">pdata</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pobj</span> <span class="o">=</span> <span class="n">pyvista</span><span class="o">.</span><span class="n">Plotter</span><span class="p">()</span>
+    <span class="n">pobj</span><span class="o">.</span><span class="n">add_mesh</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">scalars</span><span class="o">=</span><span class="n">pdata</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">boacoords</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">pobj</span><span class="o">.</span><span class="n">AddPointLabels</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">boacoords</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span>
-            <span class="nb">len</span><span class="p">(</span><span class="n">boacoords</span><span class="p">))]),</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">pointcolor</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">textcolor</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+        <span class="n">pobj</span><span class="o">.</span><span class="n">add_point_labels</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">boacoords</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">boacoords</span><span class="p">))]),</span>
+            <span class="n">font_size</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+            <span class="n">point_color</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span>
+            <span class="n">text_color</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">show_boundaries</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">boacoords</span><span class="p">)):</span>
-            <span class="n">pobj</span><span class="o">.</span><span class="n">AddMesh</span><span class="p">(</span><span class="n">boa</span><span class="o">.</span><span class="n">get_domain_boundary</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">pdata</span><span class="p">,</span> <span class="n">ii</span><span class="p">),</span>
-                         <span class="n">color</span><span class="o">=</span><span class="n">bcolor</span><span class="p">,</span> <span class="n">psize</span><span class="o">=</span><span class="n">bpsize</span><span class="p">,</span> <span class="n">linethick</span><span class="o">=</span><span class="n">blinewidth</span><span class="p">)</span>
-</div>
-    <span class="n">pobj</span><span class="o">.</span><span class="n">Plot</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">boacoords</span><span class="p">)):</span>
+            <span class="n">pobj</span><span class="o">.</span><span class="n">add_mesh</span><span class="p">(</span>
+                <span class="n">boa</span><span class="o">.</span><span class="n">get_domain_boundary</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">pdata</span><span class="p">,</span> <span class="n">ii</span><span class="p">),</span>
+                <span class="n">color</span><span class="o">=</span><span class="n">bcolor</span><span class="p">,</span>
+                <span class="n">point_size</span><span class="o">=</span><span class="n">bpsize</span><span class="p">,</span>
+                <span class="n">line_width</span><span class="o">=</span><span class="n">blinewidth</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="n">pobj</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="rot_matrix_44"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.plot.rot_matrix_44">[docs]</a><span class="k">def</span> <span class="nf">rot_matrix_44</span><span class="p">(</span><span class="n">angles</span><span class="p">,</span> <span class="n">invert</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="n">angles</span>
+    <span class="n">Rx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">alpha</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">alpha</span><span class="p">),</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">alpha</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">alpha</span><span class="p">),</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+    <span class="n">Ry</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">beta</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">beta</span><span class="p">),</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="p">[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">beta</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">beta</span><span class="p">),</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+    <span class="n">Rz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">gamma</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">gamma</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">gamma</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">gamma</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">invert</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">Rz</span><span class="p">,</span> <span class="n">Ry</span><span class="p">),</span> <span class="n">Rx</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">invert</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">Rz</span><span class="p">,</span> <span class="n">Ry</span><span class="p">),</span> <span class="n">Rx</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">R</span></div>
+
+
+<div class="viewcode-block" id="PlotParaboloid"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.plot.PlotParaboloid">[docs]</a><span class="k">def</span> <span class="nf">PlotParaboloid</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">sampleDim</span><span class="o">=</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">),</span> <span class="n">bounds</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span><span class="p">):</span>
+    <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">p4</span><span class="p">,</span> <span class="n">p5</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="n">p</span>
+
+    <span class="kn">import</span> <span class="nn">vtk</span>
+
+    <span class="c1"># Configure</span>
+    <span class="n">quadric</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkQuadric</span><span class="p">()</span>
+    <span class="n">quadric</span><span class="o">.</span><span class="n">SetCoefficients</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">p4</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">p5</span><span class="p">)</span>
+
+    <span class="n">sample</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkSampleFunction</span><span class="p">()</span>
+    <span class="n">sample</span><span class="o">.</span><span class="n">SetSampleDimensions</span><span class="p">(</span><span class="n">sampleDim</span><span class="p">)</span>
+    <span class="n">sample</span><span class="o">.</span><span class="n">SetImplicitFunction</span><span class="p">(</span><span class="n">quadric</span><span class="p">)</span>
+    <span class="n">sample</span><span class="o">.</span><span class="n">SetModelBounds</span><span class="p">(</span><span class="n">bounds</span><span class="p">)</span>
+    <span class="n">sample</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+
+    <span class="n">contour</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkContourFilter</span><span class="p">()</span>
+    <span class="n">contour</span><span class="o">.</span><span class="n">SetInputData</span><span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">())</span>
+    <span class="n">contour</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+
+    <span class="n">contourMapper</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkPolyDataMapper</span><span class="p">()</span>
+    <span class="n">contourMapper</span><span class="o">.</span><span class="n">SetInputData</span><span class="p">(</span><span class="n">contour</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">())</span>
+    <span class="n">contourActor</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkActor</span><span class="p">()</span>
+    <span class="n">contourActor</span><span class="o">.</span><span class="n">SetMapper</span><span class="p">(</span><span class="n">contourMapper</span><span class="p">)</span>
+
+    <span class="n">rotMat</span> <span class="o">=</span> <span class="n">rot_matrix_44</span><span class="p">([</span><span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span><span class="p">],</span> <span class="n">invert</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">trans</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkMatrix4x4</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">rotMat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">rotMat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">trans</span><span class="o">.</span><span class="n">SetElement</span><span class="p">(</span><span class="n">ii</span><span class="p">,</span> <span class="n">jj</span><span class="p">,</span> <span class="n">rotMat</span><span class="p">[</span><span class="n">ii</span><span class="p">][</span><span class="n">jj</span><span class="p">])</span>
+
+    <span class="n">transMat</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkMatrixToHomogeneousTransform</span><span class="p">()</span>
+    <span class="n">transMat</span><span class="o">.</span><span class="n">SetInput</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>
+    <span class="n">transformFilter</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkTransformPolyDataFilter</span><span class="p">()</span>
+    <span class="n">transformFilter</span><span class="o">.</span><span class="n">SetInputData</span><span class="p">(</span><span class="n">contour</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">())</span>
+    <span class="n">transformFilter</span><span class="o">.</span><span class="n">SetTransform</span><span class="p">(</span><span class="n">transMat</span><span class="p">)</span>
+    <span class="n">transformFilter</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+    <span class="n">tpoly</span> <span class="o">=</span> <span class="n">pyvista</span><span class="o">.</span><span class="n">pointset</span><span class="o">.</span><span class="n">PolyData</span><span class="p">(</span><span class="n">transformFilter</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">())</span>
+    <span class="n">tpoly</span><span class="o">.</span><span class="n">clip_with_plane</span><span class="p">([</span><span class="n">mesh</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+
+    <span class="n">pobj</span> <span class="o">=</span> <span class="n">pyvista</span><span class="o">.</span><span class="n">Plotter</span><span class="p">()</span>
+    <span class="n">pobj</span><span class="o">.</span><span class="n">add_mesh</span><span class="p">(</span><span class="n">tpoly</span><span class="p">,</span> <span class="n">opacity</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">showedges</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;orange&quot;</span><span class="p">)</span>
+    <span class="n">pobj</span><span class="o">.</span><span class="n">add_mesh</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">opcaity</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">)</span>
+    <span class="n">pobj</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span></div>
 </pre></div>
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -208,13 +385,14 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">Phenotastic 0.1.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../../index.html">Phenotastic 0.2.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">phenotastic.plot</a></li>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2018, Henrik Ahl.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
     </div>
   </body>
 </html>

@@ -91,21 +91,21 @@ def rot_matrix_44(angles, invert=False):
 
 
 def paraboloid(p, sampling=(200, 200, 200), bounds=None):
-    """
+    r"""
     Generate a meshed paraboloid object
 
     Parameters
     ----------
     p : 5-tuple of the paraboloid parameters
-        Parameters satisfying the equation
+        Parameters of the folliwing equation:
 
         .. math::
-        z = p_0 x^2 + p_1 y^2 + p_2 x + p_3 y + p_4
+            z = p_0 x^2 + p_1 y^2 + p_2 x + p_3 y + p_4
 
     sampling : 3-tuple of ints, optional
         The sampling in XYZ. The default is (200, 200, 200).
     bounds : float or 6-tuple, optional
-        The cut-off bounds for the paraboloid in format [X0,X1, Y0,Y1, Z0,Z1]. The default is None.
+        The cut-off bounds for the paraboloid in format [X0,X1,Y0,Y1,Z0,Z1]. The default is None.
 
     Returns
     -------
@@ -176,6 +176,24 @@ def paraboloid(p, sampling=(200, 200, 200), bounds=None):
 
 
 def create_mesh(contour, resolution=[1, 1, 1], step_size=1):
+    """
+    Generate a polydata mesh from a binary contour.
+
+    Parameters
+    ----------
+    contour : np.array of type bool, int or float
+        The binary mask of the contour.
+    resolution : 3-tuple, optional
+        The spatial resolution. The default is [1, 1, 1].
+    step_size : float, optional
+        Step size of the marching cubes method. The default is 1.
+
+    Returns
+    -------
+    mesh : pyvista.PolyData
+        The output mesh.
+
+    """
     v, f, _, _ = marching_cubes(
         contour,
         0,
@@ -188,17 +206,51 @@ def create_mesh(contour, resolution=[1, 1, 1], step_size=1):
 
 
 def filter_curvature(mesh, curvature_threshold):
+    """Remove mesh vertices based on curvatures.
+
+    Parameters
+    ----------
+    mesh : pyvista.PolyData
+        The input mesh.
+    curvature_threshold : tuple of floats
+        The curvature threshold.
+
+    Returns
+    -------
+    mesh : pyvista.PolyData
+        The filtered mesh.
+    """
     if isinstance(curvature_threshold, (int, float)):
         curvature_threshold = (-curvature_threshold, curvature_threshold)
     curvature = mesh.curvature()
-    to_remove = np.logical_or(
-        curvature < curvature_threshold[0], curvature > curvature_threshold[1],
-    )
+
+    to_remove = curvature < curvature_threshold[0] | curvature > curvature_threshold[1]
     mesh = mesh.remove_points(to_remove)[0]
+
     return mesh
 
 
 def label_cellular_mesh(mesh, values, value_tag='values', id_tag='cell_id'):
+    """Label the mesh with unique cell identifiers with the given values.
+
+    Parameter
+    ---------
+
+    mesh : pyvista.PolyData
+        The input mesh.
+    values : np.array
+        The values to be assigned to the mesh.
+    value_tag : str, optional
+        The array name for the values in the input mesh. The default is 'values'.
+    id_tag : str, optional
+        The array name for the cell ids in the input mesh. The default is 'cell_id'.
+
+    Returns
+    -------
+    mesh : pyvista.PolyData
+        The output mesh.
+
+    """
     mesh[value_tag] = np.zeros(mesh.n_points)
     for ii in np.unique(mesh[id_tag]):
         mesh[value_tag][mesh[id_tag] == ii] = values[ii]
@@ -206,13 +258,30 @@ def label_cellular_mesh(mesh, values, value_tag='values', id_tag='cell_id'):
 
 
 def create_cellular_mesh(seg_img, resolution=[1, 1, 1], verbose=True):
+    """Generate a cellular mesh from a segmentation image.
+
+    Parameters
+    ----------
+    seg_img : 3D np.array
+        The segmentated image.
+    resolution : 3-tuple, optional
+        The spatial resolution. The default is [1, 1, 1].
+    verbose : bool, optional
+        Whether to print the progress. The default is True.
+
+    Returns
+    -------
+    mesh : pyvista.MultiBlock
+        The output mesh object, with each block corresponding to a single cell.
+
+    """
     cells = []
-    n_cells = len(np.unique(seg_img)) - 1
-    for c_idx, cell_id in enumerate(np.unique(seg_img)[1:]):
+    labels = np.unique(seg_img)[1:]
+    n_cells = len(labels)
+    for c_idx, cell_id in enumerate(labels):
         if verbose:
             print(
-                f'Now meshing cell {c_idx} (label: {cell_id}) out of {n_cells}',
-            )
+                f'Now meshing cell {c_idx} (label: {cell_id}) out of {n_cells}')
         cell_img, cell_cuts = autocrop(
             seg_img == cell_id,
             threshold=0,
@@ -243,6 +312,7 @@ def create_cellular_mesh(seg_img, resolution=[1, 1, 1], verbose=True):
     poly = pv.PolyData()
     for ii in range(multi.n_blocks):
         poly += multi.get(ii)
+
     return poly
 
 
@@ -262,10 +332,55 @@ def contour(
     lambda1=1,
     lambda2=1,
     stackreg=True,
+    target_resolution=[.5, .5, .5],
     fill_inland_threshold=None,
     return_resolution=False,
     verbose=True,
 ):
+    """Generate a contour from a 3D image.
+
+    Parameters
+    ----------
+    fin : str or 3D np.array
+        The input image or path to file.
+    iterations : int, optional
+        The number of iterations for the morphosnakes algorithm. The default is 25.
+    smoothing : int, optional
+        The number of morphosnakes smoothing iterations per cycle. The default is 1.
+    masking : float, optional
+        The masking threshold. The default is 0.75.
+    crop : bool, optional
+        Whether to crop the image. The default is True.
+    resolution : 3-tuple, optional
+        The spatial resolution. The default is None.
+    clahe_window : int, optional
+        The window/histogram size for the CLAHE algorithm. The default is None.
+    clahe_clip_limit : float, optional
+        The clip limit for the CLAHE algorithm. The default is None.
+    gaussian_sigma : float, optional
+        The sigma for the Gaussian filter. The default is None.
+    gaussian_iterations : int, optional
+        The number of iterations for the Gaussian filter. The default is 5.
+    interpolate_slices : bool, optional
+        Whether to interpolate the slices. The default is True.
+    fill_slices : bool, optional
+        Whether to fill holes in the XY slices. The default is True.
+    lambda1 : float, optional
+        The lambda1 parameter for the morphosnakes algorithm. The default is 1.
+    lambda2 : float, optional
+        The lambda2 parameter for the morphosnakes algorithm. The default is 1.
+    stackreg : bool, optional
+        Whether to run stackreg. The default is True.
+    target_resolution : 3-tuple, optional
+        The target resolution for the output. The default is [.5,.5,.5].
+    fill_inland_threshold : float, optional
+        The distance threshold from the object XY periphery to fill. The default is None, which results in no filling.
+    return_resolution : bool, optional
+        Whether to return the resolution. The default is False.
+    verbose : bool, optional
+        Whether to print the progress. The default is True.
+
+    """
 
     if verbose:
         print(f'Reading in data for {fin}')
@@ -281,8 +396,9 @@ def contour(
     if verbose:
         print(f'Resolution for {fin} is {resolution}')
 
-    data = zoom(data, resolution / np.array([0.25, 0.25, 0.25]), order=3)
+    data = zoom(data, resolution / np.asarray(target_resolution), order=3)
 
+    # Perform stack regularisation
     if stackreg:
         if verbose:
             print(f'Running stackreg for {fin}')
@@ -299,6 +415,7 @@ def contour(
         data[data < 0] = 0
         data = data.astype(pretype)
 
+    # Autocrop the image
     if crop:
         if verbose:
             print(f'Running autocrop for {fin}')
@@ -317,6 +434,7 @@ def contour(
         else:
             data = autocrop(data, 2 * mh.otsu(data), n=10, offset=offset)
 
+    # Perform Wiener filtering
     if verbose:
         print(f'Running wiener filtering for {fin}')
     data = data.astype('float')
@@ -329,6 +447,7 @@ def contour(
     data = to_uint8(data, False)
     gc.collect()
 
+    # Performing CLAHE
     if verbose:
         print(f'Running CLAHE for {fin}')
     if clahe_window is None:
@@ -338,18 +457,16 @@ def contour(
     data = clahe(data, win_shape=clahe_window, clip_limit=clahe_clip_limit)
     gc.collect()
 
+    # Performing Gaussian smoothing
     if gaussian_sigma is None:
-        # A good reference unit is ~.25 micron for smoothing
         gaussian_sigma = [1, 1, 1]
-        # gaussian_sigma = [1. * .25 / resolution[0],
-        #                   1. * .25 / resolution[1],
-        #                   1. * .25 / resolution[2]]
     for ii in range(gaussian_iterations):
         if verbose:
             print(f'Smoothing out {fin} with gaussian smoothing')
             data = gaussian_filter(data, sigma=gaussian_sigma)
 
-    # if interpolate_slices:
+    if interpolate_slices:
+        raise NotImplementedError('Interpolation not implemented yet')
     #     if verbose:
     #         print(f'Interpolating slices for {fin}')
     #     resolution = np.array(resolution)
@@ -357,12 +474,12 @@ def contour(
     #     resolution = resolution / (np.round(data.shape * resolution / np.min(resolution)) / data.shape)
     # gc.collect()
 
+    # Perform morphological chan-vese
+    if verbose:
+        print(f'Running morphological chan-vese for {fin}')
     if isinstance(masking, (float, int)):
         masking = to_uint8(data, False) > masking * \
             mh.otsu(to_uint8(data, False))
-
-    if verbose:
-        print(f'Running morphological chan-vese for {fin}')
     contour = morphological_chan_vese(
         data,
         iterations=iterations,
@@ -372,6 +489,7 @@ def contour(
         lambda2=lambda2,
     )
 
+    # Postprocess the contour by filling etc.
     contour = fill_contour(contour, fill_xy=fill_slices, fill_zx_zy=False)
 
     if fill_inland_threshold is not None:
@@ -379,30 +497,48 @@ def contour(
             print(f'Filling inland for {fin}')
         contour = fill_inland(contour, fill_inland_threshold)
 
+    # Return outputs
     if return_resolution:
         return contour, resolution
     return contour
 
 
 def fill_beneath(contour, mode='bottom'):
-    contour = contour.copy()
-    contour = np.pad(contour, 1)
+    """Fill the contour beneath the XY periphery. of a binary object
 
+    Parameters
+    ----------
+    contour : np.ndarray
+        The contour to fill beneath.
+    mode : str, optional
+        Whether to fill from the bottom or the top. The default is 'bottom'.
+
+    Returns
+    -------
+    cimg : np.ndarray
+        The filled contour.
+
+    """
+    cimg = contour.copy()
+    cimg = np.pad(cimg, 1)
+
+    # Get the indices for the first and last non-zero elements
     first = (
-        np.argmax(contour, 0)
+        np.argmax(cimg, 0)
         if mode == 'first'
-        else np.zeros_like(contour[0], dtype=np.uint16)
+        else np.zeros_like(cimg[0], dtype=np.uint16)
     )
-    last = contour.shape[0] - np.argmax(contour[::-1], 0) - 1
-    last[last == contour.shape[0] - 1] = 0
+    last = cimg.shape[0] - np.argmax(cimg[::-1], 0) - 1
+    last[last == cimg.shape[0] - 1] = 0
 
-    # mask = np.zeros_like(contour)
-    for ii in range(contour.shape[1]):
-        for jj in range(contour.shape[2]):
-            contour[first[ii, jj]: last[ii, jj], ii, jj] = True
-    contour[:, last == 0] = False
-    contour = contour[1:-1, 1:-1, 1:-1]
-    return contour
+    # Fill the contour
+    for ii in range(cimg.shape[1]):
+        for jj in range(cimg.shape[2]):
+            cimg[first[ii, jj]: last[ii, jj], ii, jj] = True
+    cimg[:, last == 0] = False
+    cimg = cimg[1:-1, 1:-1, 1:-1]
+
+    return cimg
 
 
 def fill_contour(
@@ -505,28 +641,34 @@ def fill_contour(
     new_contour = binary_fill_holes(new_contour)
     new_contour = new_contour[1:-1, 1:-1, 1:-1]
 
-    if inplace:
-        return
-    else:
-        return new_contour
+    return None if inplace else new_contour
 
 
-def label_mesh(mesh, segm_img, resolution=[1, 1, 1], bg=0, mode='point', inplace=False):
-    """Label a mesh using the closest (by euclidean distance) voxel in a segmented image."""
-    coords = pl.coord_array(segm_img, resolution).T
-    # I, J, K = segm_img.shape
-    # i_coords, j_coords, k_coords = np.meshgrid(range(I),
-    #                                            range(J),
-    #                                            range(K),
-    #                                            indexing='ij')
-    # coordinate_grid = np.array([i_coords, j_coords, k_coords])
-    # coordinate_grid = np.multiply(coordinate_grid, resolution)
-    img_raveled = segm_img.ravel()
-    coords = coords[img_raveled != bg]
-    img_raveled = img_raveled[img_raveled != bg]
+def label_mesh(mesh, segm_img, resolution=[1, 1, 1], background=0, mode='point', inplace=False):
+    """Label a mesh using the closest (by euclidean distance) voxel in a segmented image.
 
-    tree = cKDTree(coords)
-    if mode.lower() in [
+    Parameters
+    ----------
+    mesh : pyvista.PolyData
+        Mesh to label.
+    segm_img : np.ndarray
+        Segmented image to use for labeling.
+    resolution : list, optional
+        Resolution of the segmented image.
+    background : int, optional
+        Background value in the segmented image.
+    mode : str, optional
+        Mode to use for labeling. Can be 'point' or 'face'.
+    inplace : bool, optional
+        Flag to modify object in place.
+
+    Returns
+    -------
+    new_mesh : pyvista.PolyData
+        Mesh after modification. If inplace is True, nothing is returned.
+
+    """
+    vertex_flags = [
         'point',
         'points',
         'pts',
@@ -537,9 +679,8 @@ def label_mesh(mesh, segm_img, resolution=[1, 1, 1], bg=0, mode='point', inplace
         'vert',
         'verts',
         'v',
-    ]:
-        closest = tree.query(mesh.points, k=1)[1]
-    elif mode.lower() in [
+    ]
+    triangle_flags = [
         'cell',
         'cells',
         'c',
@@ -551,12 +692,24 @@ def label_mesh(mesh, segm_img, resolution=[1, 1, 1], bg=0, mode='point', inplace
         'polygons',
         'poly',
         'polys',
-    ]:
+    ]
+
+    # Get the coordinates of the points in the image
+    coords = pl.coord_array(segm_img, resolution).T
+    img_raveled = segm_img.ravel()
+    coords = coords[img_raveled != background]
+    img_raveled = img_raveled[img_raveled != background]
+
+    # Compute the closest coodinate to each point
+    tree = cKDTree(coords)
+    if mode.lower() in vertex_flags:
+        closest = tree.query(mesh.points, k=1)[1]
+    elif mode.lower() in triangle_flags:
         centers = mesh.cell_centers().points
         closest = tree.query(centers, k=1)[1]
 
+    # Get the values of the closest points and either assign them to the mesh, or return them
     values = img_raveled[closest]
-
     if inplace:
         mesh['labels'] = values
     else:
@@ -564,83 +717,110 @@ def label_mesh(mesh, segm_img, resolution=[1, 1, 1], bg=0, mode='point', inplace
 
 
 def project2surface(
-    mesh, int_img, distance, mask=None, resolution=[1, 1, 1], fct=np.mean,
+    mesh, int_img, distance_threshold, mask=None, resolution=[1, 1, 1], fct=np.sum, background=0
 ):
+    """ Project values to a surface using a distance map. Values are aggregated per vertex in the mesh.
+
+    Parameters
+    ----------
+    mesh : pyvista.PolyData
+        Mesh to project values to.
+    int_img : np.ndarray
+        Image values to project.
+    distance_threshold : np.ndarray
+        Distance threshold from the surface of values to use for projection.
+    mask : np.ndarray, optional
+        Mask to apply to the image.
+    resolution : list, optional
+        Resolution of the image. Default is [1, 1, 1].
+    fct : function, optional
+        Function to use for aggregation of values. Applies to each vertex in the mesh Default is np.sum.
+    background : int, optional
+        Background value in the image. Default is 0.
+    """
+
+    # Get the coordinates and values of the points in the image
     coords = pl.coord_array(int_img, resolution).T
     if mask is not None:
-        int_img[np.logical_not(mask)] = 0
-
+        int_img[~mask] = background
     img_raveled = int_img.ravel()
-    coords = coords[img_raveled > 0]
-    img_raveled = img_raveled[img_raveled > 0]
 
-    # Limit scope a little
+    # Don't consider background values
+    coords = coords[img_raveled != background]
+    img_raveled = img_raveled[img_raveled != background]
+
+    # Filter out points clearly outside of the mesh to reduce computation time
     bounds = np.reshape(mesh.bounds, (-1, 2))
     for ii, bound_pair in enumerate(bounds):
-        img_raveled = img_raveled[
-            np.logical_and(
-                coords[:, ii] >= bound_pair[0], coords[:, ii] <= bound_pair[1],
-            )
-        ]
-        coords = coords[
-            np.logical_and(
-                coords[:, ii] >= bound_pair[0], coords[:, ii] <= bound_pair[1],
-            )
-        ]
-
-    ipd = vtk.vtkImplicitPolyDataDistance()
-    ipd.SetInput(mesh)
+        within_bounds = coords[:,
+                               ii] >= bound_pair[0] & coords[:, ii] <= bound_pair[1]
+        img_raveled = img_raveled[within_bounds]
+        coords = coords[within_bounds]
 
     # Get distance
+    # Updating the normals is needed for the distance orientation
+    mesh = mesh.compute_normals()
+    ipd = vtk.vtkImplicitPolyDataDistance()
+    ipd.SetInput(mesh)
     dists = np.zeros((len(coords),))
     pts = np.zeros((len(coords), 3))
     for ii in range(len(coords)):
         dists[ii] = ipd.EvaluateFunctionAndGetClosestPoint(coords[ii], pts[ii])
 
-    # Filter out
-    # internal
-    mesh = mesh.compute_normals()
-    internal_filter = dists > 0 if distance > 0 else dists < 0
-    # internal_coords = coords[internal_filter]
-    # internal_vals = img_raveled[internal_filter]
+   # Filter out the external values
+    internal_filter = dists > 0 if distance_threshold > 0 else dists < 0
     l1_coords = coords[internal_filter]
 
-    # l1
-    layer_threshold = distance
-    if distance < 0:
-        l1_filter = np.logical_and(dists > layer_threshold, dists < 0)
+    # Now filter out the values that are too far away
+    if distance_threshold < 0:
+        l1_filter = dists > distance_threshold & dists < 0
     else:
-        l1_filter = np.logical_and(dists < layer_threshold, dists > 0)
+        l1_filter = dists < distance_threshold & dists > 0
     l1_coords = coords[l1_filter]
     l1_vals = img_raveled[l1_filter]
 
-    # l1_dists = dists[l1_filter]
+    # Get the closest point to each vertex and sum up the values for the vertex
+    if fct is not np.sum:
+        raise NotImplementedError('fct : Only np.sum is implemented for now.')
 
-    # if mode.lower() == 'closest':
     tree = cKDTree(mesh.points)
     closest = tree.query(l1_coords, k=1)[1]
     values = np.zeros(mesh.n_points)
+
     for ii, val in enumerate(l1_vals):
         values[closest[ii]] += val
-
-    # pobj = pv.Plotter(notebook=False)
-    # pobj.add_mesh(mesh, opacity=1, scalars=values, clim=[np.quantile(values, .01), np.quantile(values, .99)])
-    # # pobj.add_points(internal_coords, scalars=internal_vals, opacity='sigmoid')
-    # # pobj.add_points(l1_coords, scalars=l1_vals, opacity='sigmoid')
-    # # pobj.add_points(non_l1_coords, scalars=non_l1_vals, opacity=1)
-    # pobj.show()
 
     return values
 
 
-# Actual mesh processing
-
-
 def remove_inland_under(mesh, contour, threshold, resolution=[1, 1, 1], invert=False):
-    # TODO: Only use mesh instead of contour
-    # TODO: Add size threshold on segments
+    """ Remove the part of the mesh that is under the contour and that may have arisen
+    due to holes in the contour.
 
-    # Find max projection
+    Parameters
+    ----------
+    mesh : pyvista.PolyData
+        Mesh to remove the inland part from.
+    contour : np.ndarray
+        Contour to use for the removal.
+    threshold : int
+        Threshold distance from the contour XY periphery to use for the removal.
+    resolution : list, optional
+        Resolution of the image. Default is [1, 1, 1].
+    invert : bool, optional
+        Invert the mesh normals. Default is False.
+
+    Returns
+    -------
+   output : pyvista.PolyData
+        Mesh with the inland part removed.
+
+    Notes
+    -----
+    This function is in development and may not work as expected.
+    """
+
+    # Compute the domain of interest
     cont2d = np.max(contour, 0)
     cont2d = np.pad(cont2d, pad_width=1, constant_values=0, mode='constant')
     distance_map = distance_transform_edt(cont2d)
@@ -655,12 +835,10 @@ def remove_inland_under(mesh, contour, threshold, resolution=[1, 1, 1], invert=F
     xycoords[xycoords[:, 0] > contour.shape[1] - 1, 0] = contour.shape[1] - 1
     xycoords[xycoords[:, 1] > contour.shape[2] - 1, 0] = contour.shape[2] - 1
     inside = c[xycoords[:, 0], xycoords[:, 1]] == 2
-    #    inside = c==2
-
-    #    mesh['inside'] = inside
     indices = np.where(inside)[0]
-    under_indices = []
 
+    # Use ray-tracing to identify if the point is under the mesh surface or not
+    under_indices = []
     target = mesh.bounds[1] + \
         0.00001 if not invert else mesh.bounds[0] - 0.00001
     for ii in indices:
@@ -670,43 +848,78 @@ def remove_inland_under(mesh, contour, threshold, resolution=[1, 1, 1], invert=F
         if pt[0].shape[0] > 1:
             under_indices.append(ii)
     under_indices = np.array(under_indices)
-    under = np.zeros(mesh.n_points, 'bool')
+    under = np.zeros(mesh.n_points, bool)
     if len(under_indices) > 0:
         under[under_indices] = True
-    mesh['under'] = under
-    #    mesh.plot(notebook=False, scalars='under')
-    mesh = mesh.remove_points(under)[0]
 
-    return mesh
+    output = mesh.remove_points(under)[0]
+    return output
 
 
-def fill_inland(contour, threshold=0):
+def fill_inland(contour, threshold_distance=0):
+    """ Fill the contour based on the distance to the contour XY periphery.
+
+    Parameters
+    ----------
+    contour : np.ndarray
+        Contour to fill.
+    threshold_distance : int, optional
+        Threshold distance from the contour XY periphery to use for the filling.
+        Default is 0.
+
+    Returns
+    -------
+    filled_contour : np.ndarray
+        Filled contour.
+
+    """
+
+    # Get a maximum projection of the contour and compute the distane map
     cont2d = np.max(contour, 0)
     cont2d = np.pad(cont2d, pad_width=1, constant_values=0, mode='constant')
     distance_map = distance_transform_edt(cont2d)
     distance_map = distance_map[1:-1, 1:-1]
-    larger = np.array(np.where(distance_map > threshold)).T
+    larger = np.array(np.where(distance_map > threshold_distance)).T
     c = cont2d.astype(int)
     c[larger[:, 0], larger[:, 1]] = 2
 
+    # Get the first and last indices in the Z-direction for each XY pixel
     first_occurence = np.argmax(contour, 0)
     last_occurence = contour.shape[0] - np.argmax(contour[::-1], 0) - 1
     last_occurence[last_occurence == contour.shape[0] - 1] = 0
 
+    # Fill in the mask
     mask = np.zeros_like(contour)
     for ii in range(mask.shape[1]):
         for jj in range(mask.shape[2]):
             mask[first_occurence[ii, jj]: last_occurence[ii, jj], ii, jj] = True
+    mask = mask & (c[1:-1, 1:-1] == 2)
 
-    mask = np.logical_and(mask, c[1:-1, 1:-1] == 2)
+    output = contour.copy()
+    output[mask] = True
+    output = fill_contour(output, True)
 
-    contour[mask] = True
-    contour = fill_contour(contour, True)
-
-    return contour
+    return output
 
 
 def repair_small(mesh, nbe=100, refine=True):
+    """ Repair small holes in a mesh based on the number of edges
+
+    Parameters
+    ----------
+    mesh : pyvista.PolyData
+        Mesh to repair.
+    nbe : int, optional
+        Number of edges to use for the repair. Default is 100.
+    refine : bool, optional
+        Refine the mesh. Default is True.
+
+    Returns
+    -------
+    output : pyvista.PolyData
+        Repaired mesh.
+
+    """
 
     mfix = PyTMesh(False)
     mfix.load_array(mesh.points, mesh.faces.reshape(-1, 4)[:, 1:])
@@ -714,10 +927,11 @@ def repair_small(mesh, nbe=100, refine=True):
         nbe = -1
     mfix.fill_small_boundaries(nbe=nbe, refine=refine)
     vert, faces = mfix.return_arrays()
-    mesh = pv.PolyData(vert, np.ravel(np.c_[[[3]] * len(faces), faces]))
-    mesh = mesh.clean()
-    mesh = mesh.triangulate()
-    return mesh
+
+    output = pv.PolyData(vert, np.ravel(np.c_[[[3]] * len(faces), faces]))
+    output = output.clean()
+    output = output.triangulate()
+    return output
 
 
 def correct_bad_mesh(mesh, verbose=True):
@@ -745,6 +959,8 @@ def correct_bad_mesh(mesh, verbose=True):
 
     Returns
     -------
+    new_poly : pyvista.PolyData
+        Corrected mesh.
 
     """
     try:
@@ -795,9 +1011,6 @@ def correct_bad_mesh(mesh, verbose=True):
     new_poly = ECFT(new_poly, 0)
 
     return new_poly
-
-
-# TODO: Add inplace argument
 
 
 def remove_bridges(mesh, verbose=True):
@@ -900,28 +1113,50 @@ def remove_normals(mesh, threshold_angle=0, flip=False, angle='polar'):
 
 
 def smooth_boundary(mesh, iterations=20, sigma=0.1, inplace=False):
-    """ """
+    """ Smooth the boundary of a mesh using Laplacian smoothing:
+
+    .. math::
+        x_{n+1} = x_n - \sigma (x_n - \sum_{j \in \mathcal{N}_x} x_j} / \vert \mathcal{N}_x \vert)
+
+    Parameters
+    ----------
+    mesh : pyvista.PolyData
+        Mesh to smooth.
+    iterations : int, optional
+        Number of smoothing iterations.  Default is 20.
+    sigma : float, optional
+        Smoothing sigma.  Default is 0.1.
+    inplace : bool, optional
+        Update mesh in-place.  Default is False.
+
+    Returns
+    -------
+    pyvista.PolyData
+        Smoothed mesh.
+    """
     mesh = mesh.copy() if not inplace else mesh
 
     # Get boundary information and index correspondences
     boundary = boundary_edges(mesh)
     bdpts = boundary.points
     from_ = np.array([mesh.FindPoint(ii) for ii in bdpts])
-    # npts = boundary.n_points
 
-    #     Find the cycles, i.e. the different boundaries we have
-    # list(get_connected_vertices_all(boundary, include_self=False))
+    # TODO this method does not work on a skeletonized mesh, but it would be far more
+    # computationally effective doing that
     neighs = []
     for ii in range(boundary.n_points):
         pt_neighs = vertex_neighbors(boundary, ii, include_self=False)
         for jj in range(pt_neighs.shape[0]):
             neighs.append((ii, pt_neighs[jj]))
 
+    # Find holes (cycles) in the mesh
     net = nx.Graph(neighs)
     cycles = nx.cycle_basis(net)
     cycles.sort(key=lambda x: len(x), reverse=True)
     cycles = [np.array(ii) for ii in cycles]
 
+    # Smooth boundary using Laplacian smoothing:
+    # x_new = x_old - sigma * (x_old - mean(x_xneighs))
     new_pts_prev = bdpts.copy()
     new_pts_now = bdpts.copy()
     for iter in range(iterations):
@@ -945,7 +1180,7 @@ def smooth_boundary(mesh, iterations=20, sigma=0.1, inplace=False):
                     )
                 )
 
-    # update coordinates
+    # Update coordinates
     for ii in range(len(cycles)):
         mesh.points[from_[cycles[ii]]] = new_pts_now[cycles[ii]]
 
@@ -967,14 +1202,52 @@ def process_mesh(
     inland_threshold=None,
     contour=None,
 ):
+    """ Convenience function for postprocessing a mesh.
+
+    Parameters
+    ----------
+    mesh : pyvista.PolyData
+        Mesh to process.
+    hole_repair_threshold : float, optional
+        Threshold for the hole repair algorithm.  Default is 100.
+    downscaling : float, optional
+        Downscaling factor for the mesh.  Default is 0.01.
+    upscaling : float, optional
+        Upscaling factor for the mesh.  Default is 2.
+    threshold_angle : float, optional
+        Threshold for the polar angle (theta). Values smaller than this will be
+        removed. Default = 60.
+    top_cut : str or tuple, optional
+        Top cut location.  Default is 'center'.
+    tongues_radius : float, optional
+        Radius of the tongues.  Default is None.
+    tongues_ratio : float, optional
+        Ratio of the tongues.  Default is 4.
+    smooth_iter : int, optional
+        Number of smoothing iterations.  Default is 200.
+    smooth_relax : float, optional
+        Smoothing relaxation factor.  Default is 0.01.
+    curvature_threshold : float, optional
+        Threshold for the curvature.  Default is 0.4.
+    inland_threshold : float, optional
+        Threshold for the inland removal.  Default is None.
+    contour : pyvista.PolyData, optional
+        Contour to use for the inland removal.  Default is None.
+
+    Returns
+    -------
+   mesh :  pyvista.PolyData
+        Processed mesh.
+    """
 
     if top_cut == 'center':
         top_cut = (mesh.center[0], 0, 0)
 
-    #    mesh = repair_small(mesh, hole_repair_threshold)
+    # Scale the mest and repair small holes
     mesh = remesh(mesh, int(mesh.n_points * downscaling), sub=0)
     mesh = repair_small(mesh, hole_repair_threshold)
 
+    # Remove vertices based on the vertex normal angle
     if threshold_angle:
         mesh.rotate_y(-90)
         mesh = remove_normals(
@@ -986,11 +1259,14 @@ def process_mesh(
         mesh.clear_arrays()
         mesh = correct_normal_orientation_topcut(mesh, top_cut)
 
+    # Remove vertices based on whether they are "inside the contour"
     if inland_threshold is not None:
         mesh = remove_inland_under(mesh, contour, threshold=inland_threshold)
         mesh = mesh.extract_largest()
         mesh = repair_small(mesh, hole_repair_threshold)
     mesh = ECFT(mesh, hole_repair_threshold)
+
+    # Remove "tongues" from the mesh
     if tongues_radius is not None:
         mesh = remove_tongues(
             mesh,
@@ -998,18 +1274,17 @@ def process_mesh(
             threshold=tongues_ratio,
             hole_edges=hole_repair_threshold,
         )
+
+    # General post-processing. Smooth the mesh, remove small holes, and regularise the faces.
     mesh = mesh.extract_largest()
     mesh = repair_small(mesh, hole_repair_threshold)
-
     mesh = mesh.smooth(smooth_iter, smooth_relax)
     mesh = remesh(mesh, upscaling * mesh.n_points)
-
     mesh = smooth_boundary(mesh, smooth_iter, smooth_relax)
 
     return mesh
 
 
-# TODO: Add inplace argument
 def remove_tongues(mesh, radius, threshold=6, hole_edges=100, verbose=True):
     """
     Remove "tongues" in mesh.
@@ -1123,17 +1398,6 @@ def remove_tongues(mesh, radius, threshold=6, hole_edges=100, verbose=True):
                 int_path_lengths = np.array(int_path_lengths)
                 bd_dists.append(bd_path_lengths)
                 int_dists.append(int_path_lengths)
-            # p = pv.Plotter(notebook=False)
-            # p.add_mesh(mesh)
-            # p.add_points(mesh.points[6403], render_points_as_spheres=True, point_size=20, color='red')
-            # p.add_points(mesh.points[44], render_points_as_spheres=True, point_size=20, color='green')
-            # # p.add_points(mesh.points[from_[cycle]], render_points_as_spheres=True, point_size=20, color='blue')
-            # # p.add_points(mesh.points[from_[cycle[jj]]], render_points_as_spheres=True, point_size=20, color='blue')
-            # # p.add_points(mesh.points[from_[cycle[neighs[jj][kk]]]], render_points_as_spheres=True, point_size=20, color='red')
-            # # p.add_points(cpts[100], render_points_as_spheres=True, point_size=20, color='blue')
-            # # p.add_points(mesh.points[from_[cycles[ii][neighs[jj][kk]]]], render_points_as_spheres=True, point_size=20, color='red')
-            # # p.add_points(mesh.points[from_[cycles[ii][jj]]], render_points_as_spheres=True, point_size=20, color='green')
-            # p.show()
 
             frac = [bd_dists[jj] / int_dists[jj] for jj in range(len(neighs))]
 
@@ -1144,11 +1408,6 @@ def remove_tongues(mesh, radius, threshold=6, hole_edges=100, verbose=True):
                     if frac[kk][jj] > threshold:
                         removal_anchors.append((kk, neighs[kk][jj]))
             removal_anchors = np.array(removal_anchors)
-
-            # p = pv.Plotter(notebook=False)
-            # p.add_points(cpts[removal_anchors.ravel()], color='r')
-            # p.add_mesh(boundary)
-            # p.show()
 
             # Recalculate the geodesic path between two points
             for jj in range(len(removal_anchors)):
@@ -1163,22 +1422,13 @@ def remove_tongues(mesh, radius, threshold=6, hole_edges=100, verbose=True):
 
         to_remove = np.unique(to_remove)
 
-        # if len(to_remove) > 0:
-        #     break
-        # p = pv.Plotter(notebook=False)
-        # p.add_mesh(mesh)
-        # p.add_points(mesh.points[to_remove], render_points_as_spheres=True, point_size=20, color='red')
-        # p.show()
-
         if len(to_remove) == 0:
             break
 
-        # Remove points
+        # Remove points and do some cleanup
         mesh = mesh.remove_points(to_remove, keep_scalars=False)[0]
-        #        mesh = remove_bridges(mesh)
         mesh = repair_small(mesh, hole_edges)
         mesh = make_manifold(mesh, hole_edges)
-        # mesh = correct_bad_mesh(mesh)
         mesh = ECFT(mesh, hole_edges)
 
     mesh = mesh.clean()
@@ -1186,12 +1436,29 @@ def remove_tongues(mesh, radius, threshold=6, hole_edges=100, verbose=True):
 
 
 def repair(mesh):
+    """Repair a mesh using MeshFix"""
     tmp = pmf.MeshFix(mesh)
     tmp.repair(True)
     return tmp.mesh
 
 
 def remesh(mesh, n, sub=3):
+    """Regularise the mesh faces using the ACVD algorithm.
+
+    Parameters
+    ----------
+    mesh : pyvista.PolyData
+        The mesh to regularise.
+    n : int
+        The number of clusters (i.e. output number of faces) to use.
+    sub : int, optional
+        The number of subdivisions to use when clustering.  The default is 3.
+
+    Returns
+    -------
+    output : pyvista.PolyData
+        The regularised mesh.
+    """
 
     clus = clustering.Clustering(mesh)
     clus.subdivide(sub)  # 2 also works
@@ -1202,6 +1469,7 @@ def remesh(mesh, n, sub=3):
 
 
 def make_manifold(mesh, hole_edges=300):
+    """Make a mesh manifold by removing non-manifold edges."""
     mesh = mesh.copy()
     edges = mesh.extract_feature_edges(
         boundary_edges=False,
@@ -1260,26 +1528,8 @@ def drop_skirt(mesh, maxdist, flip=False):
     return new_mesh
 
 
-def downproject_border(mesh, value, axis=0, flip=False):
-    """ """
-
-    lowest = value
-    boundary = boundary_edges(mesh)
-
-    mpts = mesh.points
-    bdpts = boundary.points
-    idx_in_parent = np.array([mesh.FindPoint(ii) for ii in bdpts])
-
-    to_adjust = idx_in_parent[bdpts[:, 0] > value]
-    mpts[to_adjust, axis] = lowest
-
-    new_mesh = pv.PolyData(mpts, mesh.faces)
-
-    return new_mesh
-
-
 def boundary_points(mesh):
-    """Get indices of points in the boundary."""
+    """Get vertex indices of points in the boundary."""
     boundary = boundary_edges(mesh)
     bdpts = boundary.points
     indices = np.array([mesh.FindPoint(ii) for ii in bdpts])
@@ -1379,7 +1629,24 @@ def feature_edges(mesh, angle=30):
 
 
 def vertex_neighbors(mesh, index, include_self=True):
+    """Get the indices of the vertices connected to a given vertex.
 
+    Parameters
+    ----------
+    mesh : pyvista.PolyData
+        Mesh to operate on.
+    index : int
+        Index of the vertex.
+    include_self : bool, optional
+        Whether to include the vertex itself in the list of neighbors.
+        Default = True.
+
+    Returns
+    -------
+    connected_vertices : list
+        List of indices of the connected vertices.
+
+    """
     connected_vertices = []
     if include_self:
         connected_vertices.append(index)
@@ -1420,6 +1687,22 @@ def vertex_neighbors(mesh, index, include_self=True):
 
 
 def vertex_neighbors_all(mesh, include_self=True):
+    """Get all vertex neighbors.
+
+    Parameters
+    ----------
+    mesh : pyvista.PolyData
+        Mesh to operate on.
+    include_self : bool, optional
+        Whether to include the vertex itself in the list of neighbors.
+        Default = True.
+
+    Returns
+    -------
+    connectivities : list
+        List of lists of indices of the connected vertices.
+
+    """
     connectivities = [[]] * mesh.n_points
     for ii in range(mesh.n_points):
         connectivities[ii] = vertex_neighbors(mesh, ii, include_self)
@@ -1428,8 +1711,9 @@ def vertex_neighbors_all(mesh, include_self=True):
 
 
 def correct_normal_orientation_topcut(mesh, origin):
+    """ Correct normal orientation of a mesh by flipping normals if the sum of the normals is negative
+    after having cropped off the top of the mesh. """
     mesh.clear_arrays()
-    # mesh = mesh.compute_normals(auto_orient_normals=True)
     if mesh.clip(normal='-x', origin=origin).point_normals[:, 0].sum() > 0:
         mesh.flip_normals()
     return mesh
@@ -1570,6 +1854,19 @@ def fit_paraboloid(data, init=[1, 1, 1, 1, 1, 0, 0, 0], return_success=False):
 
 
 def vertex_cycles(mesh):
+    """ Find cycles (holes/boundaries) in a mesh.
+
+    Parameters
+    ----------
+    mesh : pyvista.PolyData
+        Mesh to operate on.
+
+    Returns
+    -------
+    cycles : list
+        List of cycles, each cycle is a list of vertex indices.
+
+    """
     neighs = vertex_neighbors(mesh, True)
     pairs = []
     for ii in range(mesh.n_points):
@@ -1581,7 +1878,7 @@ def vertex_cycles(mesh):
     return cycles
 
 
-def connect_bottom(mesh, offset=0, invert=False, inplace=False):
+""" def connect_bottom(mesh, offset=0, invert=False, inplace=False):
     boundary = mesh.extract_feature_edges(0, 1, 0, 0, 0).extract_largest()
 
     cycles = vertex_cycles(boundary)
@@ -1616,9 +1913,11 @@ def connect_bottom(mesh, offset=0, invert=False, inplace=False):
         return
     else:
         return pv.PolyData(pts, faces)
+ """
 
 
 def correct_normal_orientation(mesh, relative='x', inplace=False):
+    """ Correct the orientation of the normals of a mesh. """
     mesh = mesh if inplace else mesh.copy()
     normals = mesh.point_normals
 
@@ -1694,3 +1993,21 @@ def paraboloid_apex(p):
     )[0]
 
     return coords
+
+
+""" def downproject_border(mesh, value, axis=0, flip=False):
+
+    lowest = value
+    boundary = boundary_edges(mesh)
+
+    mpts = mesh.points
+    bdpts = boundary.points
+    idx_in_parent = np.array([mesh.FindPoint(ii) for ii in bdpts])
+
+    to_adjust = idx_in_parent[bdpts[:, 0] > value]
+    mpts[to_adjust, axis] = lowest
+
+    new_mesh = pv.PolyData(mpts, mesh.faces)
+
+    return new_mesh
+ """

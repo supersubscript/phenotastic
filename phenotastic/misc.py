@@ -1,4 +1,4 @@
- #!/usr/bin/env python2
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 """
 Created on Tue May 29 20:00:11 2018
@@ -7,23 +7,28 @@ Created on Tue May 29 20:00:11 2018
 """
 
 import math
-import re
 import os
-from vtk.util import numpy_support as nps
-import scipy.optimize as opt
-import numpy as np
-import time
 import pickle
-import vtk
+import re
 import sys
-import os
+import time
+
+import numpy as np
+import scipy.optimize as opt
+import vtk
+from vtk.util import numpy_support as nps
+
 # os.chdir('/home/henrik/projects/surface_extraction/code/phenotastic/phenotastic')
 
 
-#import phenotastic.Meristem_Phenotyper_3D as ap
+# import phenotastic.Meristem_Phenotyper_3D as ap
+
 
 def cut(img, cuts):
-    return img[cuts[0,0]:cuts[0,1], cuts[1,0]:cuts[1,1], cuts[2,0]:cuts[2,1]]
+    return img[
+        cuts[0, 0] : cuts[0, 1], cuts[1, 0] : cuts[1, 1], cuts[2, 0] : cuts[2, 1]
+    ]
+
 
 def merge(lists):
     """
@@ -60,20 +65,19 @@ def merge(lists):
 
 
 def flatten(llist):
-    """ Flatten a list of lists """
+    """Flatten a list of lists"""
     return [item for sublist in llist for item in sublist]
 
 
 def remove_empty_slices(arr, keepaxis=0):
-    """ Remove empty slices (based on the total intensity) in an ndarray """
-    not_empty = np.sum(arr, axis=tuple(
-        np.delete(list(range(arr.ndim)), keepaxis))) > 0
+    """Remove empty slices (based on the total intensity) in an ndarray"""
+    not_empty = np.sum(arr, axis=tuple(np.delete(list(range(arr.ndim)), keepaxis))) > 0
     arr = arr[not_empty]
     return arr
 
 
-def reject_outliers(data, n=2.):
-    """ Remove outliers outside of n standard deviations.
+def reject_outliers(data, n=2.0):
+    """Remove outliers outside of n standard deviations.
 
     Parameters
     ----------
@@ -92,43 +96,42 @@ def reject_outliers(data, n=2.):
     """
     d = np.abs(data - np.median(data))
     mdev = np.median(d)
-    s = d / (mdev if mdev else 1.)
+    s = d / (mdev if mdev else 1.0)
     filtered_data = data[s < n]
     return filtered_data
 
 
 def angle(v1, v2, acute=False):
-    angle = np.arccos(
-        np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
+    angle = np.arccos(np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
     return angle if acute else 2 * np.pi - angle
 
 
 def angle_difference(ang1, ang2, period=360):
-    ''' Return the smallest angle difference on a template with periodic boundary conditions.
+    """Return the smallest angle difference on a template with periodic boundary conditions.
 
     Returns
     -------
     angs : np.array of floats
         The smallest angles.
 
-    '''
+    """
     difference = np.subtract(ang1, ang2)
-    angs = np.array([np.abs(np.mod(difference, period)),
-                     np.abs(np.mod(difference, -period))])
+    angs = np.array(
+        [np.abs(np.mod(difference, period)), np.abs(np.mod(difference, -period))]
+    )
     angs = np.min(angs, axis=0)
     return angs
 
 
 def divergence_angles(angles, period=360):
-    ''' Divergence angles between an ordered list of angles '''
-    div_angs = angle_difference(angles,
-                                np.roll(angles, 1), period=period)[1:]
+    """Divergence angles between an ordered list of angles"""
+    div_angs = angle_difference(angles, np.roll(angles, 1), period=period)[1:]
 
     return div_angs
 
 
 def paraboloid(x, y, p):
-    """ Return the z-value for a paraboloid given input xy-coordinates and
+    """Return the z-value for a paraboloid given input xy-coordinates and
     parameters.
 
     Parameters
@@ -149,7 +152,7 @@ def paraboloid(x, y, p):
 
 
 def get_max_contrast_colours(n=64):
-    """ Get colors with maximal inter-color contrast.
+    """Get colors with maximal inter-color contrast.
 
     Parameters
     ----------
@@ -162,88 +165,90 @@ def get_max_contrast_colours(n=64):
         List of colours (RGB) up to a certain n that maximise contrast.
 
     """
-    rgbs = [[0, 0, 0],
-            [1, 0, 103],
-            [213, 255, 0],
-            [255, 0, 86],
-            [158, 0, 142],
-            [14, 76, 161],
-            [255, 229, 2],
-            [0, 95, 57],
-            [0, 255, 0],
-            [149, 0, 58],
-            [255, 147, 126],
-            [164, 36, 0],
-            [0, 21, 68],
-            [145, 208, 203],
-            [98, 14, 0],
-            [107, 104, 130],
-            [0, 0, 255],
-            [0, 125, 181],
-            [106, 130, 108],
-            [0, 174, 126],
-            [194, 140, 159],
-            [190, 153, 112],
-            [0, 143, 156],
-            [95, 173, 78],
-            [255, 0, 0],
-            [255, 0, 246],
-            [255, 2, 157],
-            [104, 61, 59],
-            [255, 116, 163],
-            [150, 138, 232],
-            [152, 255, 82],
-            [167, 87, 64],
-            [1, 255, 254],
-            [255, 238, 232],
-            [254, 137, 0],
-            [189, 198, 255],
-            [1, 208, 255],
-            [187, 136, 0],
-            [117, 68, 177],
-            [165, 255, 210],
-            [255, 166, 254],
-            [119, 77, 0],
-            [122, 71, 130],
-            [38, 52, 0],
-            [0, 71, 84],
-            [67, 0, 44],
-            [181, 0, 255],
-            [255, 177, 103],
-            [255, 219, 102],
-            [144, 251, 146],
-            [126, 45, 210],
-            [189, 211, 147],
-            [229, 111, 254],
-            [222, 255, 116],
-            [0, 255, 120],
-            [0, 155, 255],
-            [0, 100, 1],
-            [0, 118, 255],
-            [133, 169, 0],
-            [0, 185, 23],
-            [120, 130, 49],
-            [0, 255, 198],
-            [255, 110, 65],
-            [232, 94, 190]]
+    rgbs = [
+        [0, 0, 0],
+        [1, 0, 103],
+        [213, 255, 0],
+        [255, 0, 86],
+        [158, 0, 142],
+        [14, 76, 161],
+        [255, 229, 2],
+        [0, 95, 57],
+        [0, 255, 0],
+        [149, 0, 58],
+        [255, 147, 126],
+        [164, 36, 0],
+        [0, 21, 68],
+        [145, 208, 203],
+        [98, 14, 0],
+        [107, 104, 130],
+        [0, 0, 255],
+        [0, 125, 181],
+        [106, 130, 108],
+        [0, 174, 126],
+        [194, 140, 159],
+        [190, 153, 112],
+        [0, 143, 156],
+        [95, 173, 78],
+        [255, 0, 0],
+        [255, 0, 246],
+        [255, 2, 157],
+        [104, 61, 59],
+        [255, 116, 163],
+        [150, 138, 232],
+        [152, 255, 82],
+        [167, 87, 64],
+        [1, 255, 254],
+        [255, 238, 232],
+        [254, 137, 0],
+        [189, 198, 255],
+        [1, 208, 255],
+        [187, 136, 0],
+        [117, 68, 177],
+        [165, 255, 210],
+        [255, 166, 254],
+        [119, 77, 0],
+        [122, 71, 130],
+        [38, 52, 0],
+        [0, 71, 84],
+        [67, 0, 44],
+        [181, 0, 255],
+        [255, 177, 103],
+        [255, 219, 102],
+        [144, 251, 146],
+        [126, 45, 210],
+        [189, 211, 147],
+        [229, 111, 254],
+        [222, 255, 116],
+        [0, 255, 120],
+        [0, 155, 255],
+        [0, 100, 1],
+        [0, 118, 255],
+        [133, 169, 0],
+        [0, 185, 23],
+        [120, 130, 49],
+        [0, 255, 198],
+        [255, 110, 65],
+        [232, 94, 190],
+    ]
     return rgbs[0:n]
 
 
 def prime_sieve(n, output={}):
-    '''
+    """
     Return a dict or a list of primes up to N create full prime sieve for
     N=10^6 in 1 sec
 
-    '''
+    """
 
     nroot = int(math.sqrt(n))
-    sieve = list(range(n+1))
+    sieve = list(range(n + 1))
     sieve[1] = 0
 
-    for i in range(2, nroot+1):
+    for i in range(2, nroot + 1):
         if sieve[i] != 0:
-            m = n/i - i
-            sieve[i*i: n+1:i] = [0] * (m+1)
+            m = n / i - i
+            sieve[i * i : n + 1 : i] = [0] * (m + 1)
 
     if type(output) == dict:
         pmap = {}
@@ -258,7 +263,7 @@ def prime_sieve(n, output={}):
 
 
 def get_factors(n, primelist=None):
-    '''
+    """
     Get a list of all factors for N.
 
     Example
@@ -266,7 +271,7 @@ def get_factors(n, primelist=None):
     >>> get_factors(10)
     >>> Out[1]: [1, 2, 5, 10]
 
-    '''
+    """
     if primelist is None:
         primelist = prime_sieve(n, output=[])
 
@@ -284,23 +289,23 @@ def get_factors(n, primelist=None):
     factors = [1]
     for i in fcount:
         level = []
-        exp = [i**(x+1) for x in range(fcount[i])]
+        exp = [i ** (x + 1) for x in range(fcount[i])]
         for j in exp:
-            level.extend([j*x for x in factors])
+            level.extend([j * x for x in factors])
         factors.extend(level)
 
     return factors
 
 
 def get_prime_factors(n, primelist=None):
-    ''' Get a list of prime factors and corresponding powers.
+    """Get a list of prime factors and corresponding powers.
 
     Example
     -------
     >>> get_prime_factors(140) # 140 = 2^2 * 5^1 * 7^1
     >>> Out[1]: [(2, 2), (5, 1), (7, 1)]
 
-    '''
+    """
     if primelist is None:
         primelist = prime_sieve(n, output=[])
 
@@ -319,9 +324,9 @@ def get_prime_factors(n, primelist=None):
 def autocrop(arr, threshold=8e3, channel=-1, n=1, return_cuts=False, offset=None):
 
     if offset is None:
-        offset=[[0, 0], [0,0], [0,0]]
+        offset = [[0, 0], [0, 0], [0, 0]]
     offset = np.array(offset)
-        
+
     sumarr = arr
     if arr.ndim > 3:
         if channel == -1:
@@ -335,28 +340,30 @@ def autocrop(arr, threshold=8e3, channel=-1, n=1, return_cuts=False, offset=None
     for ii in range(sumarr.ndim):
         axes = np.array([0, 1, 2])[np.array([0, 1, 2]) != ii]
 
-        transposed = np.transpose(sumarr, (ii, ) + tuple(axes))
-        nabove = np.sum(np.reshape(
-            transposed, (transposed.shape[0], -1)) > threshold, axis=1)
+        transposed = np.transpose(sumarr, (ii,) + tuple(axes))
+        nabove = np.sum(
+            np.reshape(transposed, (transposed.shape[0], -1)) > threshold, axis=1
+        )
 
         first = next((e[0] for e in enumerate(nabove) if e[1] >= n), 0)
-        last = len(nabove) - next((e[0]
-                                   for e in enumerate(nabove[::-1]) if e[1] >= n), 0)
+        last = len(nabove) - next(
+            (e[0] for e in enumerate(nabove[::-1]) if e[1] >= n), 0
+        )
 
         cp[ii] = first, last
-#    ranges = [range(cp[ii, 0], cp[ii, 1]) for ii in range(len(cp))]
-    cp[0, 0] = np.max([0, cp[0, 0] - offset[0,0]])
-    cp[0, 1] = np.min([arr.shape[0], cp[0, 1] + offset[0,1]])
-    cp[1, 0] = np.max([0, cp[1, 0] - offset[1,0]])
-    cp[1, 1] = np.min([arr.shape[1], cp[1, 1] + offset[1,1]])
-    cp[2, 0] = np.max([0, cp[2, 0] - offset[2,0]])
-    cp[2, 1] = np.min([arr.shape[2], cp[2, 1] + offset[2,1]])
+    #    ranges = [range(cp[ii, 0], cp[ii, 1]) for ii in range(len(cp))]
+    cp[0, 0] = np.max([0, cp[0, 0] - offset[0, 0]])
+    cp[0, 1] = np.min([arr.shape[0], cp[0, 1] + offset[0, 1]])
+    cp[1, 0] = np.max([0, cp[1, 0] - offset[1, 0]])
+    cp[1, 1] = np.min([arr.shape[1], cp[1, 1] + offset[1, 1]])
+    cp[2, 0] = np.max([0, cp[2, 0] - offset[2, 0]])
+    cp[2, 1] = np.min([arr.shape[2], cp[2, 1] + offset[2, 1]])
 
     if arr.ndim > 3:
         arr = np.moveaxis(arr, 1, -1)
     for ii, _range in enumerate(cp):
         arr = np.swapaxes(arr, 0, ii)
-        arr = arr[_range[0]:_range[1]]
+        arr = arr[_range[0] : _range[1]]
         arr = np.swapaxes(arr, 0, ii)
     if arr.ndim > 3:
         arr = np.moveaxis(arr, -1, 1)
@@ -378,15 +385,23 @@ def rotate(coord, angles, invert=False):
 
     alpha, beta, gamma = angles
     xyz = np.zeros(np.shape(coord))
-    Rx = np.array([[1, 0, 0],
-                   [0, np.cos(alpha), -np.sin(alpha)],
-                   [0, np.sin(alpha), np.cos(alpha)]])
-    Ry = np.array([[np.cos(beta), 0, np.sin(beta)],
-                   [0, 1, 0],
-                   [-np.sin(beta), 0, np.cos(beta)]])
-    Rz = np.array([[np.cos(gamma), -np.sin(gamma), 0],
-                   [np.sin(gamma), np.cos(gamma), 0],
-                   [0, 0, 1]])
+    Rx = np.array(
+        [
+            [1, 0, 0],
+            [0, np.cos(alpha), -np.sin(alpha)],
+            [0, np.sin(alpha), np.cos(alpha)],
+        ]
+    )
+    Ry = np.array(
+        [[np.cos(beta), 0, np.sin(beta)], [0, 1, 0], [-np.sin(beta), 0, np.cos(beta)]]
+    )
+    Rz = np.array(
+        [
+            [np.cos(gamma), -np.sin(gamma), 0],
+            [np.sin(gamma), np.cos(gamma), 0],
+            [0, 0, 1],
+        ]
+    )
 
     if invert:
         R = np.linalg.inv(np.matmul(np.matmul(Rz, Ry), Rx))
@@ -432,8 +447,7 @@ def listdir(path, include=None, exclude=None, full=True, sorting=None):
     if isinstance(include, str):
         files = np.array([x for x in files if include in x])
     elif isinstance(include, (list, np.ndarray)):
-        matches = np.array([np.array([inc in ii for ii in files])
-                            for inc in include])
+        matches = np.array([np.array([inc in ii for ii in files]) for inc in include])
         matches = np.any(matches, axis=0)
         files = files[matches]
 
@@ -441,14 +455,13 @@ def listdir(path, include=None, exclude=None, full=True, sorting=None):
     if isinstance(exclude, str):
         files = np.array([x for x in files if exclude not in x])
     elif isinstance(exclude, (list, np.ndarray)):
-        matches = np.array([np.array([exc in ii for ii in files])
-                            for exc in exclude])
+        matches = np.array([np.array([exc in ii for ii in files]) for exc in exclude])
         matches = np.logical_not(np.any(matches, axis=0))
         files = files[matches]
 
-    if sorting == 'natural':
+    if sorting == "natural":
         files = np.array(natural_sort(files))
-    elif sorting == 'alphabetical':
+    elif sorting == "alphabetical":
         files = np.sort(files)
     elif sorting == True:
         files = np.sort(files)
@@ -472,13 +485,16 @@ def natural_sort(l):
 
     """
 
-    def convert(text): return int(text) if text.isdigit() else text.lower()
-    def alphanum_key(key): return [convert(c)
-                                   for c in re.split('([0-9]+)', key)]
+    def convert(text):
+        return int(text) if text.isdigit() else text.lower()
+
+    def alphanum_key(key):
+        return [convert(c) for c in re.split("([0-9]+)", key)]
+
     return sorted(l, key=alphanum_key)
 
 
-def match_shape(a, t, side='both', val=0):
+def match_shape(a, t, side="both", val=0):
     """
 
     Parameters
@@ -491,69 +507,67 @@ def match_shape(a, t, side='both', val=0):
     try:
         if len(t) != a.ndim:
             raise TypeError(
-                't shape must have the same number of dimensions as the input')
+                "t shape must have the same number of dimensions as the input"
+            )
     except TypeError:
-        raise TypeError('t must be array-like')
+        raise TypeError("t must be array-like")
 
     try:
         if isinstance(val, (int, float, complex)):
             b = np.ones(t, a.dtype) * val
-        elif val == 'max':
+        elif val == "max":
             b = np.ones(t, a.dtype) * np.max(a)
-        elif val == 'mean':
+        elif val == "mean":
             b = np.ones(t, a.dtype) * np.mean(a)
-        elif val == 'median':
+        elif val == "median":
             b = np.ones(t, a.dtype) * np.median(a)
-        elif val == 'min':
+        elif val == "min":
             b = np.ones(t, a.dtype) * np.min(a)
     except TypeError:
-        raise TypeError('Pad value must be numeric or string')
+        raise TypeError("Pad value must be numeric or string")
     except ValueError:
-        raise ValueError('Pad value must be scalar or valid string')
+        raise ValueError("Pad value must be scalar or valid string")
 
     aind = [slice(None, None)] * a.ndim
     bind = [slice(None, None)] * a.ndim
 
     # pad/trim comes after the array in each dimension
-    if side == 'after':
+    if side == "after":
         for dd in range(a.ndim):
             if a.shape[dd] > t[dd]:
                 aind[dd] = slice(None, t[dd])
             elif a.shape[dd] < t[dd]:
                 bind[dd] = slice(None, a.shape[dd])
     # pad/trim comes before the array in each dimension
-    elif side == 'before':
+    elif side == "before":
         for dd in range(a.ndim):
             if a.shape[dd] > t[dd]:
                 aind[dd] = slice(int(a.shape[dd] - t[dd]), None)
             elif a.shape[dd] < t[dd]:
                 bind[dd] = slice(int(t[dd] - a.shape[dd]), None)
     # pad/trim both sides of the array in each dimension
-    elif side == 'both':
+    elif side == "both":
         for dd in range(a.ndim):
             if a.shape[dd] > t[dd]:
-                diff = (a.shape[dd] - t[dd]) / 2.
-                aind[dd] = slice(int(np.floor(diff)), int(
-                    a.shape[dd] - np.ceil(diff)))
+                diff = (a.shape[dd] - t[dd]) / 2.0
+                aind[dd] = slice(int(np.floor(diff)), int(a.shape[dd] - np.ceil(diff)))
             elif a.shape[dd] < t[dd]:
-                diff = (t[dd] - a.shape[dd]) / 2.
-                bind[dd] = slice(int(np.floor(diff)),
-                                 int(t[dd] - np.ceil(diff)))
+                diff = (t[dd] - a.shape[dd]) / 2.0
+                bind[dd] = slice(int(np.floor(diff)), int(t[dd] - np.ceil(diff)))
     else:
-        raise Exception('Invalid choice of pad type: %s' % side)
+        raise Exception("Invalid choice of pad type: %s" % side)
 
     b[tuple(bind)] = a[tuple(aind)]
 
     return b
 
 
-def intensity_projection_series_all(infiles, outname,
-                                    fct=np.max,
-                                    normalize='all'):
-    import phenotastic.file_processing as fp
+def intensity_projection_series_all(infiles, outname, fct=np.max, normalize="all"):
+    import tifffile as tiff
     from pystackreg import StackReg
     from skimage.transform import warp
-    import tifffile as tiff
+
+    import phenotastic.file_processing as fp
 
     fdata = [fp.tiffload(x).data for x in infiles]
     shapes = [x.shape for x in fdata]
@@ -577,9 +591,9 @@ def intensity_projection_series_all(infiles, outname,
             cdstack = np.vstack(cdstack)
             cstack[dim] = cdstack
 
-        if normalize == 'all':
+        if normalize == "all":
             cstack /= np.max(cstack)
-        elif normalize == 'first':
+        elif normalize == "first":
             cstack /= np.max(cstack[0])
 
         cstack = np.hstack(cstack)
@@ -617,7 +631,7 @@ def car2sph(xyz):
     x = xyz[:, 0]
     y = xyz[:, 1]
     z = xyz[:, 2]
-    
+
     rtp = np.zeros(xyz.shape)
     xy = x**2 + y**2
     rtp[:, 0] = np.sqrt(xy + z**2)
@@ -651,20 +665,28 @@ def sph2car(rtp):
 
 
 def to_uint8(data, normalize=True):
-    data = data.astype('float')
+    data = data.astype("float")
     if normalize:
         data = (data - np.min(data)) / (np.max(data) - np.min(data)) * 255
     else:
-        data = data/np.max(data) * 255
+        data = data / np.max(data) * 255
     data = data.astype(np.uint8)
     return data
 
 
 def matching_rows(array1, array2):
-    return np.array(np.all((array1[:, None, :] == array2[None, :, :]), axis=-1).nonzero()).T
+    return np.array(
+        np.all((array1[:, None, :] == array2[None, :, :]), axis=-1).nonzero()
+    ).T
 
 
-def rand_cmap(nlabels, type='bright', first_color_black=True, last_color_black=False, verbose=False):
+def rand_cmap(
+    nlabels,
+    type="bright",
+    first_color_black=True,
+    last_color_black=False,
+    verbose=False,
+):
     """
     Creates a random colormap to be used together with matplotlib. Useful for segmentation tasks
     :param nlabels: Number of labels (size of colormap)
@@ -674,28 +696,35 @@ def rand_cmap(nlabels, type='bright', first_color_black=True, last_color_black=F
     :param verbose: Prints the number of labels and shows the colormap. True or False
     :return: colormap for matplotlib
     """
-    from matplotlib.colors import LinearSegmentedColormap
     import colorsys
-    import numpy as np
 
-    if type not in ('bright', 'soft'):
+    import numpy as np
+    from matplotlib.colors import LinearSegmentedColormap
+
+    if type not in ("bright", "soft"):
         print('Please choose "bright" or "soft" for type')
         return
 
     if verbose:
-        print('Number of labels: ' + str(nlabels))
+        print("Number of labels: " + str(nlabels))
 
     # Generate color map for bright colors, based on hsv
-    if type == 'bright':
-        randHSVcolors = [(np.random.uniform(low=0.0, high=1),
-                          np.random.uniform(low=0.2, high=1),
-                          np.random.uniform(low=0.9, high=1)) for i in range(nlabels)]
+    if type == "bright":
+        randHSVcolors = [
+            (
+                np.random.uniform(low=0.0, high=1),
+                np.random.uniform(low=0.2, high=1),
+                np.random.uniform(low=0.9, high=1),
+            )
+            for i in range(nlabels)
+        ]
 
         # Convert HSV list to RGB
         randRGBcolors = []
         for HSVcolor in randHSVcolors:
-            randRGBcolors.append(colorsys.hsv_to_rgb(
-                HSVcolor[0], HSVcolor[1], HSVcolor[2]))
+            randRGBcolors.append(
+                colorsys.hsv_to_rgb(HSVcolor[0], HSVcolor[1], HSVcolor[2])
+            )
 
         if first_color_black:
             randRGBcolors[0] = [0, 0, 0]
@@ -704,15 +733,21 @@ def rand_cmap(nlabels, type='bright', first_color_black=True, last_color_black=F
             randRGBcolors[-1] = [0, 0, 0]
 
         random_colormap = LinearSegmentedColormap.from_list(
-            'new_map', randRGBcolors, N=nlabels)
+            "new_map", randRGBcolors, N=nlabels
+        )
 
     # Generate soft pastel colors, by limiting the RGB spectrum
-    if type == 'soft':
+    if type == "soft":
         low = 0.6
         high = 0.95
-        randRGBcolors = [(np.random.uniform(low=low, high=high),
-                          np.random.uniform(low=low, high=high),
-                          np.random.uniform(low=low, high=high)) for i in range(nlabels)]
+        randRGBcolors = [
+            (
+                np.random.uniform(low=low, high=high),
+                np.random.uniform(low=low, high=high),
+                np.random.uniform(low=low, high=high),
+            )
+            for i in range(nlabels)
+        ]
 
         if first_color_black:
             randRGBcolors[0] = [0, 0, 0]
@@ -720,18 +755,28 @@ def rand_cmap(nlabels, type='bright', first_color_black=True, last_color_black=F
         if last_color_black:
             randRGBcolors[-1] = [0, 0, 0]
         random_colormap = LinearSegmentedColormap.from_list(
-            'new_map', randRGBcolors, N=nlabels)
+            "new_map", randRGBcolors, N=nlabels
+        )
 
     # Display colorbar
     if verbose:
-        from matplotlib import colors, colorbar
+        from matplotlib import colorbar, colors
         from matplotlib import pyplot as plt
+
         fig, ax = plt.subplots(1, 1, figsize=(15, 0.5))
 
         bounds = np.linspace(0, nlabels, nlabels + 1)
         norm = colors.BoundaryNorm(bounds, nlabels)
 
-        cb = colorbar.ColorbarBase(ax, cmap=random_colormap, norm=norm, spacing='proportional', ticks=None,
-                                   boundaries=bounds, format='%1i', orientation=u'horizontal')
+        cb = colorbar.ColorbarBase(
+            ax,
+            cmap=random_colormap,
+            norm=norm,
+            spacing="proportional",
+            ticks=None,
+            boundaries=bounds,
+            format="%1i",
+            orientation="horizontal",
+        )
 
     return random_colormap

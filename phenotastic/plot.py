@@ -5,16 +5,21 @@ Created on Tue May 29 21:53:06 2018
 
 @author: henrik
 """
-import sys, os
-# os.chdir('/home/henrik/projects/surface_extraction/code/phenotastic/phenotastic')
+import os
+import sys
 
 import numpy as np
-import phenotastic.domains as boa
 import pyvista
-#import phenotastic.Meristem_Phenotyper_3D as ap
+
+import phenotastic.domains as boa
+
+# os.chdir('/home/henrik/projects/surface_extraction/code/phenotastic/phenotastic')
+
+# import phenotastic.Meristem_Phenotyper_3D as ap
+
 
 def coord_array(arr, res=(1, 1, 1), offset=(0, 0, 0)):
-    '''
+    """
     Create a coordinate array (of e.g. same dimensionality as intensity array) of the same dimensions as another array. Only defined for 3D.
 
     Parameters
@@ -34,11 +39,11 @@ def coord_array(arr, res=(1, 1, 1), offset=(0, 0, 0)):
     -------
     coords : np.ndarray
         Vertically stacked coordinate array for the input data.
-    '''
+    """
 
     xv = offset[0] + np.arange(0, arr.shape[0] * res[0] - 0.000001, res[0])
-    yv = offset[1] + np.arange(0, arr.shape[1] * res[1]- 0.000001, res[1])
-    zv = offset[2] + np.arange(0, arr.shape[2] * res[2]- 0.000001, res[2])
+    yv = offset[1] + np.arange(0, arr.shape[1] * res[1] - 0.000001, res[1])
+    zv = offset[2] + np.arange(0, arr.shape[2] * res[2] - 0.000001, res[2])
     grid = np.meshgrid(xv, yv, zv)
     grid = np.array(grid)
     grid = grid.transpose(0, 2, 1, 3)
@@ -51,14 +56,41 @@ def coord_array(arr, res=(1, 1, 1), offset=(0, 0, 0)):
     coords = np.vstack((xx.ravel(), yy.ravel(), zz.ravel()))
     return coords
 
-def PlotImage(arr, res=(1, 1, 1), offset=(0, 0, 0), mask=None, mesh=None, mopacity=1,
-              popacity=1, psize=5, bg=[.5, .5, .5], pcolor=None, prng=None, pname='',
-              pstitle='', pflipscalars=False, pcolormap=None, pncolors=256, mcolor=None,
-              mstyle=None, mscalars=None, mrng=None, mstitle=None, mshowedges=True,
-              mpsize=5.0, mlinethick=None, mflipscalars=False, mlighting=False,
-              mncolors=256, minterpolatebeforemap=False, mcolormap=None, mkwargs=dict(),
-              return_pobj=False):
-    '''
+
+def PlotImage(
+    arr,
+    res=(1, 1, 1),
+    offset=(0, 0, 0),
+    mask=None,
+    mesh=None,
+    mopacity=1,
+    popacity=1,
+    psize=5,
+    bg=[0.5, 0.5, 0.5],
+    pcolor=None,
+    prng=None,
+    pname="",
+    pstitle="",
+    pflipscalars=False,
+    pcolormap=None,
+    pncolors=256,
+    mcolor=None,
+    mstyle=None,
+    mscalars=None,
+    mrng=None,
+    mstitle=None,
+    mshowedges=True,
+    mpsize=5.0,
+    mlinethick=None,
+    mflipscalars=False,
+    mlighting=False,
+    mncolors=256,
+    minterpolatebeforemap=False,
+    mcolormap=None,
+    mkwargs=dict(),
+    return_pobj=False,
+):
+    """
     Plot an intensity image with its mesh (optional).
     TODO: Rewrite documentation
 
@@ -86,7 +118,7 @@ def PlotImage(arr, res=(1, 1, 1), offset=(0, 0, 0), mask=None, mesh=None, mopaci
     -------
     No return. Plots input array and mesh if given.
 
-    '''
+    """
     # Create coordinate matrix
     xv = offset[0] + np.arange(0, arr.shape[0] * res[0], res[0])
     yv = offset[1] + np.arange(0, arr.shape[1] * res[1], res[1])
@@ -105,26 +137,60 @@ def PlotImage(arr, res=(1, 1, 1), offset=(0, 0, 0), mask=None, mesh=None, mopaci
 
     # Plot
     pobj = pyvista.Plotter(notebook=False)
-    pobj.add_points(coords, color=pcolor, psize=psize, scalars=vals, rng=prng, name=pname,
-                   opacity=popacity, stitle=pstitle, flipscalars=pflipscalars, colormap=pcolormap,
-                   ncolors=pncolors)
+    pobj.add_points(
+        coords,
+        color=pcolor,
+        psize=psize,
+        scalars=vals,
+        rng=prng,
+        name=pname,
+        opacity=popacity,
+        stitle=pstitle,
+        flipscalars=pflipscalars,
+        colormap=pcolormap,
+        ncolors=pncolors,
+    )
     pobj.set_background(bg)
 
     if mesh is not None:
-        pobj.add_mesh(mesh, color=mcolor, style=mstyle, scalars=mscalars, rng=mrng,
-                     stitle=mstitle, showedges=mshowedges, psize=mpsize, opacity=mopacity,
-                     linethick=mlinethick, flipscalars=mflipscalars, lighting=mlighting,
-                     interpolatebeforemap=minterpolatebeforemap, ncolors=mncolors,
-                     colormap=mcolormap, **mkwargs)
+        pobj.add_mesh(
+            mesh,
+            color=mcolor,
+            style=mstyle,
+            scalars=mscalars,
+            rng=mrng,
+            stitle=mstitle,
+            showedges=mshowedges,
+            psize=mpsize,
+            opacity=mopacity,
+            linethick=mlinethick,
+            flipscalars=mflipscalars,
+            lighting=mlighting,
+            interpolatebeforemap=minterpolatebeforemap,
+            ncolors=mncolors,
+            colormap=mcolormap,
+            **mkwargs
+        )
 
     if return_pobj:
         return pobj
     else:
         pobj.plot()
 
-def PlotPointData(mesh, pdata, var='domain', boacoords=[], show_boundaries=False,
-                bcolor='black', bpsize=10, blinewidth=10, *args, **kwargs):
-    '''
+
+def PlotPointData(
+    mesh,
+    pdata,
+    var="domain",
+    boacoords=[],
+    show_boundaries=False,
+    bcolor="black",
+    bpsize=10,
+    blinewidth=10,
+    *args,
+    **kwargs
+):
+    """
     Plot point data of mesh, with eventual domain boundaries and attractor maxima.
 
     Parameters
@@ -151,35 +217,57 @@ def PlotPointData(mesh, pdata, var='domain', boacoords=[], show_boundaries=False
     -------
     No return. Plots input.
 
-    '''
+    """
     pobj = pyvista.Plotter()
     pobj.add_mesh(mesh, scalars=pdata[var].values, **kwargs)
 
     if len(boacoords) > 0:
-        pobj.add_point_labels(np.array(boacoords), np.array([str(ii) for ii in range(
-            len(boacoords))]), font_size=30, point_color='w', text_color='w')
+        pobj.add_point_labels(
+            np.array(boacoords),
+            np.array([str(ii) for ii in range(len(boacoords))]),
+            font_size=30,
+            point_color="w",
+            text_color="w",
+        )
 
     if show_boundaries:
         for ii in range(len(boacoords)):
-            pobj.add_mesh(boa.get_domain_boundary(mesh, pdata, ii),
-                         color=bcolor, point_size=bpsize, line_width=blinewidth)
+            pobj.add_mesh(
+                boa.get_domain_boundary(mesh, pdata, ii),
+                color=bcolor,
+                point_size=bpsize,
+                line_width=blinewidth,
+            )
 
     pobj.plot(**kwargs)
 
+
 def rot_matrix_44(angles, invert=False):
     alpha, beta, gamma = angles
-    Rx = np.array([[1, 0, 0, 0],
-                   [0, np.cos(alpha), -np.sin(alpha), 0],
-                   [0, np.sin(alpha), np.cos(alpha), 0],
-                   [0, 0, 0, 1]])
-    Ry = np.array([[np.cos(beta), 0, np.sin(beta), 0],
-                   [0, 1, 0, 0],
-                   [-np.sin(beta), 0, np.cos(beta), 0],
-                   [0, 0, 0, 1]])
-    Rz = np.array([[np.cos(gamma), -np.sin(gamma), 0, 0],
-                   [np.sin(gamma), np.cos(gamma), 0, 0],
-                   [0, 0, 1, 0],
-                   [0, 0, 0, 1]])
+    Rx = np.array(
+        [
+            [1, 0, 0, 0],
+            [0, np.cos(alpha), -np.sin(alpha), 0],
+            [0, np.sin(alpha), np.cos(alpha), 0],
+            [0, 0, 0, 1],
+        ]
+    )
+    Ry = np.array(
+        [
+            [np.cos(beta), 0, np.sin(beta), 0],
+            [0, 1, 0, 0],
+            [-np.sin(beta), 0, np.cos(beta), 0],
+            [0, 0, 0, 1],
+        ]
+    )
+    Rz = np.array(
+        [
+            [np.cos(gamma), -np.sin(gamma), 0, 0],
+            [np.sin(gamma), np.cos(gamma), 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1],
+        ]
+    )
 
     if invert == True:
         R = np.linalg.inv(np.matmul(np.matmul(Rz, Ry), Rx))
@@ -188,11 +276,12 @@ def rot_matrix_44(angles, invert=False):
 
     return R
 
-def PlotParaboloid(mesh, p, sampleDim=(200, 200, 200),
-                   bounds=[-2000, 2000] * 3):
+
+def PlotParaboloid(mesh, p, sampleDim=(200, 200, 200), bounds=[-2000, 2000] * 3):
     p1, p2, p3, p4, p5, alpha, beta, gamma = p
 
     import vtk
+
     # Configure
     quadric = vtk.vtkQuadric()
     quadric.SetCoefficients(p1, p2, 0, 0, 0, 0, p3, p4, -1, p5)
@@ -228,6 +317,6 @@ def PlotParaboloid(mesh, p, sampleDim=(200, 200, 200),
     tpoly.clip_with_plane([mesh.bounds[0] - 20, 0, 0], [1, 0, 0])
 
     pobj = pyvista.Plotter()
-    pobj.add_mesh(tpoly, opacity=.5, showedges=False, color='orange')
-    pobj.add_mesh(mesh, opcaity=.9, color='green')
+    pobj.add_mesh(tpoly, opacity=0.5, showedges=False, color="orange")
+    pobj.add_mesh(mesh, opcaity=0.9, color="green")
     pobj.plot()

@@ -4,42 +4,53 @@ Created on Tue May 29 22:10:18 2018
 
 @author: henrik
 """
+import gc
 import os
 import sys
-import vtk
+
+import mahotas as mh
 import numpy as np
 import pyvista as pv
 import tifffile as tiff
-from scipy.spatial import cKDTree
-from scipy.ndimage.filters import gaussian_filter
-from skimage.segmentation import morphological_chan_vese
-from skimage.measure import marching_cubes
+import vtk
 from clahe import clahe
-from imgmisc import autocrop
-from imgmisc import cut
-from imgmisc import get_resolution
-from imgmisc import to_uint8
-from scipy.signal import wiener
+from imgmisc import autocrop, cut, get_resolution, to_uint8
+from scipy.ndimage.filters import gaussian_filter
 from scipy.ndimage.morphology import binary_fill_holes
-import mahotas as mh
-import gc
+from scipy.signal import wiener
+from scipy.spatial import cKDTree
+from skimage.measure import marching_cubes
+from skimage.segmentation import morphological_chan_vese
 
 import phenotastic.plot as pl
 
+
 def rot_matrix_44(angles, invert=False):
     alpha, beta, gamma = angles
-    Rx = np.array([[1, 0, 0, 0],
-                   [0, np.cos(alpha), -np.sin(alpha), 0],
-                   [0, np.sin(alpha), np.cos(alpha), 0],
-                   [0, 0, 0, 1]])
-    Ry = np.array([[np.cos(beta), 0, np.sin(beta), 0],
-                   [0, 1, 0, 0],
-                   [-np.sin(beta), 0, np.cos(beta), 0],
-                   [0, 0, 0, 1]])
-    Rz = np.array([[np.cos(gamma), -np.sin(gamma), 0, 0],
-                   [np.sin(gamma), np.cos(gamma), 0, 0],
-                   [0, 0, 1, 0],
-                   [0, 0, 0, 1]])
+    Rx = np.array(
+        [
+            [1, 0, 0, 0],
+            [0, np.cos(alpha), -np.sin(alpha), 0],
+            [0, np.sin(alpha), np.cos(alpha), 0],
+            [0, 0, 0, 1],
+        ]
+    )
+    Ry = np.array(
+        [
+            [np.cos(beta), 0, np.sin(beta), 0],
+            [0, 1, 0, 0],
+            [-np.sin(beta), 0, np.cos(beta), 0],
+            [0, 0, 0, 1],
+        ]
+    )
+    Rz = np.array(
+        [
+            [np.cos(gamma), -np.sin(gamma), 0, 0],
+            [np.sin(gamma), np.cos(gamma), 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1],
+        ]
+    )
 
     if invert == True:
         R = np.linalg.inv(np.matmul(np.matmul(Rz, Ry), Rx))
@@ -50,8 +61,10 @@ def rot_matrix_44(angles, invert=False):
 
 
 def paraboloid(p, sampling=(200, 200, 200), bounds=None):
-    from phenotastic.misc import rotate
     import vtk
+
+    from phenotastic.misc import rotate
+
     p1, p2, p3, p4, p5, alpha, beta, gamma = p
 
     if bounds is None:
@@ -61,19 +74,25 @@ def paraboloid(p, sampling=(200, 200, 200), bounds=None):
     if isinstance(sampling, (int, float)):
         sampling = [sampling] * 3
     bounds = np.array(bounds)
-    corners = [[bounds[0], bounds[2], bounds[4]],
-               [bounds[0], bounds[2], bounds[5]],
-               [bounds[0], bounds[3], bounds[4]],
-               [bounds[0], bounds[3], bounds[5]],
-               [bounds[1], bounds[2], bounds[4]],
-               [bounds[1], bounds[2], bounds[5]],
-               [bounds[1], bounds[3], bounds[4]],
-               [bounds[1], bounds[3], bounds[5]]
-               ]
+    corners = [
+        [bounds[0], bounds[2], bounds[4]],
+        [bounds[0], bounds[2], bounds[5]],
+        [bounds[0], bounds[3], bounds[4]],
+        [bounds[0], bounds[3], bounds[5]],
+        [bounds[1], bounds[2], bounds[4]],
+        [bounds[1], bounds[2], bounds[5]],
+        [bounds[1], bounds[3], bounds[4]],
+        [bounds[1], bounds[3], bounds[5]],
+    ]
     corners = rotate(np.array(corners), [alpha, beta, gamma], invert=False)
-    bounds = [min(corners[:, 0]), max(corners[:, 0]),
-              min(corners[:, 1]), max(corners[:, 1]),
-              min(corners[:, 2]), max(corners[:, 2])]
+    bounds = [
+        min(corners[:, 0]),
+        max(corners[:, 0]),
+        min(corners[:, 1]),
+        max(corners[:, 1]),
+        min(corners[:, 2]),
+        max(corners[:, 2]),
+    ]
 
     # Generate the paraboloid mesh along the z-axis
     # vtkQuadric evaluates the quadric function F(x,y,z) = a0*x^2 + a1*y^2 + a2*z^2 + a3*x*y + a4*y*z + a5*x*z + a6*x + a7*y + a8*z + a9.
@@ -107,7 +126,12 @@ def paraboloid(p, sampling=(200, 200, 200), bounds=None):
 
 def create_mesh(contour, resolution=[1, 1, 1], step_size=1):
     v, f, _, _ = marching_cubes(
-        contour, 0, spacing=list(resolution), step_size=step_size, allow_degenerate=False)
+        contour,
+        0,
+        spacing=list(resolution),
+        step_size=step_size,
+        allow_degenerate=False,
+    )
     mesh = pv.PolyData(v, np.c_[[3] * len(f), f].ravel())
     return mesh
 
@@ -116,13 +140,14 @@ def filter_curvature(mesh, curvature_threshold):
     if isinstance(curvature_threshold, (int, float)):
         curvature_threshold = (-curvature_threshold, curvature_threshold)
     curvature = mesh.curvature()
-    to_remove = np.logical_or(curvature < curvature_threshold[0],
-                              curvature > curvature_threshold[1])
+    to_remove = np.logical_or(
+        curvature < curvature_threshold[0], curvature > curvature_threshold[1]
+    )
     mesh = mesh.remove_points(to_remove)[0]
     return mesh
 
 
-def label_cellular_mesh(mesh, values, value_tag='values', id_tag='cell_id'):
+def label_cellular_mesh(mesh, values, value_tag="values", id_tag="cell_id"):
     mesh[value_tag] = np.zeros(mesh.n_points)
     for ii in np.unique(mesh[id_tag]):
         mesh[value_tag][mesh[id_tag] == ii] = values[ii]
@@ -134,23 +159,26 @@ def create_cellular_mesh(seg_img, resolution=[1, 1, 1], verbose=True):
     n_cells = len(np.unique(seg_img)) - 1
     for c_idx, cell_id in enumerate(np.unique(seg_img)[1:]):
         if verbose:
-            print(
-                f'Now meshing cell {c_idx} (label: {cell_id}) out of {n_cells}')
+            print(f"Now meshing cell {c_idx} (label: {cell_id}) out of {n_cells}")
         cell_img, cell_cuts = autocrop(
-            seg_img == cell_id, threshold=0, n=1, return_cuts=True, offset=[[2, 2], [2, 2], [2, 2]])
+            seg_img == cell_id,
+            threshold=0,
+            n=1,
+            return_cuts=True,
+            offset=[[2, 2], [2, 2], [2, 2]],
+        )
         cell_volume = np.sum(cell_img > 0) * np.product(resolution)
 
-        v, f, _, _ = marching_cubes(cell_img, 0, allow_degenerate=False,
-                                            step_size=1, spacing=resolution)
+        v, f, _, _ = marching_cubes(
+            cell_img, 0, allow_degenerate=False, step_size=1, spacing=resolution
+        )
         v[:, 0] += cell_cuts[0, 0] * resolution[0]
         v[:, 1] += cell_cuts[1, 0] * resolution[1]
         v[:, 2] += cell_cuts[2, 0] * resolution[2]
 
-        cell_mesh = pv.PolyData(v, np.ravel(np.c_[[[3]]*len(f), f]))
-        cell_mesh['cell_id'] = np.full(
-            fill_value=cell_id, shape=cell_mesh.n_points)
-        cell_mesh['volume'] = np.full(
-            fill_value=cell_volume, shape=cell_mesh.n_points)
+        cell_mesh = pv.PolyData(v, np.ravel(np.c_[[[3]] * len(f), f]))
+        cell_mesh["cell_id"] = np.full(fill_value=cell_id, shape=cell_mesh.n_points)
+        cell_mesh["volume"] = np.full(fill_value=cell_volume, shape=cell_mesh.n_points)
 
         cells.append(cell_mesh)
 
@@ -161,12 +189,29 @@ def create_cellular_mesh(seg_img, resolution=[1, 1, 1], verbose=True):
     return poly
 
 
-def contour(fin, iterations=25, smoothing=1, masking=0.75, crop=True, resolution=None, clahe_window=None,
-            clahe_clip_limit=None, gaussian_sigma=None, gaussian_iterations=5, interpolate_slices=True,
-            fill_slices=True, lambda1=1, lambda2=1, stackreg=True, fill_inland_threshold=None, return_resolution=False, verbose=True):
+def contour(
+    fin,
+    iterations=25,
+    smoothing=1,
+    masking=0.75,
+    crop=True,
+    resolution=None,
+    clahe_window=None,
+    clahe_clip_limit=None,
+    gaussian_sigma=None,
+    gaussian_iterations=5,
+    interpolate_slices=True,
+    fill_slices=True,
+    lambda1=1,
+    lambda2=1,
+    stackreg=True,
+    fill_inland_threshold=None,
+    return_resolution=False,
+    verbose=True,
+):
 
     if verbose:
-        print(f'Reading in data for {fin}')
+        print(f"Reading in data for {fin}")
     if isinstance(fin, str):
         data = tiff.imread(fin)
         data = np.squeeze(data)
@@ -177,18 +222,20 @@ def contour(fin, iterations=25, smoothing=1, masking=0.75, crop=True, resolution
     if any(np.less(resolution, 1e-3)):
         resolution = np.multiply(resolution, 1e6)
     if verbose:
-        print(f'Resolution for {fin} is {resolution}')
+        print(f"Resolution for {fin} is {resolution}")
 
     from scipy.ndimage import zoom
-    data = zoom(data, resolution / np.array([.25, .25, .25]), order=3)
+
+    data = zoom(data, resolution / np.array([0.25, 0.25, 0.25]), order=3)
 
     if stackreg:
         if verbose:
-            print(f'Running stackreg for {fin}')
+            print(f"Running stackreg for {fin}")
         pretype = data.dtype
         data = data.astype(float)
 
         from pystackreg import StackReg
+
         sr = StackReg(StackReg.RIGID_BODY)
         if data.ndim > 3:
             trsf_mat = sr.register_stack(np.max(data, 1))
@@ -202,20 +249,25 @@ def contour(fin, iterations=25, smoothing=1, masking=0.75, crop=True, resolution
 
     if crop:
         if verbose:
-            print(f'Running autocrop for {fin}')
+            print(f"Running autocrop for {fin}")
         offset = np.full((3, 2), 5)
         offset[0] = (10, 10)
 
         if data.ndim > 3:
-            _, cuts = autocrop(np.max(data, 1), 2 * mh.otsu(np.max(data, 1)), n=10,
-                               offset=offset, return_cuts=True)
+            _, cuts = autocrop(
+                np.max(data, 1),
+                2 * mh.otsu(np.max(data, 1)),
+                n=10,
+                offset=offset,
+                return_cuts=True,
+            )
             data = cut(data, cuts)
         else:
             data = autocrop(data, 2 * mh.otsu(data), n=10, offset=offset)
 
     if verbose:
-        print(f'Running wiener filtering for {fin}')
-    data = data.astype('float')
+        print(f"Running wiener filtering for {fin}")
+    data = data.astype("float")
     if data.ndim > 3:
         for ii in range(data.shape[1]):
             data[:, ii] = wiener(data[:, ii])
@@ -226,14 +278,12 @@ def contour(fin, iterations=25, smoothing=1, masking=0.75, crop=True, resolution
     gc.collect()
 
     if verbose:
-        print(f'Running CLAHE for {fin}')
+        print(f"Running CLAHE for {fin}")
     if clahe_window is None:
         clahe_window = (np.array(data.shape) + 4) // 8
     if clahe_clip_limit is None:
         clahe_clip_limit = mh.otsu(data)
-    data = clahe(data,
-                  win_shape=clahe_window,
-                  clip_limit=clahe_clip_limit)
+    data = clahe(data, win_shape=clahe_window, clip_limit=clahe_clip_limit)
     gc.collect()
 
     if gaussian_sigma is None:
@@ -244,7 +294,7 @@ def contour(fin, iterations=25, smoothing=1, masking=0.75, crop=True, resolution
         #                   1. * .25 / resolution[2]]
     for ii in range(gaussian_iterations):
         if verbose:
-            print(f'Smoothing out {fin} with gaussian smoothing')
+            print(f"Smoothing out {fin} with gaussian smoothing")
             data = gaussian_filter(data, sigma=gaussian_sigma)
 
     # if interpolate_slices:
@@ -256,45 +306,61 @@ def contour(fin, iterations=25, smoothing=1, masking=0.75, crop=True, resolution
     # gc.collect()
 
     if isinstance(masking, (float, int)):
-        masking = to_uint8(data, False) > masking * \
-            mh.otsu(to_uint8(data, False))
+        masking = to_uint8(data, False) > masking * mh.otsu(to_uint8(data, False))
 
     if verbose:
-        print(f'Running morphological chan-vese for {fin}')
-    contour = morphological_chan_vese(data, iterations=iterations,
-                                      init_level_set=masking,
-                                      smoothing=smoothing, lambda1=lambda1, lambda2=lambda2)
+        print(f"Running morphological chan-vese for {fin}")
+    contour = morphological_chan_vese(
+        data,
+        iterations=iterations,
+        init_level_set=masking,
+        smoothing=smoothing,
+        lambda1=lambda1,
+        lambda2=lambda2,
+    )
 
     contour = fill_contour(contour, fill_xy=fill_slices, fill_zx_zy=False)
 
     if fill_inland_threshold is not None:
         if verbose:
-            print(f'Filling inland for {fin}')
+            print(f"Filling inland for {fin}")
         contour = fill_inland(contour, fill_inland_threshold)
 
     if return_resolution:
         return contour, resolution
     return contour
 
-def fill_beneath(contour, mode='bottom'):
+
+def fill_beneath(contour, mode="bottom"):
     contour = contour.copy()
     contour = np.pad(contour, 1)
 
-    first = np.argmax(contour, 0) if mode == 'first' else np.zeros_like(
-        contour[0], dtype=np.uint16)
+    first = (
+        np.argmax(contour, 0)
+        if mode == "first"
+        else np.zeros_like(contour[0], dtype=np.uint16)
+    )
     last = contour.shape[0] - np.argmax(contour[::-1], 0) - 1
     last[last == contour.shape[0] - 1] = 0
 
     # mask = np.zeros_like(contour)
     for ii in range(contour.shape[1]):
         for jj in range(contour.shape[2]):
-            contour[first[ii, jj]:last[ii, jj], ii, jj] = True
+            contour[first[ii, jj] : last[ii, jj], ii, jj] = True
     contour[:, last == 0] = False
     contour = contour[1:-1, 1:-1, 1:-1]
     return contour
 
 
-def fill_contour(contour, fill_xy=False, fill_zx_zy=False, inplace=False, zrange=None, xrange=None, yrange=None):
+def fill_contour(
+    contour,
+    fill_xy=False,
+    fill_zx_zy=False,
+    inplace=False,
+    zrange=None,
+    xrange=None,
+    yrange=None,
+):
     """
     Fill contour by closing all the edges (except for the top one), and applying
     a binary fill-holes operation. Note that this causes some errors if there is
@@ -332,7 +398,7 @@ def fill_contour(contour, fill_xy=False, fill_zx_zy=False, inplace=False, zrange
     else:
         new_contour = contour
 
-    new_contour = np.pad(new_contour, 1, 'constant', constant_values=1)
+    new_contour = np.pad(new_contour, 1, "constant", constant_values=1)
     if xrange is None:
         xrange = [0, new_contour.shape[2]]
     else:
@@ -355,9 +421,17 @@ def fill_contour(contour, fill_xy=False, fill_zx_zy=False, inplace=False, zrange
     # Fill holes form in xz & yz planes.
     if fill_zx_zy:
         for ii in range(*yrange):
-            new_contour[zrange[0]:zrange[1], ii, xrange[0]:xrange[1]] = binary_fill_holes(new_contour[zrange[0]:zrange[1], ii, xrange[0]:xrange[1]])
+            new_contour[
+                zrange[0] : zrange[1], ii, xrange[0] : xrange[1]
+            ] = binary_fill_holes(
+                new_contour[zrange[0] : zrange[1], ii, xrange[0] : xrange[1]]
+            )
         for ii in range(*xrange):
-            new_contour[zrange[0]:zrange[1], yrange[0]:yrange[1], ii] = binary_fill_holes(new_contour[zrange[0]:zrange[1], yrange[0]:yrange[1], ii])
+            new_contour[
+                zrange[0] : zrange[1], yrange[0] : yrange[1], ii
+            ] = binary_fill_holes(
+                new_contour[zrange[0] : zrange[1], yrange[0] : yrange[1], ii]
+            )
 
     # Remove edges again, also for top
     new_contour[0] = 0
@@ -369,7 +443,11 @@ def fill_contour(contour, fill_xy=False, fill_zx_zy=False, inplace=False, zrange
 
     if fill_xy:
         for ii in range(*zrange):
-            new_contour[ii, yrange[0]:yrange[1], xrange[0]:xrange[1]] = binary_fill_holes(new_contour[ii, yrange[0]:yrange[1], xrange[0]:xrange[1]])
+            new_contour[
+                ii, yrange[0] : yrange[1], xrange[0] : xrange[1]
+            ] = binary_fill_holes(
+                new_contour[ii, yrange[0] : yrange[1], xrange[0] : xrange[1]]
+            )
 
     new_contour = binary_fill_holes(new_contour)
     new_contour = new_contour[1:-1, 1:-1, 1:-1]
@@ -380,8 +458,8 @@ def fill_contour(contour, fill_xy=False, fill_zx_zy=False, inplace=False, zrange
         return new_contour
 
 
-def label_mesh(mesh, segm_img, resolution=[1, 1, 1], bg=0, mode='point', inplace=False):
-    ''' Label a mesh using the closest (by euclidean distance) voxel in a segmented image. '''
+def label_mesh(mesh, segm_img, resolution=[1, 1, 1], bg=0, mode="point", inplace=False):
+    """Label a mesh using the closest (by euclidean distance) voxel in a segmented image."""
     coords = pl.coord_array(segm_img, resolution).T
     # I, J, K = segm_img.shape
     # i_coords, j_coords, k_coords = np.meshgrid(range(I),
@@ -395,24 +473,46 @@ def label_mesh(mesh, segm_img, resolution=[1, 1, 1], bg=0, mode='point', inplace
     img_raveled = img_raveled[img_raveled != bg]
 
     tree = cKDTree(coords)
-    if mode.lower() in ['point', 'points', 'pts', 'pt', 'p',
-                        'vertex', 'vertices', 'vert', 'verts', 'v']:
+    if mode.lower() in [
+        "point",
+        "points",
+        "pts",
+        "pt",
+        "p",
+        "vertex",
+        "vertices",
+        "vert",
+        "verts",
+        "v",
+    ]:
         closest = tree.query(mesh.points, k=1)[1]
-    elif mode.lower() in ['cell', 'cells', 'c',
-                          'triangle', 'triangles', 'tri', 'tris',
-                          'polygon', 'polygons', 'poly', 'polys']:
+    elif mode.lower() in [
+        "cell",
+        "cells",
+        "c",
+        "triangle",
+        "triangles",
+        "tri",
+        "tris",
+        "polygon",
+        "polygons",
+        "poly",
+        "polys",
+    ]:
         centers = mesh.cell_centers().points
         closest = tree.query(centers, k=1)[1]
 
     values = img_raveled[closest]
 
     if inplace:
-        mesh['labels'] = values
+        mesh["labels"] = values
     else:
         return values
 
 
-def project2surface(mesh, int_img, distance, mask=None, resolution=[1, 1, 1], fct=np.mean):
+def project2surface(
+    mesh, int_img, distance, mask=None, resolution=[1, 1, 1], fct=np.mean
+):
     coords = pl.coord_array(int_img, resolution).T
     if mask is not None:
         int_img[np.logical_not(mask)] = 0
@@ -424,10 +524,16 @@ def project2surface(mesh, int_img, distance, mask=None, resolution=[1, 1, 1], fc
     # Limit scope a little
     bounds = np.reshape(mesh.bounds, (-1, 2))
     for ii, bound_pair in enumerate(bounds):
-        img_raveled = img_raveled[np.logical_and(coords[:, ii] >= bound_pair[0],
-                                                 coords[:, ii] <= bound_pair[1])]
-        coords = coords[np.logical_and(coords[:, ii] >= bound_pair[0],
-                                       coords[:, ii] <= bound_pair[1])]
+        img_raveled = img_raveled[
+            np.logical_and(
+                coords[:, ii] >= bound_pair[0], coords[:, ii] <= bound_pair[1]
+            )
+        ]
+        coords = coords[
+            np.logical_and(
+                coords[:, ii] >= bound_pair[0], coords[:, ii] <= bound_pair[1]
+            )
+        ]
 
     ipd = vtk.vtkImplicitPolyDataDistance()
     ipd.SetInput(mesh)
@@ -473,6 +579,7 @@ def project2surface(mesh, int_img, distance, mask=None, resolution=[1, 1, 1], fc
 
     return values
 
+
 ### Actual mesh processing
 
 
@@ -482,8 +589,9 @@ def remove_inland_under(mesh, contour, threshold, resolution=[1, 1, 1], invert=F
 
     # Find max projection
     from scipy.ndimage.morphology import distance_transform_edt
+
     cont2d = np.max(contour, 0)
-    cont2d = np.pad(cont2d, pad_width=1, constant_values=0, mode='constant')
+    cont2d = np.pad(cont2d, pad_width=1, constant_values=0, mode="constant")
     distance_map = distance_transform_edt(cont2d)
     distance_map = distance_map[1:-1, 1:-1]
     larger = np.array(np.where(distance_map > threshold)).T
@@ -496,25 +604,25 @@ def remove_inland_under(mesh, contour, threshold, resolution=[1, 1, 1], invert=F
     xycoords[xycoords[:, 0] > contour.shape[1] - 1, 0] = contour.shape[1] - 1
     xycoords[xycoords[:, 1] > contour.shape[2] - 1, 0] = contour.shape[2] - 1
     inside = c[xycoords[:, 0], xycoords[:, 1]] == 2
-#    inside = c==2
+    #    inside = c==2
 
-#    mesh['inside'] = inside
+    #    mesh['inside'] = inside
     indices = np.where(inside)[0]
     under_indices = []
 
-    target = mesh.bounds[1] + \
-        0.00001 if not invert else mesh.bounds[0] - 0.00001
+    target = mesh.bounds[1] + 0.00001 if not invert else mesh.bounds[0] - 0.00001
     for ii in indices:
         pt = mesh.ray_trace(
-            mesh.points[ii], [target, mesh.points[ii][1], mesh.points[ii][2]])
+            mesh.points[ii], [target, mesh.points[ii][1], mesh.points[ii][2]]
+        )
         if pt[0].shape[0] > 1:
             under_indices.append(ii)
     under_indices = np.array(under_indices)
-    under = np.zeros(mesh.n_points, 'bool')
+    under = np.zeros(mesh.n_points, "bool")
     if len(under_indices) > 0:
         under[under_indices] = True
-    mesh['under'] = under
-#    mesh.plot(notebook=False, scalars='under')
+    mesh["under"] = under
+    #    mesh.plot(notebook=False, scalars='under')
     mesh = mesh.remove_points(under)[0]
 
     return mesh
@@ -522,8 +630,9 @@ def remove_inland_under(mesh, contour, threshold, resolution=[1, 1, 1], invert=F
 
 def fill_inland(contour, threshold=0):
     from scipy.ndimage.morphology import distance_transform_edt
+
     cont2d = np.max(contour, 0)
-    cont2d = np.pad(cont2d, pad_width=1, constant_values=0, mode='constant')
+    cont2d = np.pad(cont2d, pad_width=1, constant_values=0, mode="constant")
     distance_map = distance_transform_edt(cont2d)
     distance_map = distance_map[1:-1, 1:-1]
     larger = np.array(np.where(distance_map > threshold)).T
@@ -537,7 +646,7 @@ def fill_inland(contour, threshold=0):
     mask = np.zeros_like(contour)
     for ii in range(mask.shape[1]):
         for jj in range(mask.shape[2]):
-            mask[first_occurence[ii, jj]:last_occurence[ii, jj], ii, jj] = True
+            mask[first_occurence[ii, jj] : last_occurence[ii, jj], ii, jj] = True
 
     mask = np.logical_and(mask, c[1:-1, 1:-1] == 2)
 
@@ -549,13 +658,14 @@ def fill_inland(contour, threshold=0):
 
 def repair_small(mesh, nbe=100, refine=True):
     from pymeshfix._meshfix import PyTMesh
+
     mfix = PyTMesh(False)
     mfix.load_array(mesh.points, mesh.faces.reshape(-1, 4)[:, 1:])
     if nbe is None:
         nbe = -1
     mfix.fill_small_boundaries(nbe=nbe, refine=refine)
     vert, faces = mfix.return_arrays()
-    mesh = pv.PolyData(vert, np.ravel(np.c_[[[3]]*len(faces), faces]))
+    mesh = pv.PolyData(vert, np.ravel(np.c_[[[3]] * len(faces), faces]))
     mesh = mesh.clean()
     mesh = mesh.triangulate()
     return mesh
@@ -591,15 +701,14 @@ def correct_bad_mesh(mesh, verbose=True):
     try:
         from pymeshfix import _meshfix
     except ImportError:
-        raise ImportError(
-            'Package pymeshfix not found. Install to use this function.')
+        raise ImportError("Package pymeshfix not found. Install to use this function.")
 
     new_poly = ECFT(mesh, 0)
     nm = non_manifold_edges(new_poly)
 
     while nm.n_points > 0:
         if verbose:
-            print(('Trying to remove %d points' % nm.GetNumberOfPoints()))
+            print(("Trying to remove %d points" % nm.GetNumberOfPoints()))
 
         # Create pymeshfix object from our mesh
         meshfix = _meshfix.PyTMesh()
@@ -619,8 +728,7 @@ def correct_bad_mesh(mesh, verbose=True):
         nm = non_manifold_edges(new_poly)
         nmpts = nm.points
         mpts = new_poly.points
-        ptidx = np.array([np.where((mpts == ii).all(axis=1))[0][0]
-                          for ii in nmpts])
+        ptidx = np.array([np.where((mpts == ii).all(axis=1))[0][0] for ii in nmpts])
 
         mask = np.zeros((mpts.shape[0],), dtype=bool)
         if ptidx.shape[0] > 0:
@@ -633,6 +741,7 @@ def correct_bad_mesh(mesh, verbose=True):
     new_poly = ECFT(new_poly, 0)
 
     return new_poly
+
 
 # TODO: Add inplace argument
 
@@ -666,16 +775,14 @@ def remove_bridges(mesh, verbose=True):
         faces = new_mesh.faces.reshape(-1, 4)[:, 1:]
         f_flat = faces.ravel()
         boundary = boundary_points(new_mesh)
-        border_faces = faces[np.unique(
-            np.where(np.in1d(f_flat, boundary))[0] // 3)]
+        border_faces = faces[np.unique(np.where(np.in1d(f_flat, boundary))[0] // 3)]
 
         # Find pts to remove
-        all_boundary = np.array([np.all(np.in1d(ii, boundary))
-                                 for ii in border_faces])
+        all_boundary = np.array([np.all(np.in1d(ii, boundary)) for ii in border_faces])
         remove_pts = np.unique(border_faces[all_boundary].flatten())
 
         if verbose:
-            print(('Removing %d points' % len(remove_pts)))
+            print(("Removing %d points" % len(remove_pts)))
         if len(remove_pts) == 0:
             break
 
@@ -689,8 +796,8 @@ def remove_bridges(mesh, verbose=True):
     return new_mesh
 
 
-def remove_normals(mesh, threshold_angle=0, flip=False, angle='polar'):
-    """ Remove points based on the point normal angle.
+def remove_normals(mesh, threshold_angle=0, flip=False, angle="polar"):
+    """Remove points based on the point normal angle.
 
     Currently only considering the polar angle.
 
@@ -716,25 +823,27 @@ def remove_normals(mesh, threshold_angle=0, flip=False, angle='polar'):
 
     normals = mesh.point_normals.copy()
     if flip:
-        normals *= -1.
-    normals = car2sph(normals) / (2. * np.pi) * 360.
-    
-    if angle == 'polar':
+        normals *= -1.0
+    normals = car2sph(normals) / (2.0 * np.pi) * 360.0
+
+    if angle == "polar":
         angle_index = 1
-    elif angle == 'azimuth':
+    elif angle == "azimuth":
         angle_index = 2
     else:
         raise ValueError(
-            'Parameter \'angle\' can only take attributes \'polar\' and \'azimuth\'.')
+            "Parameter 'angle' can only take attributes 'polar' and 'azimuth'."
+        )
 
     to_remove = normals[:, angle_index] < threshold_angle
     new_mesh = mesh.remove_points(to_remove, keep_scalars=False)[0]
     return new_mesh
 
-def smooth_boundary(mesh, iterations=20, sigma=.1, inplace=False):
-    """
-    """
+
+def smooth_boundary(mesh, iterations=20, sigma=0.1, inplace=False):
+    """ """
     import networkx as nx
+
     mesh = mesh.copy() if not inplace else mesh
 
     # Get boundary information and index correspondences
@@ -743,7 +852,7 @@ def smooth_boundary(mesh, iterations=20, sigma=.1, inplace=False):
     from_ = np.array([mesh.FindPoint(ii) for ii in bdpts])
     # npts = boundary.n_points
 
-#     Find the cycles, i.e. the different boundaries we have
+    #     Find the cycles, i.e. the different boundaries we have
     # list(get_connected_vertices_all(boundary, include_self=False))
     neighs = []
     for ii in range(boundary.n_points):
@@ -762,8 +871,19 @@ def smooth_boundary(mesh, iterations=20, sigma=.1, inplace=False):
         new_pts_prev = new_pts_now.copy()
         for ii in range(len(cycles)):
             for jj in range(len(cycles[ii])):
-                new_pts_now[cycles[ii][jj]] = new_pts_prev[cycles[ii][jj]] - sigma * (new_pts_prev[cycles[ii][jj]] - np.mean(np.array(
-                    [new_pts_prev[cycles[ii][jj]], new_pts_prev[cycles[ii][jj-1]], new_pts_prev[cycles[ii][(jj+1) % len(cycles[ii])]]]), axis=0))
+                new_pts_now[cycles[ii][jj]] = new_pts_prev[cycles[ii][jj]] - sigma * (
+                    new_pts_prev[cycles[ii][jj]]
+                    - np.mean(
+                        np.array(
+                            [
+                                new_pts_prev[cycles[ii][jj]],
+                                new_pts_prev[cycles[ii][jj - 1]],
+                                new_pts_prev[cycles[ii][(jj + 1) % len(cycles[ii])]],
+                            ]
+                        ),
+                        axis=0,
+                    )
+                )
 
     # update coordinates
     for ii in range(len(cycles)):
@@ -772,22 +892,32 @@ def smooth_boundary(mesh, iterations=20, sigma=.1, inplace=False):
     return None if inplace else mesh
 
 
-def process_mesh(mesh, hole_repair_threshold=100, downscaling=.01, upscaling=2,
-                 threshold_angle=60, top_cut='center', tongues_radius=None, tongues_ratio=4,
-                 smooth_iter=200, smooth_relax=0.01, curvature_threshold=0.4,
-                 inland_threshold=None, contour=None):
+def process_mesh(
+    mesh,
+    hole_repair_threshold=100,
+    downscaling=0.01,
+    upscaling=2,
+    threshold_angle=60,
+    top_cut="center",
+    tongues_radius=None,
+    tongues_ratio=4,
+    smooth_iter=200,
+    smooth_relax=0.01,
+    curvature_threshold=0.4,
+    inland_threshold=None,
+    contour=None,
+):
 
-    if top_cut == 'center':
+    if top_cut == "center":
         top_cut = (mesh.center[0], 0, 0)
 
-#    mesh = repair_small(mesh, hole_repair_threshold)
+    #    mesh = repair_small(mesh, hole_repair_threshold)
     mesh = remesh(mesh, int(mesh.n_points * downscaling), sub=0)
     mesh = repair_small(mesh, hole_repair_threshold)
 
     if threshold_angle:
         mesh.rotate_y(-90)
-        mesh = remove_normals(
-            mesh, threshold_angle=threshold_angle, angle='polar')
+        mesh = remove_normals(mesh, threshold_angle=threshold_angle, angle="polar")
         mesh.rotate_y(90)
         mesh = make_manifold(mesh, hole_repair_threshold)
         mesh = mesh.extract_largest()
@@ -800,8 +930,12 @@ def process_mesh(mesh, hole_repair_threshold=100, downscaling=.01, upscaling=2,
         mesh = repair_small(mesh, hole_repair_threshold)
     mesh = ECFT(mesh, hole_repair_threshold)
     if tongues_radius is not None:
-        mesh = remove_tongues(mesh, radius=tongues_radius,
-                              threshold=tongues_ratio, hole_edges=hole_repair_threshold)
+        mesh = remove_tongues(
+            mesh,
+            radius=tongues_radius,
+            threshold=tongues_ratio,
+            hole_edges=hole_repair_threshold,
+        )
     mesh = mesh.extract_largest()
     mesh = repair_small(mesh, hole_repair_threshold)
 
@@ -814,8 +948,7 @@ def process_mesh(mesh, hole_repair_threshold=100, downscaling=.01, upscaling=2,
 
 
 # TODO: Add inplace argument
-def remove_tongues(mesh, radius, threshold=6, hole_edges=100,
-                   verbose=True):
+def remove_tongues(mesh, radius, threshold=6, hole_edges=100, verbose=True):
     """
     Remove "tongues" in mesh.
 
@@ -857,8 +990,13 @@ def remove_tongues(mesh, radius, threshold=6, hole_edges=100,
                 all_edges.append((ii, neigh))
         all_edges = np.array(all_edges)
 
-        weighted_all_edges = np.c_[all_edges, np.sum(
-            (mesh.points[all_edges[:, 0]] - mesh.points[all_edges[:, 1]])**2, 1)**.5]
+        weighted_all_edges = np.c_[
+            all_edges,
+            np.sum(
+                (mesh.points[all_edges[:, 0]] - mesh.points[all_edges[:, 1]]) ** 2, 1
+            )
+            ** 0.5,
+        ]
         all_net = nx.Graph()
         all_net.add_weighted_edges_from(weighted_all_edges)
 
@@ -871,8 +1009,9 @@ def remove_tongues(mesh, radius, threshold=6, hole_edges=100,
                 neighs.append((ii, pt_neighs[jj]))
         neighs = np.array(neighs)
 
-        weighted_edges = np.c_[neighs, np.sum(
-            (bdpts[neighs[:, 0]] - bdpts[neighs[:, 1]])**2, 1)**.5]
+        weighted_edges = np.c_[
+            neighs, np.sum((bdpts[neighs[:, 0]] - bdpts[neighs[:, 1]]) ** 2, 1) ** 0.5
+        ]
         bdnet = nx.Graph()
         bdnet.add_weighted_edges_from(weighted_edges)
 
@@ -885,7 +1024,7 @@ def remove_tongues(mesh, radius, threshold=6, hole_edges=100,
         to_remove = []
         for ii, cycle in enumerate(cycles):
             if verbose:
-                print('Running cycle {} with {} points'.format(ii, len(cycle)))
+                print("Running cycle {} with {} points".format(ii, len(cycle)))
             cpts = bdpts[cycle]
 
             # Get the boundary points (in same loop) within a certain radius
@@ -900,16 +1039,18 @@ def remove_tongues(mesh, radius, threshold=6, hole_edges=100,
             for jj in range(len(cpts)):
                 bd_path_lengths, int_path_lengths = [], []
                 for kk in range(len(neighs[jj])):
-                    bd_length = nx.shortest_path_length(bdnet,
-                                                        source=cycle[jj],
-                                                        target=cycle[neighs[jj][kk]],
-                                                        weight='weight')
-                    int_length = nx.shortest_path_length(all_net,
-                                                         source=from_[
-                                                             cycle[jj]],
-                                                         target=from_[
-                                                             cycle[neighs[jj][kk]]],
-                                                         weight='weight')
+                    bd_length = nx.shortest_path_length(
+                        bdnet,
+                        source=cycle[jj],
+                        target=cycle[neighs[jj][kk]],
+                        weight="weight",
+                    )
+                    int_length = nx.shortest_path_length(
+                        all_net,
+                        source=from_[cycle[jj]],
+                        target=from_[cycle[neighs[jj][kk]]],
+                        weight="weight",
+                    )
 
                     bd_path_lengths.append(bd_length)
                     int_path_lengths.append(int_length)
@@ -947,13 +1088,13 @@ def remove_tongues(mesh, radius, threshold=6, hole_edges=100,
 
             # Recalculate the geodesic path between two points
             for jj in range(len(removal_anchors)):
-                gdpts = nx.shortest_path(all_net,
-                                         source=from_[
-                                             cycles[ii][removal_anchors[jj][0]]],
-                                         target=from_[
-                                             cycles[ii][removal_anchors[jj][1]]],
-                                         weight='weight')
-                gdpts = np.array(gdpts, dtype='int')
+                gdpts = nx.shortest_path(
+                    all_net,
+                    source=from_[cycles[ii][removal_anchors[jj][0]]],
+                    target=from_[cycles[ii][removal_anchors[jj][1]]],
+                    weight="weight",
+                )
+                gdpts = np.array(gdpts, dtype="int")
                 to_remove.extend(gdpts)
 
         to_remove = np.unique(to_remove)
@@ -970,18 +1111,19 @@ def remove_tongues(mesh, radius, threshold=6, hole_edges=100,
 
         # Remove points
         mesh = mesh.remove_points(to_remove, keep_scalars=False)[0]
-#        mesh = remove_bridges(mesh)
+        #        mesh = remove_bridges(mesh)
         mesh = repair_small(mesh, hole_edges)
         mesh = make_manifold(mesh, hole_edges)
         # mesh = correct_bad_mesh(mesh)
         mesh = ECFT(mesh, hole_edges)
-        
+
     mesh = mesh.clean()
     return mesh
 
 
 def repair(mesh):
     import pymeshfix as pmf
+
     tmp = pmf.MeshFix(mesh)
     tmp.repair(True)
     return tmp.mesh
@@ -989,6 +1131,7 @@ def repair(mesh):
 
 def remesh(mesh, n, sub=3):
     from pyacvd import clustering
+
     clus = clustering.Clustering(mesh)
     clus.subdivide(sub)  # 2 also works
     clus.cluster(n)
@@ -999,21 +1142,25 @@ def remesh(mesh, n, sub=3):
 
 def make_manifold(mesh, hole_edges=300):
     mesh = mesh.copy()
-    edges = mesh.extract_feature_edges(boundary_edges=False,
-                                       feature_edges=False,
-                                       manifold_edges=False,
-                                       non_manifold_edges=True)
+    edges = mesh.extract_feature_edges(
+        boundary_edges=False,
+        feature_edges=False,
+        manifold_edges=False,
+        non_manifold_edges=True,
+    )
     while edges.n_points > 0:
         to_remove = [mesh.FindPoint(pt) for pt in edges.points]
-        print('Removing {} points'.format(len(to_remove)))
+        print("Removing {} points".format(len(to_remove)))
         mesh = mesh.remove_points(to_remove)[0]
         mesh = mesh.extract_largest()
         mesh = repair_small(mesh, nbe=hole_edges)
         mesh = mesh.clean()
-        edges = mesh.extract_feature_edges(boundary_edges=False,
-                                           feature_edges=False,
-                                           manifold_edges=False,
-                                           non_manifold_edges=True)
+        edges = mesh.extract_feature_edges(
+            boundary_edges=False,
+            feature_edges=False,
+            manifold_edges=False,
+            non_manifold_edges=True,
+        )
 
     return mesh
 
@@ -1053,8 +1200,7 @@ def drop_skirt(mesh, maxdist, flip=False):
 
 
 def downproject_border(mesh, value, axis=0, flip=False):
-    """
-    """
+    """ """
 
     lowest = value
     boundary = boundary_edges(mesh)
@@ -1072,7 +1218,7 @@ def downproject_border(mesh, value, axis=0, flip=False):
 
 
 def boundary_points(mesh):
-    """ Get indices of points in the boundary. """
+    """Get indices of points in the boundary."""
     boundary = boundary_edges(mesh)
     bdpts = boundary.points
     indices = np.array([mesh.FindPoint(ii) for ii in bdpts])
@@ -1080,7 +1226,7 @@ def boundary_points(mesh):
     return indices
 
 
-def remesh_decimate(mesh, iters, upfactor=2, downfactor=.5, verbose=True):
+def remesh_decimate(mesh, iters, upfactor=2, downfactor=0.5, verbose=True):
     """
     Iterative remeshing/decimation.
 
@@ -1117,42 +1263,54 @@ def remesh_decimate(mesh, iters, upfactor=2, downfactor=.5, verbose=True):
 
         mesh = remesh(mesh, mesh.GetNumberOfPoints() * 2)
         mesh = mesh.compute_normals(inplace=False)
-        mesh = mesh.decimate(.5, volume_preservation=True,
-                             normals=True, inplace=False)
+        mesh = mesh.decimate(0.5, volume_preservation=True, normals=True, inplace=False)
         mesh = ECFT(mesh, 0)
 
     return mesh
 
 
 def non_manifold_edges(mesh):
-    """ Get non-manifold edges. """
-    edges = mesh.extract_feature_edges(boundary_edges=False,
-                                       non_manifold_edges=True, feature_edges=False,
-                                       manifold_edges=False)
+    """Get non-manifold edges."""
+    edges = mesh.extract_feature_edges(
+        boundary_edges=False,
+        non_manifold_edges=True,
+        feature_edges=False,
+        manifold_edges=False,
+    )
     return edges
 
 
 def boundary_edges(mesh):
-    """ Get boundary edges. """
-    edges = mesh.extract_feature_edges(boundary_edges=True,
-                                       non_manifold_edges=False, feature_edges=False,
-                                       manifold_edges=False)
+    """Get boundary edges."""
+    edges = mesh.extract_feature_edges(
+        boundary_edges=True,
+        non_manifold_edges=False,
+        feature_edges=False,
+        manifold_edges=False,
+    )
     return edges
 
 
 def manifold_edges(mesh):
-    """ Get manifold edges. """
-    edges = mesh.extract_feature_edges(boundary_edges=False,
-                                       non_manifold_edges=False, feature_edges=False,
-                                       manifold_edges=True)
+    """Get manifold edges."""
+    edges = mesh.extract_feature_edges(
+        boundary_edges=False,
+        non_manifold_edges=False,
+        feature_edges=False,
+        manifold_edges=True,
+    )
     return edges
 
 
 def feature_edges(mesh, angle=30):
-    """ Get feature edges defined by given angle. """
-    edges = mesh.extract_feature_edges(feature_angle=angle, boundary_edges=False,
-                                       non_manifold_edges=False, feature_edges=True,
-                                       manifold_edges=False)
+    """Get feature edges defined by given angle."""
+    edges = mesh.extract_feature_edges(
+        feature_angle=angle,
+        boundary_edges=False,
+        non_manifold_edges=False,
+        feature_edges=True,
+        manifold_edges=False,
+    )
     return edges
 
 
@@ -1173,8 +1331,11 @@ def vertex_neighbors(mesh, index, include_self=True):
             point_id_list = cell.GetPointIds()
 
             # add the point which isn't the seed
-            to_add = point_id_list.GetId(1) if point_id_list.GetId(
-                0) == index else point_id_list.GetId(0)
+            to_add = (
+                point_id_list.GetId(1)
+                if point_id_list.GetId(0) == index
+                else point_id_list.GetId(0)
+            )
             connected_vertices.append(to_add)
         else:
             # Loop through the edges of the point and add all points on these.
@@ -1182,8 +1343,11 @@ def vertex_neighbors(mesh, index, include_self=True):
                 point_id_list = cell.GetEdge(jj).GetPointIds()
 
                 # add the point which isn't the seed
-                to_add = point_id_list.GetId(1) if point_id_list.GetId(
-                    0) == index else point_id_list.GetId(0)
+                to_add = (
+                    point_id_list.GetId(1)
+                    if point_id_list.GetId(0) == index
+                    else point_id_list.GetId(0)
+                )
                 connected_vertices.append(to_add)
 
     connected_vertices = np.unique(connected_vertices)
@@ -1202,7 +1366,7 @@ def vertex_neighbors_all(mesh, include_self=True):
 def correct_normal_orientation_topcut(mesh, origin):
     mesh.clear_arrays()
     # mesh = mesh.compute_normals(auto_orient_normals=True)
-    if mesh.clip(normal='-x', origin=origin).point_normals[:, 0].sum() > 0:
+    if mesh.clip(normal="-x", origin=origin).point_normals[:, 0].sum() > 0:
         mesh.flip_normals()
     return mesh
 
@@ -1243,7 +1407,7 @@ def ECFT(mesh, hole_edges=300, inplace=False):
     return None if inplace else new_mesh
 
 
-def define_meristem(mesh, method='central_mass', res=(1, 1, 1), return_coord=False):
+def define_meristem(mesh, method="central_mass", res=(1, 1, 1), return_coord=False):
     """
     Determine which domain in the segmentation that corresponds to the meristem.
     Some methods are deprecated and should not be used.
@@ -1274,20 +1438,21 @@ def define_meristem(mesh, method='central_mass', res=(1, 1, 1), return_coord=Fal
     """
     # TODO: Sort out this function
     ccoord = np.zeros((3,))
-    if method == 'central_mass':
+    if method == "central_mass":
         com = vtk.vtkCenterOfMass()
         com.SetInputData(mesh)
         com.Update()
         ccoord = np.array(com.GetCenter())
-    elif method == 'central_bounds':
+    elif method == "central_bounds":
         ccoord = np.mean(np.reshape(mesh.GetBounds(), (3, 2)), axis=1)
 
-    m_idx = np.argmin(((mesh.points - ccoord)**2).sum(1)**.5)
-    meristem = mesh['domains'][m_idx]
+    m_idx = np.argmin(((mesh.points - ccoord) ** 2).sum(1) ** 0.5)
+    meristem = mesh["domains"][m_idx]
     if return_coord:
         return meristem, ccoord
     else:
         return meristem
+
 
 def erode(mesh, iterations=1):
     mesh = mesh.copy()
@@ -1296,6 +1461,7 @@ def erode(mesh, iterations=1):
             break
         mesh = mesh.remove_points(boundary_points(mesh))[0]
     return mesh
+
 
 def fit_paraboloid(data, init=[1, 1, 1, 1, 1, 0, 0, 0], return_success=False):
     """
@@ -1325,7 +1491,8 @@ def fit_paraboloid(data, init=[1, 1, 1, 1, 1, 0, 0, 0], return_success=False):
 
     """
     import scipy.optimize as opt
-#    from scipy.spatial.transform import Rotation as R
+
+    #    from scipy.spatial.transform import Rotation as R
     from phenotastic.misc import rotate
 
     def errfunc(p, coord):
@@ -1333,15 +1500,17 @@ def fit_paraboloid(data, init=[1, 1, 1, 1, 1, 0, 0, 0], return_success=False):
         coord = rotate(coord, [alpha, beta, gamma])
 
         x, y, z = np.array(coord).T
-        return abs(p1 * x**2. + p2 * y**2. + p3 * x + p4 * y + p5 - z)
+        return abs(p1 * x**2.0 + p2 * y**2.0 + p3 * x + p4 * y + p5 - z)
+
     popt, _1, _2, _3, _4 = opt.leastsq(errfunc, init, args=(data,), full_output=True)
     if return_success:
-        return popt, _4 in [1,2,3,4]
+        return popt, _4 in [1, 2, 3, 4]
     return popt
 
 
 def vertex_cycles(mesh):
     import networkx as nx
+
     neighs = vertex_neighbors(mesh, True)
     pairs = []
     for ii in range(mesh.n_points):
@@ -1359,8 +1528,7 @@ def connect_bottom(mesh, offset=0, invert=False, inplace=False):
     cycles = vertex_cycles(boundary)
     cycle = np.array(cycles[0])
 
-    corresp_in_orig = np.array([mesh.FindPoint(pp)
-                                for pp in boundary.points[cycle]])
+    corresp_in_orig = np.array([mesh.FindPoint(pp) for pp in boundary.points[cycle]])
 
     pts = mesh.points
     faces = mesh.faces.reshape((-1, 4))[:, 1:]
@@ -1374,7 +1542,8 @@ def connect_bottom(mesh, offset=0, invert=False, inplace=False):
     faces_to_append = []
     for ii in range(corresp_in_orig.shape[0]):
         faces_to_append.append(
-            [corresp_in_orig[ii], corresp_in_orig[ii-1], len(pts) - 1])
+            [corresp_in_orig[ii], corresp_in_orig[ii - 1], len(pts) - 1]
+        )
     faces = np.vstack([faces, faces_to_append])
     faces = np.hstack([[[3]] * len(faces), faces])
     faces = np.ravel(faces)
@@ -1387,13 +1556,15 @@ def connect_bottom(mesh, offset=0, invert=False, inplace=False):
         return pv.PolyData(pts, faces)
 
 
-def correct_normal_orientation(mesh, relative='x', inplace=False):
+def correct_normal_orientation(mesh, relative="x", inplace=False):
     mesh = mesh if inplace else mesh.copy()
     normals = mesh.point_normals
 
-    if (relative == 'x' and normals[:, 0].sum() > 0) or (
-            relative == 'y' and normals[:, 1].sum() > 0) or (
-            relative == 'z' and normals[:, 2].sum() > 0):
+    if (
+        (relative == "x" and normals[:, 0].sum() > 0)
+        or (relative == "y" and normals[:, 1].sum() > 0)
+        or (relative == "z" and normals[:, 2].sum() > 0)
+    ):
         mesh.flip_normals()
 
     return None if inplace else mesh
@@ -1415,7 +1586,9 @@ def fit_paraboloid_mesh(mesh, return_coord=False):
         paraboloid apex.
 
     """
-    popt = fit_paraboloid(mesh.points, )
+    popt = fit_paraboloid(
+        mesh.points,
+    )
     if return_coord:
         apex = paraboloid_apex(popt)
         return popt, apex
@@ -1445,10 +1618,18 @@ def paraboloid_apex(p):
     from phenotastic.misc import rotate
 
     p1, p2, p3, p4, p5, alpha, beta, gamma = p
-    x = -p3 / (2. * p1)
-    y = -p4 / (2. * p2)
-    z = p1 * x**2. + p2 * y**2. + p3 * x + p4 * y + p5
+    x = -p3 / (2.0 * p1)
+    y = -p4 / (2.0 * p2)
+    z = p1 * x**2.0 + p2 * y**2.0 + p3 * x + p4 * y + p5
 
-    coords = rotate(np.array([[x, y, z], ]), [alpha, beta, gamma], True)[0]
-    
+    coords = rotate(
+        np.array(
+            [
+                [x, y, z],
+            ]
+        ),
+        [alpha, beta, gamma],
+        True,
+    )[0]
+
     return coords

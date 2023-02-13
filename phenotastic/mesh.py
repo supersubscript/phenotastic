@@ -5,8 +5,6 @@ Created on Tue May 29 22:10:18 2018
 @author: henrik
 """
 import gc
-import os
-import sys
 
 import mahotas as mh
 import numpy as np

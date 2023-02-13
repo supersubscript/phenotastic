@@ -5,17 +5,12 @@ Created on Tue May 29 21:53:06 2018
 
 @author: henrik
 """
-import os
-import sys
 
 import numpy as np
 import pyvista
 
 import phenotastic.domains as boa
 
-# os.chdir('/home/henrik/projects/surface_extraction/code/phenotastic/phenotastic')
-
-# import phenotastic.Meristem_Phenotyper_3D as ap
 
 
 def coord_array(arr, res=(1, 1, 1), offset=(0, 0, 0)):

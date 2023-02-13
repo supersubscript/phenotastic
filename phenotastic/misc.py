@@ -8,21 +8,9 @@ Created on Tue May 29 20:00:11 2018
 
 import math
 import os
-import pickle
 import re
-import sys
-import time
 
 import numpy as np
-import scipy.optimize as opt
-import vtk
-from vtk.util import numpy_support as nps
-
-# os.chdir('/home/henrik/projects/surface_extraction/code/phenotastic/phenotastic')
-
-
-# import phenotastic.Meristem_Phenotyper_3D as ap
-
 
 def cut(img, cuts):
     return img[
@@ -768,7 +756,7 @@ def rand_cmap(
         bounds = np.linspace(0, nlabels, nlabels + 1)
         norm = colors.BoundaryNorm(bounds, nlabels)
 
-        cb = colorbar.ColorbarBase(
+        _ = colorbar.ColorbarBase(
             ax,
             cmap=random_colormap,
             norm=norm,

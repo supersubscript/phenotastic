@@ -6,24 +6,15 @@ Created on Sun Jan 14 14:38:43 2018
 @author: henrik
 """
 import copy
-import os
-import sys
 
 import numpy as np
 import pandas as pd
 import pyvista
 import scipy
-import vtk
 
-# import phenotastic.Meristem_Phenotyper_3D as ap
 from imgmisc import flatten, merge
-from vtk.util import numpy_support as nps
 
-# from phenotastic.misc import merge, flatten
-# import misc
 import phenotastic.mesh as mp
-
-# os.chdir('/home/henrik/projects/surface_extraction/code/phenotastic/phenotastic')
 
 
 def median(scalars, neighs=None, iterations=1):
@@ -660,7 +651,6 @@ def merge_border_length(mesh, domains, threshold=0.0, neighbours=None, verbose=F
         neighbours = mp.get_connected_vertices_all(mesh)
 
     domains = domains.copy()
-    boundary = boundary_indices(mesh)
     n_domains_initial = np.unique(domains).shape[0]
 
     changed = True

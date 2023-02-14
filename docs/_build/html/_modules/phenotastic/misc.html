@@ -39,8 +39,7 @@
   <h1>Source code for phenotastic.misc</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python2</span>
 <span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Created on Tue May 29 20:00:11 2018</span>
+<span class="sd">&quot;&quot;&quot;Created on Tue May 29 20:00:11 2018.</span>
 
 <span class="sd">@author: henrik</span>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -49,19 +48,17 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
+
 <div class="viewcode-block" id="cut"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.cut">[docs]</a><span class="k">def</span> <span class="nf">cut</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">cuts</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Slice 3D image with supplied cuts.&quot;&quot;&quot;</span>
     <span class="c1"># TODO this should be written for nD with advanced slicing comprehension</span>
     <span class="k">return</span> <span class="n">img</span><span class="p">[</span>
-        <span class="n">cuts</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]:</span> <span class="n">cuts</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
-        <span class="n">cuts</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]:</span> <span class="n">cuts</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
-        <span class="n">cuts</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]:</span> <span class="n">cuts</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">cuts</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">cuts</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">cuts</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">cuts</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">cuts</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">cuts</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
     <span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="merge"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.merge">[docs]</a><span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="n">lists</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Merge lists based on overlapping elements.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Merge lists based on overlapping elements.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -72,7 +69,6 @@
 <span class="sd">    -------</span>
 <span class="sd">    sets : list</span>
 <span class="sd">        Minimal list of independent sets.</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="nb">set</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span> <span class="k">for</span> <span class="n">lst</span> <span class="ow">in</span> <span class="n">lists</span> <span class="k">if</span> <span class="n">lst</span><span class="p">]</span>
     <span class="n">merged</span> <span class="o">=</span> <span class="mi">1</span>
@@ -94,15 +90,15 @@
 
 
 <div class="viewcode-block" id="flatten"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.flatten">[docs]</a><span class="k">def</span> <span class="nf">flatten</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Flatten an arbitrarily nested iterable &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Flatten an arbitrarily nested iterable.&quot;&quot;&quot;</span>
     <span class="kn">import</span> <span class="nn">itertools</span>
+
     <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">arr</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="remove_empty_slices"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.remove_empty_slices">[docs]</a><span class="k">def</span> <span class="nf">remove_empty_slices</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">keepaxis</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove empty slices (based on the total signal) in an ndarray&quot;&quot;&quot;</span>
-    <span class="n">not_empty</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">ndim</span><span class="p">)),</span> <span class="n">keepaxis</span><span class="p">)))</span> <span class="o">&gt;</span> <span class="mi">0</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove empty slices (based on the total signal) in an ndarray.&quot;&quot;&quot;</span>
+    <span class="n">not_empty</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">ndim</span><span class="p">)),</span> <span class="n">keepaxis</span><span class="p">)))</span> <span class="o">&gt;</span> <span class="mi">0</span>
     <span class="n">arr</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">not_empty</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">arr</span></div>
 
@@ -123,7 +119,6 @@
 <span class="sd">    -------</span>
 <span class="sd">    filtered_data : bool, np.array</span>
 <span class="sd">        Data within the specified range.</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">data</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
     <span class="n">mdev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
@@ -133,14 +128,14 @@
 
 
 <div class="viewcode-block" id="angle"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.angle">[docs]</a><span class="k">def</span> <span class="nf">angle</span><span class="p">(</span><span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">acute</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Compute the angle (in radians) between two vectors. &quot;&quot;&quot;</span>
-    <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v1</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v2</span><span class="p">)))</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the angle (in radians) between two vectors.&quot;&quot;&quot;</span>
+    <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v1</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v2</span><span class="p">)))</span>
     <span class="k">return</span> <span class="n">angle</span> <span class="k">if</span> <span class="n">acute</span> <span class="k">else</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">-</span> <span class="n">angle</span></div>
 
 
 <div class="viewcode-block" id="angle_difference"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.angle_difference">[docs]</a><span class="k">def</span> <span class="nf">angle_difference</span><span class="p">(</span><span class="n">ang1</span><span class="p">,</span> <span class="n">ang2</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="mi">360</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the smallest angle difference on a template with periodic boundary conditions.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the smallest angle difference on a template with periodic</span>
+<span class="sd">    boundary conditions.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -153,27 +148,25 @@
 <span class="sd">    -------</span>
 <span class="sd">    angs : np.array of floats</span>
 <span class="sd">        The smallest angles.</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">difference</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">ang1</span><span class="p">,</span> <span class="n">ang2</span><span class="p">)</span>
     <span class="n">angs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-        <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">difference</span><span class="p">,</span> <span class="n">period</span><span class="p">)),</span>
-         <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">difference</span><span class="p">,</span> <span class="o">-</span><span class="n">period</span><span class="p">))]</span>
+        <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">difference</span><span class="p">,</span> <span class="n">period</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">difference</span><span class="p">,</span> <span class="o">-</span><span class="n">period</span><span class="p">))]</span>
     <span class="p">)</span>
     <span class="n">angs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">angs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">angs</span></div>
 
 
 <div class="viewcode-block" id="divergence_angles"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.divergence_angles">[docs]</a><span class="k">def</span> <span class="nf">divergence_angles</span><span class="p">(</span><span class="n">angles</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="mi">360</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Divergence angles between an ordered list of angles&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Divergence angles between an ordered list of angles.&quot;&quot;&quot;</span>
     <span class="n">div_angs</span> <span class="o">=</span> <span class="n">angle_difference</span><span class="p">(</span><span class="n">angles</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">angles</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">period</span><span class="o">=</span><span class="n">period</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]</span>
 
     <span class="k">return</span> <span class="n">div_angs</span></div>
 
 
 <div class="viewcode-block" id="paraboloid"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.paraboloid">[docs]</a><span class="k">def</span> <span class="nf">paraboloid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the z-value for a non-rotated paraboloid given input xy-coordinates and</span>
-<span class="sd">    parameters. Translations are permitted in x, y, and z.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the z-value for a non-rotated paraboloid given input xy-</span>
+<span class="sd">    coordinates and parameters. Translations are permitted in x, y, and z.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -206,7 +199,6 @@
 <span class="sd">    -------</span>
 <span class="sd">    rgbs : list</span>
 <span class="sd">        List of colours (RGB) up to a certain n that maximise contrast.</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">rgbs</span> <span class="o">=</span> <span class="p">[</span>
         <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
@@ -278,12 +270,8 @@
 
 
 <div class="viewcode-block" id="prime_sieve"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.prime_sieve">[docs]</a><span class="k">def</span> <span class="nf">prime_sieve</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="p">{}):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Return a dict or a list of primes up to N create full prime sieve for</span>
-<span class="sd">    N=10^6 in 1 sec</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a dict or a list of primes up to N create full prime sieve for</span>
+<span class="sd">    N=10^6 in 1 sec.&quot;&quot;&quot;</span>
     <span class="n">nroot</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
     <span class="n">sieve</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
     <span class="n">sieve</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
@@ -291,7 +279,7 @@
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">nroot</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">sieve</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">m</span> <span class="o">=</span> <span class="n">n</span> <span class="o">/</span> <span class="n">i</span> <span class="o">-</span> <span class="n">i</span>
-            <span class="n">sieve</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">i</span><span class="p">:</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">sieve</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">i</span> <span class="p">:</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">output</span><span class="p">)</span> <span class="o">==</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="n">pmap</span> <span class="o">=</span> <span class="p">{}</span>
@@ -306,14 +294,12 @@
 
 
 <div class="viewcode-block" id="get_factors"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.get_factors">[docs]</a><span class="k">def</span> <span class="nf">get_factors</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">primelist</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Get a list of all factors for N.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a list of all factors for N.</span>
 
 <span class="sd">    Example</span>
 <span class="sd">    -------</span>
 <span class="sd">    &gt;&gt;&gt; get_factors(10)</span>
 <span class="sd">    &gt;&gt;&gt; Out[1]: [1, 2, 5, 10]</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">primelist</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">primelist</span> <span class="o">=</span> <span class="n">prime_sieve</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="p">[])</span>
@@ -347,7 +333,6 @@
 <span class="sd">    -------</span>
 <span class="sd">    &gt;&gt;&gt; get_prime_factors(140) # 140 = 2^2 * 5^1 * 7^1</span>
 <span class="sd">    &gt;&gt;&gt; Out[1]: [(2, 2), (5, 1), (7, 1)]</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">primelist</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">primelist</span> <span class="o">=</span> <span class="n">prime_sieve</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="p">[])</span>
@@ -416,9 +401,10 @@
 <span class="c1">#     else:</span>
 <span class="c1">#         return arr</span>
 
+
 <div class="viewcode-block" id="coord_array"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.coord_array">[docs]</a><span class="k">def</span> <span class="nf">coord_array</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">res</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">offset</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Create a coordinate array (of e.g. same dimensionality as intensity array) of the same dimensions as another array. Only defined for 3D.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a coordinate array (of e.g. same dimensionality as intensity</span>
+<span class="sd">    array) of the same dimensions as another array. Only defined for 3D.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -438,7 +424,6 @@
 <span class="sd">    coords : np.ndarray</span>
 <span class="sd">        Vertically stacked coordinate array for the input data.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">xv</span> <span class="o">=</span> <span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.000001</span><span class="p">,</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">yv</span> <span class="o">=</span> <span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.000001</span><span class="p">,</span> <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
     <span class="n">zv</span> <span class="o">=</span> <span class="n">offset</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">res</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.000001</span><span class="p">,</span> <span class="n">res</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
@@ -491,14 +476,11 @@
 
 
 <div class="viewcode-block" id="rotate"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.rotate">[docs]</a><span class="k">def</span> <span class="nf">rotate</span><span class="p">(</span><span class="n">coord</span><span class="p">,</span> <span class="n">angles</span><span class="p">,</span> <span class="n">invert</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Rotate given coordinates by specified angles.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Rotate given coordinates by specified angles.</span>
 
-<span class="sd">    Use rotation matrices to rotate a list of coordinates around the x, y, z axis</span>
-<span class="sd">    by specified angles alpha, beta, gamma.</span>
-
+<span class="sd">    Use rotation matrices to rotate a list of coordinates around the x,</span>
+<span class="sd">    y, z axis by specified angles alpha, beta, gamma.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="n">angles</span>
     <span class="n">xyz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">coord</span><span class="p">))</span>
     <span class="n">Rx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
@@ -509,8 +491,7 @@
         <span class="p">]</span>
     <span class="p">)</span>
     <span class="n">Ry</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-        <span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">beta</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">beta</span><span class="p">)],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
-         <span class="p">[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">beta</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">beta</span><span class="p">)]]</span>
+        <span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">beta</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">beta</span><span class="p">)],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">beta</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">beta</span><span class="p">)]]</span>
     <span class="p">)</span>
     <span class="n">Rz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
         <span class="p">[</span>
@@ -614,7 +595,7 @@
 <span class="c1">#     return sorted(l, key=alphanum_key)</span>
 
 
-<div class="viewcode-block" id="match_shape"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.match_shape">[docs]</a><span class="k">def</span> <span class="nf">match_shape</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="match_shape"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.match_shape">[docs]</a><span class="k">def</span> <span class="nf">match_shape</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    Parameters</span>
@@ -633,57 +614,55 @@
     <span class="k">try</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">!=</span> <span class="n">a</span><span class="o">.</span><span class="n">ndim</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="s1">&#39;t shape must have the same number of dimensions as the input&#39;</span>
+                <span class="s2">&quot;t shape must have the same number of dimensions as the input&quot;</span>
             <span class="p">)</span>
     <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;t must be array-like&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;t must be array-like&quot;</span><span class="p">)</span>
 
     <span class="k">try</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">complex</span><span class="p">)):</span>
             <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="o">*</span> <span class="n">val</span>
-        <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span>
             <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="s1">&#39;mean&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="s2">&quot;mean&quot;</span><span class="p">:</span>
             <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="s1">&#39;median&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="s2">&quot;median&quot;</span><span class="p">:</span>
             <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="s1">&#39;min&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="s2">&quot;min&quot;</span><span class="p">:</span>
             <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Pad value must be numeric or string&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Pad value must be numeric or string&quot;</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Pad value must be scalar or valid string&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Pad value must be scalar or valid string&quot;</span><span class="p">)</span>
 
     <span class="n">aind</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)]</span> <span class="o">*</span> <span class="n">a</span><span class="o">.</span><span class="n">ndim</span>
     <span class="n">bind</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)]</span> <span class="o">*</span> <span class="n">a</span><span class="o">.</span><span class="n">ndim</span>
 
     <span class="c1"># pad/trim comes after the array in each dimension</span>
-    <span class="k">if</span> <span class="n">side</span> <span class="o">==</span> <span class="s1">&#39;after&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">side</span> <span class="o">==</span> <span class="s2">&quot;after&quot;</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">dd</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">ndim</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">t</span><span class="p">[</span><span class="n">dd</span><span class="p">]:</span>
                 <span class="n">aind</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="n">dd</span><span class="p">])</span>
             <span class="k">elif</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">t</span><span class="p">[</span><span class="n">dd</span><span class="p">]:</span>
                 <span class="n">bind</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dd</span><span class="p">])</span>
     <span class="c1"># pad/trim comes before the array in each dimension</span>
-    <span class="k">elif</span> <span class="n">side</span> <span class="o">==</span> <span class="s1">&#39;before&#39;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">side</span> <span class="o">==</span> <span class="s2">&quot;before&quot;</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">dd</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">ndim</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">t</span><span class="p">[</span><span class="n">dd</span><span class="p">]:</span>
                 <span class="n">aind</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="n">dd</span><span class="p">]),</span> <span class="kc">None</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">t</span><span class="p">[</span><span class="n">dd</span><span class="p">]:</span>
                 <span class="n">bind</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">-</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dd</span><span class="p">]),</span> <span class="kc">None</span><span class="p">)</span>
     <span class="c1"># pad/trim both sides of the array in each dimension</span>
-    <span class="k">elif</span> <span class="n">side</span> <span class="o">==</span> <span class="s1">&#39;both&#39;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">side</span> <span class="o">==</span> <span class="s2">&quot;both&quot;</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">dd</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">ndim</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">t</span><span class="p">[</span><span class="n">dd</span><span class="p">]:</span>
                 <span class="n">diff</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="n">dd</span><span class="p">])</span> <span class="o">/</span> <span class="mf">2.0</span>
-                <span class="n">aind</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">diff</span><span class="p">)),</span> <span class="nb">int</span><span class="p">(</span>
-                    <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">diff</span><span class="p">)))</span>
+                <span class="n">aind</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">diff</span><span class="p">)),</span> <span class="nb">int</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">diff</span><span class="p">)))</span>
             <span class="k">elif</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">t</span><span class="p">[</span><span class="n">dd</span><span class="p">]:</span>
                 <span class="n">diff</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">-</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dd</span><span class="p">])</span> <span class="o">/</span> <span class="mf">2.0</span>
-                <span class="n">bind</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">diff</span><span class="p">)),</span>
-                                 <span class="nb">int</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">diff</span><span class="p">)))</span>
+                <span class="n">bind</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">diff</span><span class="p">)),</span> <span class="nb">int</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">diff</span><span class="p">)))</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Invalid choice of pad type: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">side</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Invalid choice of pad type: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">side</span><span class="p">)</span>
 
     <span class="n">b</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">bind</span><span class="p">)]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">aind</span><span class="p">)]</span>
 
@@ -733,15 +712,17 @@
 
 
 <div class="viewcode-block" id="mode"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.mode">[docs]</a><span class="k">def</span> <span class="nf">mode</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the mode of a sequence of values. Returns nan if sequence too short.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the mode of a sequence of values.</span>
+
+<span class="sd">    Returns nan if sequence too short.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
     <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="car2sph"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.car2sph">[docs]</a><span class="k">def</span> <span class="nf">car2sph</span><span class="p">(</span><span class="n">xyz</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Convert cartesian coordinates into spherical coordinates.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert cartesian coordinates into spherical coordinates.</span>
 
 <span class="sd">    Convert a list of cartesian coordinates x, y, z to spherical coordinates</span>
 <span class="sd">    r, theta, phi. theta is defined as 0 along z-axis.</span>
@@ -752,8 +733,6 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-
-
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">xyz</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">xyz</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
@@ -768,8 +747,7 @@
 
 
 <div class="viewcode-block" id="sph2car"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.sph2car">[docs]</a><span class="k">def</span> <span class="nf">sph2car</span><span class="p">(</span><span class="n">rtp</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Convert spherical coordinates into cartesian coordinates.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert spherical coordinates into cartesian coordinates.</span>
 
 <span class="sd">    Convert a list of spherical coordinates r, theta, phi to cartesian coordinates</span>
 <span class="sd">    x, y, z. Theta is defined as 0 along z-axis.</span>
@@ -781,8 +759,6 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-
-
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">xyz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">rtp</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
     <span class="n">xyz</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">rtp</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">rtp</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">rtp</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])</span>
@@ -792,8 +768,7 @@
 
 
 <div class="viewcode-block" id="to_uint8"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.to_uint8">[docs]</a><span class="k">def</span> <span class="nf">to_uint8</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Convert image to uint8 format.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert image to uint8 format.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -807,7 +782,6 @@
 <span class="sd">    -------</span>
 <span class="sd">    data : np.ndarray</span>
 <span class="sd">        The output image</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">normalize</span><span class="p">:</span>
@@ -819,7 +793,7 @@
 
 
 <div class="viewcode-block" id="matching_rows"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.matching_rows">[docs]</a><span class="k">def</span> <span class="nf">matching_rows</span><span class="p">(</span><span class="n">array1</span><span class="p">,</span> <span class="n">array2</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find matching rows in a 2D array. &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find matching rows in a 2D array.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
         <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">((</span><span class="n">array1</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:]</span> <span class="o">==</span> <span class="n">array2</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()</span>
     <span class="p">)</span><span class="o">.</span><span class="n">T</span></div>
@@ -827,13 +801,13 @@
 
 <div class="viewcode-block" id="rand_cmap"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.rand_cmap">[docs]</a><span class="k">def</span> <span class="nf">rand_cmap</span><span class="p">(</span>
     <span class="n">nlabels</span><span class="p">,</span>
-    <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;bright&#39;</span><span class="p">,</span>
+    <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;bright&quot;</span><span class="p">,</span>
     <span class="n">first_color_black</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">last_color_black</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Creates a random colormap to be used together with matplotlib. Useful for segmentation tasks</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a random colormap to be used together with matplotlib. Useful</span>
+<span class="sd">    for segmentation tasks.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -854,17 +828,18 @@
 <span class="sd">        Colormap for matplotlib</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">import</span> <span class="nn">colorsys</span>
+
     <span class="kn">from</span> <span class="nn">matplotlib.colors</span> <span class="kn">import</span> <span class="n">LinearSegmentedColormap</span>
 
-    <span class="k">if</span> <span class="nb">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;bright&#39;</span><span class="p">,</span> <span class="s1">&#39;soft&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;bright&quot;</span><span class="p">,</span> <span class="s2">&quot;soft&quot;</span><span class="p">):</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Please choose &quot;bright&quot; or &quot;soft&quot; for type&#39;</span><span class="p">)</span>
         <span class="k">return</span>
 
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of labels: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nlabels</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of labels: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nlabels</span><span class="p">))</span>
 
     <span class="c1"># Generate color map for bright colors, based on hsv</span>
-    <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;bright&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;bright&quot;</span><span class="p">:</span>
         <span class="n">randHSVcolors</span> <span class="o">=</span> <span class="p">[</span>
             <span class="p">(</span>
                 <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
@@ -888,11 +863,11 @@
             <span class="n">randRGBcolors</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
 
         <span class="n">random_colormap</span> <span class="o">=</span> <span class="n">LinearSegmentedColormap</span><span class="o">.</span><span class="n">from_list</span><span class="p">(</span>
-            <span class="s1">&#39;new_map&#39;</span><span class="p">,</span> <span class="n">randRGBcolors</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="n">nlabels</span>
+            <span class="s2">&quot;new_map&quot;</span><span class="p">,</span> <span class="n">randRGBcolors</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="n">nlabels</span>
         <span class="p">)</span>
 
     <span class="c1"># Generate soft pastel colors, by limiting the RGB spectrum</span>
-    <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;soft&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;soft&quot;</span><span class="p">:</span>
         <span class="n">low</span> <span class="o">=</span> <span class="mf">0.6</span>
         <span class="n">high</span> <span class="o">=</span> <span class="mf">0.95</span>
         <span class="n">randRGBcolors</span> <span class="o">=</span> <span class="p">[</span>
@@ -910,7 +885,7 @@
         <span class="k">if</span> <span class="n">last_color_black</span><span class="p">:</span>
             <span class="n">randRGBcolors</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
         <span class="n">random_colormap</span> <span class="o">=</span> <span class="n">LinearSegmentedColormap</span><span class="o">.</span><span class="n">from_list</span><span class="p">(</span>
-            <span class="s1">&#39;new_map&#39;</span><span class="p">,</span> <span class="n">randRGBcolors</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="n">nlabels</span>
+            <span class="s2">&quot;new_map&quot;</span><span class="p">,</span> <span class="n">randRGBcolors</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="n">nlabels</span>
         <span class="p">)</span>
 
     <span class="c1"># Display colorbar</span>
@@ -927,11 +902,11 @@
             <span class="n">ax</span><span class="p">,</span>
             <span class="n">cmap</span><span class="o">=</span><span class="n">random_colormap</span><span class="p">,</span>
             <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">,</span>
-            <span class="n">spacing</span><span class="o">=</span><span class="s1">&#39;proportional&#39;</span><span class="p">,</span>
+            <span class="n">spacing</span><span class="o">=</span><span class="s2">&quot;proportional&quot;</span><span class="p">,</span>
             <span class="n">ticks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">boundaries</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
-            <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%1i</span><span class="s1">&#39;</span><span class="p">,</span>
-            <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;horizontal&#39;</span><span class="p">,</span>
+            <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%1i</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">orientation</span><span class="o">=</span><span class="s2">&quot;horizontal&quot;</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">random_colormap</span></div>

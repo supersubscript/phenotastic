@@ -58,7 +58,31 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.domains.border">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.domains.</span></span><span class="sig-name descname"><span class="pre">border</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">domains</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neighbours</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/domains.html#border"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.domains.border" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Get the border vertex indices between two domains.</p>
+<section id="parameters">
+<h3>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading">¶</a></h3>
+<dl class="simple">
+<dt>mesh<span class="classifier">pyvista mesh</span></dt><dd><p>Mesh to create domains for.</p>
+</dd>
+<dt>domains<span class="classifier">1D array</span></dt><dd><p>Array of current domain labels.</p>
+</dd>
+<dt>index1<span class="classifier">int</span></dt><dd><p>Index of the first domain.</p>
+</dd>
+<dt>index2<span class="classifier">int</span></dt><dd><p>Index of the second domain.</p>
+</dd>
+<dt>neighbours<span class="classifier">nested array</span></dt><dd><p>Array of neighbouring vertices for each vertex. If None, will be
+calculated.</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h3>Returns<a class="headerlink" href="#returns" title="Permalink to this heading">¶</a></h3>
+<dl class="simple">
+<dt>border<span class="classifier">1D array</span></dt><dd><p>Array of indices of the border vertices between the two domains.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.domains.boundary_indices">
@@ -75,26 +99,19 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.domains.domain_neighbors">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.domains.</span></span><span class="sig-name descname"><span class="pre">domain_neighbors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">domains</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neighs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/domains.html#domain_neighbors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.domains.domain_neighbors" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Get the number of neighbors for each domain.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.domains.extract_domain">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.domains.</span></span><span class="sig-name descname"><span class="pre">extract_domain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">domains</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/domains.html#extract_domain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.domains.extract_domain" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Extract a domain from a mesh.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.domains.extract_domaindata">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.domains.</span></span><span class="sig-name descname"><span class="pre">extract_domaindata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apex</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meristem</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/domains.html#extract_domaindata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.domains.extract_domaindata" title="Permalink to this definition">¶</a></dt>
-<dd><section id="parameters">
-<h3>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading">¶</a></h3>
-<p>pdata :</p>
-<p>mesh :</p>
-<p>apex :</p>
-<p>meristem :</p>
-</section>
-<section id="returns">
-<h3>Returns<a class="headerlink" href="#returns" title="Permalink to this heading">¶</a></h3>
-</section>
+<dd><p>Extract domain data from a labelled mesh.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -106,24 +123,13 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.domains.filter_curvature">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.domains.</span></span><span class="sig-name descname"><span class="pre">filter_curvature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">curvs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neighs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fct</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/domains.html#filter_curvature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.domains.filter_curvature" title="Permalink to this definition">¶</a></dt>
-<dd><p>Filter curvature with a function. Exclude the list of indices if given.
-Returns
-——-</p>
+<dd><p>Filter curvature with a function. Exclude the list of indices if given.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.domains.get_domain">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.domains.</span></span><span class="sig-name descname"><span class="pre">get_domain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">domain</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/domains.html#get_domain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.domains.get_domain" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a domain from a labelled mesh.</p>
-<section id="id1">
-<h3>Parameters<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h3>
-<p>mesh :</p>
-<p>pdata :</p>
-<p>domain :</p>
-</section>
-<section id="id2">
-<h3>Returns<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h3>
-</section>
 </dd></dl>
 
 <dl class="py function">
@@ -135,12 +141,30 @@ Returns
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.domains.map_to_domains">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.domains.</span></span><span class="sig-name descname"><span class="pre">map_to_domains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domains</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/domains.html#map_to_domains"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.domains.map_to_domains" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Map scalar values to a labelled array.</p>
+<section id="id1">
+<h3>Parameters<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h3>
+<dl class="simple">
+<dt>domains<span class="classifier">1D array</span></dt><dd><p>Array of domain labels.</p>
+</dd>
+<dt>values<span class="classifier">1D array</span></dt><dd><p>Array of values to map to the domains.</p>
+</dd>
+</dl>
+</section>
+<section id="id2">
+<h3>Returns<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h3>
+<dl class="simple">
+<dt>output<span class="classifier">1D array</span></dt><dd><p>Array of values mapped to the domains.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.domains.maxmin">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.domains.</span></span><span class="sig-name descname"><span class="pre">maxmin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scalars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neighs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/domains.html#maxmin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.domains.maxmin" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>MaxMin filter for mesh-based scalar arrays.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.domains.mean">
@@ -150,34 +174,37 @@ Returns
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.domains.median">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.domains.</span></span><span class="sig-name descname"><span class="pre">median</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scalars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neighs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/domains.html#median"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.domains.median" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Median filter for mesh-based scalar arrays.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.domains.merge_angles">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.domains.</span></span><span class="sig-name descname"><span class="pre">merge_angles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">domains</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meristem_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'center_of_mass'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/domains.html#merge_angles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.domains.merge_angles" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="phenotastic.domains.merge_boas_border_curv">
-<span class="sig-prename descclassname"><span class="pre">phenotastic.domains.</span></span><span class="sig-name descname"><span class="pre">merge_boas_border_curv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold=0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fct=&lt;function</span> <span class="pre">mean&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_points=4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_boundary=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/domains.html#merge_boas_border_curv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.domains.merge_boas_border_curv" title="Permalink to this definition">¶</a></dt>
-<dd><p>Merge neighbouring domains based on their border curvature.</p>
+<dd><p>Merge domains based on angles between domains and the meristem.</p>
 <section id="id3">
 <h3>Parameters<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h3>
-<p>A :</p>
-<p>pdata :</p>
 <dl class="simple">
-<dt>threshold :</dt><dd><p>(Default value = 0.0)</p>
+<dt>mesh<span class="classifier">pyvista mesh</span></dt><dd><p>Mesh to create domains for.</p>
 </dd>
-<dt>fct :</dt><dd><p>(Default value = np.mean)</p>
+<dt>domains<span class="classifier">1D array</span></dt><dd><p>Array of current domain labels.</p>
 </dd>
-<dt>min_points :</dt><dd><p>(Default value = 4)</p>
+<dt>meristem_index<span class="classifier">int</span></dt><dd><p>Index of the meristem domain.</p>
 </dd>
-<dt>exclude_boundary :</dt><dd><p>(Default value = False)</p>
+<dt>threshold<span class="classifier">float</span></dt><dd><p>Threshold for merging domains.</p>
+</dd>
+<dt>method<span class="classifier">str</span></dt><dd><p>Method to use for calculating the “apex” coordinate, i.e. which point the angles
+should be in relation to.</p>
+</dd>
+<dt>verbose<span class="classifier">bool</span></dt><dd><p>Print information about the domain creation process.</p>
 </dd>
 </dl>
 </section>
 <section id="id4">
 <h3>Returns<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h3>
+<dl class="simple">
+<dt>output<span class="classifier">1D array</span></dt><dd><p>Array of domain labels.</p>
+</dd>
+</dl>
 </section>
 </dd></dl>
 
@@ -196,13 +223,34 @@ Returns
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.domains.merge_disconnected">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.domains.</span></span><span class="sig-name descname"><span class="pre">merge_disconnected</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">domains</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meristem_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neighbours</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/domains.html#merge_disconnected"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.domains.merge_disconnected" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Merge domains that are disconnected from the meristem with a proximal domain.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.domains.merge_distance">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.domains.</span></span><span class="sig-name descname"><span class="pre">merge_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">domains</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scalars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'center_of_mass'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'euclidean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/domains.html#merge_distance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.domains.merge_distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Merge basins of attraction based on their distance from one another.</p>
 <p>Uses a KDTree to find closest points.</p>
+<section id="id5">
+<h3>Parameters<a class="headerlink" href="#id5" title="Permalink to this heading">¶</a></h3>
+<dl class="simple">
+<dt>mesh<span class="classifier">pyvista mesh</span></dt><dd><p>Mesh to create domains for.</p>
+</dd>
+<dt>domains<span class="classifier">1D array</span></dt><dd><p>Array of current domain labels.</p>
+</dd>
+<dt>threshold<span class="classifier">float</span></dt><dd><p>Distance threshold for merging domains.</p>
+</dd>
+<dt>scalars<span class="classifier">1D array</span></dt><dd><p>Array of scalars to use for the distance calculation.</p>
+</dd>
+<dt>method<span class="classifier">str</span></dt><dd><p>Method to use for calculating the “center” coordinate of each domain. Default is
+‘center_of_mass’. Options are ‘euclidean’, ‘maximum’, ‘minimum’.</p>
+</dd>
+<dt>metric<span class="classifier">str</span></dt><dd><p>Metric to use for the distance calculation. Default is ‘euclidean’.</p>
+</dd>
+<dt>verbose<span class="classifier">bool</span></dt><dd><p>Print information about the domain creation process.</p>
+</dd>
+</dl>
+</section>
 </dd></dl>
 
 <dl class="py function">
@@ -215,13 +263,14 @@ certain fraction of the domain boundary.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.domains.merge_small">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.domains.</span></span><span class="sig-name descname"><span class="pre">merge_small</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">domains</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'points'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'border'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neighbours</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/domains.html#merge_small"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.domains.merge_small" title="Permalink to this definition">¶</a></dt>
-<dd><p>Merge small domains to their neighbours.</p>
+<dd><p>Merge domains under a certain size to their neighbours.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.domains.minmax">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.domains.</span></span><span class="sig-name descname"><span class="pre">minmax</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scalars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neighs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/domains.html#minmax"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.domains.minmax" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>MinMax filter for mesh-based scalar arrays.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.domains.neighbouring_domains">
@@ -232,23 +281,13 @@ certain fraction of the domain boundary.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.domains.relabel">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.domains.</span></span><span class="sig-name descname"><span class="pre">relabel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domains</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/domains.html#relabel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.domains.relabel" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Relabel domains based on a given order.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.domains.relabel_domains">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.domains.</span></span><span class="sig-name descname"><span class="pre">relabel_domains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ddata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'area'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/domains.html#relabel_domains"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.domains.relabel_domains" title="Permalink to this definition">¶</a></dt>
-<dd><section id="id5">
-<h3>Parameters<a class="headerlink" href="#id5" title="Permalink to this heading">¶</a></h3>
-<p>pdata :</p>
-<p>ddata :</p>
-<dl class="simple">
-<dt>order :</dt><dd><p>(Default value = ‘area’)</p>
-</dd>
-</dl>
-</section>
-<section id="id6">
-<h3>Returns<a class="headerlink" href="#id6" title="Permalink to this heading">¶</a></h3>
-</section>
+<dd><p>Relabel domains according to a given metric, e.g. the surface area.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -266,21 +305,43 @@ certain fraction of the domain boundary.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.domains.steepest_ascent">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.domains.</span></span><span class="sig-name descname"><span class="pre">steepest_ascent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scalars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neighbours</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/domains.html#steepest_ascent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.domains.steepest_ascent" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create domains based on a Steepest Descent approach</p>
+<dd><p>Create domains based on a Steepest Descent approach. The method
+takes the input mesh and connects vertices based on the steepest
+local gradient.</p>
+<section id="id6">
+<h3>Parameters<a class="headerlink" href="#id6" title="Permalink to this heading">¶</a></h3>
+<dl class="simple">
+<dt>mesh<span class="classifier">pyvista mesh</span></dt><dd><p>Mesh to create domains for.</p>
+</dd>
+<dt>scalars<span class="classifier">1D array</span></dt><dd><p>Scalar array to use for domain creation.</p>
+</dd>
+<dt>neighbours<span class="classifier">2D array</span></dt><dd><p>Array of neighbours for each vertex.</p>
+</dd>
+<dt>verbose<span class="classifier">bool</span></dt><dd><p>Print information about the domain creation process.</p>
+</dd>
+</dl>
+</section>
+<section id="id7">
+<h3>Returns<a class="headerlink" href="#id7" title="Permalink to this heading">¶</a></h3>
+<dl class="simple">
+<dt>output<span class="classifier">1D array</span></dt><dd><p>Array of domain labels.</p>
+</dd>
+</dl>
+</section>
 </dd></dl>
 
 </section>
 <section id="module-phenotastic.mesh">
 <span id="phenotastic-mesh-module"></span><h2>phenotastic.mesh module<a class="headerlink" href="#module-phenotastic.mesh" title="Permalink to this heading">¶</a></h2>
-<p>Created on Tue May 29 22:10:18 2018</p>
+<p>Created on Tue May 29 22:10:18 2018.</p>
 <p>&#64;author: henrik</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.mesh.ECFT">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.mesh.</span></span><span class="sig-name descname"><span class="pre">ECFT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hole_edges</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh.html#ECFT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.mesh.ECFT" title="Permalink to this definition">¶</a></dt>
-<dd><p>Perform ExtractLargest, Clean, FillHoles, and TriFilter
-operations in sequence.</p>
-<section id="id7">
-<h3>Parameters<a class="headerlink" href="#id7" title="Permalink to this heading">¶</a></h3>
+<dd><p>Perform ExtractLargest, Clean, FillHoles, and TriFilter operations in
+sequence.</p>
+<section id="id8">
+<h3>Parameters<a class="headerlink" href="#id8" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>mesh<span class="classifier">pyvista.PolyData</span></dt><dd><p>Mesh to operate on.</p>
 </dd>
@@ -290,8 +351,8 @@ operations in sequence.</p>
 </dd>
 </dl>
 </section>
-<section id="id8">
-<h3>Returns<a class="headerlink" href="#id8" title="Permalink to this heading">¶</a></h3>
+<section id="id9">
+<h3>Returns<a class="headerlink" href="#id9" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>new_mesh<span class="classifier">pyvista.PolyData</span></dt><dd><p>Mesh after operation. Returns None if inplace == True.</p>
 </dd>
@@ -315,8 +376,8 @@ operations in sequence.</p>
 <dt class="sig sig-object py" id="phenotastic.mesh.contour">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.mesh.</span></span><span class="sig-name descname"><span class="pre">contour</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masking</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.75</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clahe_window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clahe_clip_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_iterations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolate_slices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_slices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stackreg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0.5,</span> <span class="pre">0.5,</span> <span class="pre">0.5]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_inland_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh.html#contour"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.mesh.contour" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a contour from a 3D image.</p>
-<section id="id9">
-<h3>Parameters<a class="headerlink" href="#id9" title="Permalink to this heading">¶</a></h3>
+<section id="id10">
+<h3>Parameters<a class="headerlink" href="#id10" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>fin<span class="classifier">str or 3D np.array</span></dt><dd><p>The input image or path to file.</p>
 </dd>
@@ -363,16 +424,11 @@ operations in sequence.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.mesh.correct_bad_mesh">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.mesh.</span></span><span class="sig-name descname"><span class="pre">correct_bad_mesh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh.html#correct_bad_mesh"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.mesh.correct_bad_mesh" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="simple">
-<dt>Correct a bad (non-manifold) mesh with two methods:</dt><dd><ol class="arabic simple">
-<li><p>method removesmallcomponents from the pymeshfixpackage, and</p></li>
-<li><p>identifying leftover non-manifold edges and removing all the points
-in these.</p></li>
-</ol>
-</dd>
-</dl>
-<section id="id10">
-<h3>Parameters<a class="headerlink" href="#id10" title="Permalink to this heading">¶</a></h3>
+<dd><p>Correct a bad (non-manifold) mesh with two methods: 1) method
+removesmallcomponents from the pymeshfixpackage, and 2) identifying
+leftover non-manifold edges and removing all the points in these.</p>
+<section id="id11">
+<h3>Parameters<a class="headerlink" href="#id11" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>mesh<span class="classifier">pyvista.PolyData</span></dt><dd><p>Input mesh.</p>
 </dd>
@@ -390,8 +446,8 @@ be improved upon, since one point may be sufficient to create a manifold
 mesh.</p></li>
 </ul>
 </section>
-<section id="id11">
-<h3>Returns<a class="headerlink" href="#id11" title="Permalink to this heading">¶</a></h3>
+<section id="id12">
+<h3>Returns<a class="headerlink" href="#id12" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>new_poly<span class="classifier">pyvista.PolyData</span></dt><dd><p>Corrected mesh.</p>
 </dd>
@@ -408,16 +464,16 @@ mesh.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.mesh.correct_normal_orientation_topcut">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.mesh.</span></span><span class="sig-name descname"><span class="pre">correct_normal_orientation_topcut</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh.html#correct_normal_orientation_topcut"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.mesh.correct_normal_orientation_topcut" title="Permalink to this definition">¶</a></dt>
-<dd><p>Correct normal orientation of a mesh by flipping normals if the sum of the normals is negative
-after having cropped off the top of the mesh.</p>
+<dd><p>Correct normal orientation of a mesh by flipping normals if the sum of
+the normals is negative after having cropped off the top of the mesh.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.mesh.create_cellular_mesh">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.mesh.</span></span><span class="sig-name descname"><span class="pre">create_cellular_mesh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seg_img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1,</span> <span class="pre">1,</span> <span class="pre">1]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh.html#create_cellular_mesh"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.mesh.create_cellular_mesh" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a cellular mesh from a segmentation image.</p>
-<section id="id12">
-<h3>Parameters<a class="headerlink" href="#id12" title="Permalink to this heading">¶</a></h3>
+<section id="id13">
+<h3>Parameters<a class="headerlink" href="#id13" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>seg_img<span class="classifier">3D np.array</span></dt><dd><p>The segmentated image.</p>
 </dd>
@@ -427,8 +483,8 @@ after having cropped off the top of the mesh.</p>
 </dd>
 </dl>
 </section>
-<section id="id13">
-<h3>Returns<a class="headerlink" href="#id13" title="Permalink to this heading">¶</a></h3>
+<section id="id14">
+<h3>Returns<a class="headerlink" href="#id14" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>mesh<span class="classifier">pyvista.MultiBlock</span></dt><dd><p>The output mesh object, with each block corresponding to a single cell.</p>
 </dd>
@@ -440,8 +496,8 @@ after having cropped off the top of the mesh.</p>
 <dt class="sig sig-object py" id="phenotastic.mesh.create_mesh">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.mesh.</span></span><span class="sig-name descname"><span class="pre">create_mesh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contour</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1,</span> <span class="pre">1,</span> <span class="pre">1]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh.html#create_mesh"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.mesh.create_mesh" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a polydata mesh from a binary contour.</p>
-<section id="id14">
-<h3>Parameters<a class="headerlink" href="#id14" title="Permalink to this heading">¶</a></h3>
+<section id="id15">
+<h3>Parameters<a class="headerlink" href="#id15" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>contour<span class="classifier">np.array of type bool, int or float</span></dt><dd><p>The binary mask of the contour.</p>
 </dd>
@@ -451,8 +507,8 @@ after having cropped off the top of the mesh.</p>
 </dd>
 </dl>
 </section>
-<section id="id15">
-<h3>Returns<a class="headerlink" href="#id15" title="Permalink to this heading">¶</a></h3>
+<section id="id16">
+<h3>Returns<a class="headerlink" href="#id16" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>mesh<span class="classifier">pyvista.PolyData</span></dt><dd><p>The output mesh.</p>
 </dd>
@@ -463,10 +519,10 @@ after having cropped off the top of the mesh.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.mesh.define_meristem">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.mesh.</span></span><span class="sig-name descname"><span class="pre">define_meristem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'central_mass'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_coord</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh.html#define_meristem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.mesh.define_meristem" title="Permalink to this definition">¶</a></dt>
-<dd><p>Determine which domain in the segmentation that corresponds to the meristem.
-Some methods are deprecated and should not be used.</p>
-<section id="id16">
-<h3>Parameters<a class="headerlink" href="#id16" title="Permalink to this heading">¶</a></h3>
+<dd><p>Determine which domain in the segmentation that corresponds to the
+meristem. Some methods are deprecated and should not be used.</p>
+<section id="id17">
+<h3>Parameters<a class="headerlink" href="#id17" title="Permalink to this heading">¶</a></h3>
 <blockquote>
 <div><p>mesh : pyvista.PolyData
 Mesh to operate on.</p>
@@ -482,8 +538,8 @@ Mesh to operate on.</p>
 </dd>
 </dl>
 </section>
-<section id="id17">
-<h3>Returns<a class="headerlink" href="#id17" title="Permalink to this heading">¶</a></h3>
+<section id="id18">
+<h3>Returns<a class="headerlink" href="#id18" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>meristem, ccoord<span class="classifier">int, 3-tuple</span></dt><dd><p>Domain index of the meristem, as well as the center coordinates using
 the given method.</p>
@@ -496,8 +552,8 @@ the given method.</p>
 <dt class="sig sig-object py" id="phenotastic.mesh.drop_skirt">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.mesh.</span></span><span class="sig-name descname"><span class="pre">drop_skirt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxdist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh.html#drop_skirt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.mesh.drop_skirt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Downprojects the boundary to the lowest point in the z-direction.</p>
-<section id="id18">
-<h3>Parameters<a class="headerlink" href="#id18" title="Permalink to this heading">¶</a></h3>
+<section id="id19">
+<h3>Parameters<a class="headerlink" href="#id19" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>mesh<span class="classifier">pyvista.PolyData</span></dt><dd><p>Mesh to operate on.</p>
 </dd>
@@ -505,8 +561,8 @@ the given method.</p>
 </dd>
 </dl>
 </section>
-<section id="id19">
-<h3>Returns<a class="headerlink" href="#id19" title="Permalink to this heading">¶</a></h3>
+<section id="id20">
+<h3>Returns<a class="headerlink" href="#id20" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>new_mesh<span class="classifier">pyvista.PolyData</span></dt><dd><p>Mesh with boundary downprojected.</p>
 </dd>
@@ -528,9 +584,9 @@ the given method.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.mesh.fill_beneath">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.mesh.</span></span><span class="sig-name descname"><span class="pre">fill_beneath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contour</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bottom'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh.html#fill_beneath"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.mesh.fill_beneath" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fill the contour beneath the XY periphery. of a binary object</p>
-<section id="id20">
-<h3>Parameters<a class="headerlink" href="#id20" title="Permalink to this heading">¶</a></h3>
+<dd><p>Fill the contour beneath the XY periphery. of a binary object.</p>
+<section id="id21">
+<h3>Parameters<a class="headerlink" href="#id21" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>contour<span class="classifier">np.ndarray</span></dt><dd><p>The contour to fill beneath.</p>
 </dd>
@@ -538,8 +594,8 @@ the given method.</p>
 </dd>
 </dl>
 </section>
-<section id="id21">
-<h3>Returns<a class="headerlink" href="#id21" title="Permalink to this heading">¶</a></h3>
+<section id="id22">
+<h3>Returns<a class="headerlink" href="#id22" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>cimg<span class="classifier">np.ndarray</span></dt><dd><p>The filled contour.</p>
 </dd>
@@ -550,13 +606,13 @@ the given method.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.mesh.fill_contour">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.mesh.</span></span><span class="sig-name descname"><span class="pre">fill_contour</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contour</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_xy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_zx_zy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zrange</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xrange</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yrange</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh.html#fill_contour"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.mesh.fill_contour" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fill contour by closing all the edges (except for the top one), and applying
-a binary fill-holes operation. Note that this causes some errors if there is
-significant curvature on the contour, since the above-signal is
+<dd><p>Fill contour by closing all the edges (except for the top one), and
+applying a binary fill-holes operation. Note that this causes some errors
+if there is significant curvature on the contour, since the above-signal is
 down-projected. This can cause some erronous sharp edges which ruin the
 contour.</p>
-<section id="id22">
-<h3>Parameters<a class="headerlink" href="#id22" title="Permalink to this heading">¶</a></h3>
+<section id="id23">
+<h3>Parameters<a class="headerlink" href="#id23" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>contour<span class="classifier">np.ndarray</span></dt><dd><p>Contour to operate on.</p>
 </dd>
@@ -568,15 +624,15 @@ other at a point that isn’t close to the meristem.</p>
 </dd>
 </dl>
 </section>
-<section id="id23">
-<h3>Returns<a class="headerlink" href="#id23" title="Permalink to this heading">¶</a></h3>
+<section id="id24">
+<h3>Returns<a class="headerlink" href="#id24" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>new_contour<span class="classifier">np.ndarray</span></dt><dd><p>Contour after modification. If inplace == True, nothing is returned.</p>
 </dd>
 </dl>
 </section>
-<section id="id24">
-<h3>Notes<a class="headerlink" href="#id24" title="Permalink to this heading">¶</a></h3>
+<section id="id25">
+<h3>Notes<a class="headerlink" href="#id25" title="Permalink to this heading">¶</a></h3>
 <p>Assumes first dimension being Z, ordered from bottom to top. Will remove top
 and bottom slice.</p>
 </section>
@@ -586,8 +642,8 @@ and bottom slice.</p>
 <dt class="sig sig-object py" id="phenotastic.mesh.fill_inland">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.mesh.</span></span><span class="sig-name descname"><span class="pre">fill_inland</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contour</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh.html#fill_inland"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.mesh.fill_inland" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fill the contour based on the distance to the contour XY periphery.</p>
-<section id="id25">
-<h3>Parameters<a class="headerlink" href="#id25" title="Permalink to this heading">¶</a></h3>
+<section id="id26">
+<h3>Parameters<a class="headerlink" href="#id26" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>contour<span class="classifier">np.ndarray</span></dt><dd><p>Contour to fill.</p>
 </dd>
@@ -596,8 +652,8 @@ Default is 0.</p>
 </dd>
 </dl>
 </section>
-<section id="id26">
-<h3>Returns<a class="headerlink" href="#id26" title="Permalink to this heading">¶</a></h3>
+<section id="id27">
+<h3>Returns<a class="headerlink" href="#id27" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>filled_contour<span class="classifier">np.ndarray</span></dt><dd><p>Filled contour.</p>
 </dd>
@@ -609,8 +665,8 @@ Default is 0.</p>
 <dt class="sig sig-object py" id="phenotastic.mesh.filter_curvature">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.mesh.</span></span><span class="sig-name descname"><span class="pre">filter_curvature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">curvature_threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">curvatures</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh.html#filter_curvature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.mesh.filter_curvature" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove mesh vertices based on curvatures.</p>
-<section id="id27">
-<h3>Parameters<a class="headerlink" href="#id27" title="Permalink to this heading">¶</a></h3>
+<section id="id28">
+<h3>Parameters<a class="headerlink" href="#id28" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>mesh<span class="classifier">pyvista.PolyData</span></dt><dd><p>The input mesh.</p>
 </dd>
@@ -621,8 +677,8 @@ curvatures.</p>
 </dd>
 </dl>
 </section>
-<section id="id28">
-<h3>Returns<a class="headerlink" href="#id28" title="Permalink to this heading">¶</a></h3>
+<section id="id29">
+<h3>Returns<a class="headerlink" href="#id29" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>mesh<span class="classifier">pyvista.PolyData</span></dt><dd><p>The filtered mesh.</p>
 </dd>
@@ -640,8 +696,8 @@ the rotation angles along the x, y, z axis.</p>
 <p>Returns the parameters for a paraboloid along the z-axis. The angles can be
 used to correct the paraboloid for rotation.</p>
 <p>Paraboloid equation : p1 * x**2. + p2 * y**2. + p3 * x + p4 * y + p5 = z</p>
-<section id="id29">
-<h3>Parameters<a class="headerlink" href="#id29" title="Permalink to this heading">¶</a></h3>
+<section id="id30">
+<h3>Parameters<a class="headerlink" href="#id30" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>data<span class="classifier">np.ndarray</span></dt><dd><p>Data to fit the paraboloid to.</p>
 </dd>
@@ -649,8 +705,8 @@ used to correct the paraboloid for rotation.</p>
 </dd>
 </dl>
 </section>
-<section id="id30">
-<h3>Returns<a class="headerlink" href="#id30" title="Permalink to this heading">¶</a></h3>
+<section id="id31">
+<h3>Returns<a class="headerlink" href="#id31" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>popt<span class="classifier">np.array</span></dt><dd><p>Parameters after optimisation.</p>
 </dd>
@@ -662,15 +718,15 @@ used to correct the paraboloid for rotation.</p>
 <dt class="sig sig-object py" id="phenotastic.mesh.fit_paraboloid_mesh">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.mesh.</span></span><span class="sig-name descname"><span class="pre">fit_paraboloid_mesh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_coord</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh.html#fit_paraboloid_mesh"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.mesh.fit_paraboloid_mesh" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit a paraboloid to a mesh.</p>
-<section id="id31">
-<h3>Parameters<a class="headerlink" href="#id31" title="Permalink to this heading">¶</a></h3>
+<section id="id32">
+<h3>Parameters<a class="headerlink" href="#id32" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>mesh<span class="classifier">pyvista.PolyData</span></dt><dd><p>Mesh to fit paraboloid to.</p>
 </dd>
 </dl>
 </section>
-<section id="id32">
-<h3>Returns<a class="headerlink" href="#id32" title="Permalink to this heading">¶</a></h3>
+<section id="id33">
+<h3>Returns<a class="headerlink" href="#id33" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>popt, apex<span class="classifier">8-tuple, 3-tuple</span></dt><dd><p>Parameters for the paraboloid, as well as the coordinates for the
 paraboloid apex.</p>
@@ -696,8 +752,8 @@ paraboloid apex.</p>
 </dd>
 </dl>
 </section>
-<section id="id33">
-<h3>Returns<a class="headerlink" href="#id33" title="Permalink to this heading">¶</a></h3>
+<section id="id34">
+<h3>Returns<a class="headerlink" href="#id34" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>mesh<span class="classifier">pyvista.PolyData</span></dt><dd><p>The output mesh.</p>
 </dd>
@@ -708,9 +764,10 @@ paraboloid apex.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.mesh.label_mesh">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.mesh.</span></span><span class="sig-name descname"><span class="pre">label_mesh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">segm_img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1,</span> <span class="pre">1,</span> <span class="pre">1]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">background</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'point'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh.html#label_mesh"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.mesh.label_mesh" title="Permalink to this definition">¶</a></dt>
-<dd><p>Label a mesh using the closest (by euclidean distance) voxel in a segmented image.</p>
-<section id="id34">
-<h3>Parameters<a class="headerlink" href="#id34" title="Permalink to this heading">¶</a></h3>
+<dd><p>Label a mesh using the closest (by euclidean distance) voxel in a
+segmented image.</p>
+<section id="id35">
+<h3>Parameters<a class="headerlink" href="#id35" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>mesh<span class="classifier">pyvista.PolyData</span></dt><dd><p>Mesh to label.</p>
 </dd>
@@ -726,8 +783,8 @@ paraboloid apex.</p>
 </dd>
 </dl>
 </section>
-<section id="id35">
-<h3>Returns<a class="headerlink" href="#id35" title="Permalink to this heading">¶</a></h3>
+<section id="id36">
+<h3>Returns<a class="headerlink" href="#id36" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>new_mesh<span class="classifier">pyvista.PolyData</span></dt><dd><p>Mesh after modification. If inplace is True, nothing is returned.</p>
 </dd>
@@ -756,9 +813,9 @@ paraboloid apex.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.mesh.paraboloid">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.mesh.</span></span><span class="sig-name descname"><span class="pre">paraboloid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(200,</span> <span class="pre">200,</span> <span class="pre">200)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh.html#paraboloid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.mesh.paraboloid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate a meshed paraboloid object</p>
-<section id="id36">
-<h3>Parameters<a class="headerlink" href="#id36" title="Permalink to this heading">¶</a></h3>
+<dd><p>Generate a meshed paraboloid object.</p>
+<section id="id37">
+<h3>Parameters<a class="headerlink" href="#id37" title="Permalink to this heading">¶</a></h3>
 <dl>
 <dt>p<span class="classifier">5-tuple of the paraboloid parameters</span></dt><dd><p>Parameters of the folliwing equation:</p>
 <div class="math notranslate nohighlight">
@@ -770,8 +827,8 @@ paraboloid apex.</p>
 </dd>
 </dl>
 </section>
-<section id="id37">
-<h3>Returns<a class="headerlink" href="#id37" title="Permalink to this heading">¶</a></h3>
+<section id="id38">
+<h3>Returns<a class="headerlink" href="#id38" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>output<span class="classifier">pyvista.PolyData</span></dt><dd><p>The rotated polydata mesh.</p>
 </dd>
@@ -786,15 +843,15 @@ paraboloid apex.</p>
 <p>Use the return of fit_paraboloid() to compute the apex of the paraboloid.
 The return is in the coordinate system of the data, meaning that the
 coordinates have been corrected for the rotation angles.</p>
-<section id="id38">
-<h3>Parameters<a class="headerlink" href="#id38" title="Permalink to this heading">¶</a></h3>
+<section id="id39">
+<h3>Parameters<a class="headerlink" href="#id39" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>p<span class="classifier">8-tuple</span></dt><dd><p>Parameters defining the paraboloid.</p>
 </dd>
 </dl>
 </section>
-<section id="id39">
-<h3>Returns<a class="headerlink" href="#id39" title="Permalink to this heading">¶</a></h3>
+<section id="id40">
+<h3>Returns<a class="headerlink" href="#id40" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>coords<span class="classifier">np.array</span></dt><dd><p>Coordinates for the paraboloid apex.</p>
 </dd>
@@ -846,9 +903,10 @@ removed. Default = 60.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.mesh.project2surface">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.mesh.</span></span><span class="sig-name descname"><span class="pre">project2surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">mesh,</span> <span class="pre">int_img,</span> <span class="pre">distance_threshold,</span> <span class="pre">mask=None,</span> <span class="pre">resolution=[1,</span> <span class="pre">1,</span> <span class="pre">1],</span> <span class="pre">fct=&lt;function</span> <span class="pre">sum&gt;,</span> <span class="pre">background=0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh.html#project2surface"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.mesh.project2surface" title="Permalink to this definition">¶</a></dt>
-<dd><p>Project values to a surface using a distance map. Values are aggregated per vertex in the mesh.</p>
-<section id="id40">
-<h3>Parameters<a class="headerlink" href="#id40" title="Permalink to this heading">¶</a></h3>
+<dd><p>Project values to a surface using a distance map. Values are aggregated
+per vertex in the mesh.</p>
+<section id="id41">
+<h3>Parameters<a class="headerlink" href="#id41" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>mesh<span class="classifier">pyvista.PolyData</span></dt><dd><p>Mesh to project values to.</p>
 </dd>
@@ -872,8 +930,8 @@ removed. Default = 60.</p>
 <dt class="sig sig-object py" id="phenotastic.mesh.remesh">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.mesh.</span></span><span class="sig-name descname"><span class="pre">remesh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh.html#remesh"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.mesh.remesh" title="Permalink to this definition">¶</a></dt>
 <dd><p>Regularise the mesh faces using the ACVD algorithm.</p>
-<section id="id41">
-<h3>Parameters<a class="headerlink" href="#id41" title="Permalink to this heading">¶</a></h3>
+<section id="id42">
+<h3>Parameters<a class="headerlink" href="#id42" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>mesh<span class="classifier">pyvista.PolyData</span></dt><dd><p>The mesh to regularise.</p>
 </dd>
@@ -883,8 +941,8 @@ removed. Default = 60.</p>
 </dd>
 </dl>
 </section>
-<section id="id42">
-<h3>Returns<a class="headerlink" href="#id42" title="Permalink to this heading">¶</a></h3>
+<section id="id43">
+<h3>Returns<a class="headerlink" href="#id43" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>output<span class="classifier">pyvista.PolyData</span></dt><dd><p>The regularised mesh.</p>
 </dd>
@@ -899,8 +957,8 @@ removed. Default = 60.</p>
 <p>Can be thought of as an alternative
 smoothing approach. The input mesh is remeshed with a factor times the
 original number of vertices, and then downsampled by another factor.</p>
-<section id="id43">
-<h3>Parameters<a class="headerlink" href="#id43" title="Permalink to this heading">¶</a></h3>
+<section id="id44">
+<h3>Parameters<a class="headerlink" href="#id44" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>mesh<span class="classifier">pyvista.PolyData</span></dt><dd><p>Mesh to operate on.</p>
 </dd>
@@ -914,8 +972,8 @@ original number of vertices, and then downsampled by another factor.</p>
 </dd>
 </dl>
 </section>
-<section id="id44">
-<h3>Returns<a class="headerlink" href="#id44" title="Permalink to this heading">¶</a></h3>
+<section id="id45">
+<h3>Returns<a class="headerlink" href="#id45" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>mesh<span class="classifier">pyvista.PolyData</span></dt><dd><p>Processed mesh.</p>
 </dd>
@@ -927,8 +985,8 @@ original number of vertices, and then downsampled by another factor.</p>
 <dt class="sig sig-object py" id="phenotastic.mesh.remove_bridges">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.mesh.</span></span><span class="sig-name descname"><span class="pre">remove_bridges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh.html#remove_bridges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.mesh.remove_bridges" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove triangles where all vertices are part of the mesh.</p>
-<section id="id45">
-<h3>Parameters<a class="headerlink" href="#id45" title="Permalink to this heading">¶</a></h3>
+<section id="id46">
+<h3>Parameters<a class="headerlink" href="#id46" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>mesh<span class="classifier">pyvista.PolyData</span></dt><dd><p>Mesh to operate on.</p>
 </dd>
@@ -936,12 +994,12 @@ original number of vertices, and then downsampled by another factor.</p>
 </dd>
 </dl>
 </section>
-<section id="id46">
-<h3>Notes<a class="headerlink" href="#id46" title="Permalink to this heading">¶</a></h3>
+<section id="id47">
+<h3>Notes<a class="headerlink" href="#id47" title="Permalink to this heading">¶</a></h3>
 <p>Assumes triangulated mesh.</p>
 </section>
-<section id="id47">
-<h3>Returns<a class="headerlink" href="#id47" title="Permalink to this heading">¶</a></h3>
+<section id="id48">
+<h3>Returns<a class="headerlink" href="#id48" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>new_mesh<span class="classifier">pyvista.PolyData</span></dt><dd><p>Mesh after bridge removal.</p>
 </dd>
@@ -952,9 +1010,10 @@ original number of vertices, and then downsampled by another factor.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.mesh.remove_inland_under">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.mesh.</span></span><span class="sig-name descname"><span class="pre">remove_inland_under</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contour</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1,</span> <span class="pre">1,</span> <span class="pre">1]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh.html#remove_inland_under"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.mesh.remove_inland_under" title="Permalink to this definition">¶</a></dt>
-<dd><dl>
-<dt>Remove the part of the mesh that is under the contour and that may have arisen</dt><dd><p>due to holes in the contour.</p>
-<dl class="simple">
+<dd><p>Remove the part of the mesh that is under the contour and that may have
+arisen due to holes in the contour.</p>
+<blockquote>
+<div><dl class="simple">
 <dt>mesh<span class="classifier">pyvista.PolyData</span></dt><dd><p>Mesh to remove the inland part from.</p>
 </dd>
 <dt>contour<span class="classifier">np.ndarray</span></dt><dd><p>Contour to use for the removal.</p>
@@ -966,7 +1025,8 @@ original number of vertices, and then downsampled by another factor.</p>
 <dt>invert<span class="classifier">bool, optional</span></dt><dd><p>Invert the mesh normals. Default is False.</p>
 </dd>
 </dl>
-</dd>
+</div></blockquote>
+<dl>
 <dt>output<span class="classifier">pyvista.PolyData</span></dt><dd><blockquote>
 <div><p>Mesh with the inland part removed.</p>
 </div></blockquote>
@@ -980,8 +1040,8 @@ original number of vertices, and then downsampled by another factor.</p>
 <span class="sig-prename descclassname"><span class="pre">phenotastic.mesh.</span></span><span class="sig-name descname"><span class="pre">remove_normals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold_angle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'polar'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh.html#remove_normals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.mesh.remove_normals" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove points based on the point normal angle.</p>
 <p>Currently only considering the polar angle.</p>
-<section id="id48">
-<h3>Parameters<a class="headerlink" href="#id48" title="Permalink to this heading">¶</a></h3>
+<section id="id49">
+<h3>Parameters<a class="headerlink" href="#id49" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>mesh<span class="classifier">pyvista.PolyData</span></dt><dd><p>Mesh on which to operate.</p>
 </dd>
@@ -992,8 +1052,8 @@ removed. Default = 0.</p>
 </dd>
 </dl>
 </section>
-<section id="id49">
-<h3>Returns<a class="headerlink" href="#id49" title="Permalink to this heading">¶</a></h3>
+<section id="id50">
+<h3>Returns<a class="headerlink" href="#id50" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>new_mesh<span class="classifier">pyvista.PolyData</span></dt><dd><p>Mesh with the resulting vertices removed.</p>
 </dd>
@@ -1008,8 +1068,8 @@ removed. Default = 0.</p>
 <p>All boundary points within a given radius are considered. The ones where the
 fraction of the distance along the boundary, as divided by the euclidean
 distance, is greater than the given threshold.</p>
-<section id="id50">
-<h3>Parameters<a class="headerlink" href="#id50" title="Permalink to this heading">¶</a></h3>
+<section id="id51">
+<h3>Parameters<a class="headerlink" href="#id51" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>mesh<span class="classifier">pyvista.PolyData</span></dt><dd><p>Mesh to operate on.</p>
 </dd>
@@ -1020,8 +1080,8 @@ Default = 6.</p>
 </dd>
 </dl>
 </section>
-<section id="id51">
-<h3>Returns<a class="headerlink" href="#id51" title="Permalink to this heading">¶</a></h3>
+<section id="id52">
+<h3>Returns<a class="headerlink" href="#id52" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>mesh<span class="classifier">pyvista.PolyData</span></dt><dd><p>Resulting mesh.</p>
 </dd>
@@ -1032,15 +1092,15 @@ Default = 6.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.mesh.repair">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.mesh.</span></span><span class="sig-name descname"><span class="pre">repair</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh.html#repair"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.mesh.repair" title="Permalink to this definition">¶</a></dt>
-<dd><p>Repair a mesh using MeshFix</p>
+<dd><p>Repair a mesh using MeshFix.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.mesh.repair_small">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.mesh.</span></span><span class="sig-name descname"><span class="pre">repair_small</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nbe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refine</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh.html#repair_small"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.mesh.repair_small" title="Permalink to this definition">¶</a></dt>
-<dd><p>Repair small holes in a mesh based on the number of edges</p>
-<section id="id52">
-<h3>Parameters<a class="headerlink" href="#id52" title="Permalink to this heading">¶</a></h3>
+<dd><p>Repair small holes in a mesh based on the number of edges.</p>
+<section id="id53">
+<h3>Parameters<a class="headerlink" href="#id53" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>mesh<span class="classifier">pyvista.PolyData</span></dt><dd><p>Mesh to repair.</p>
 </dd>
@@ -1050,8 +1110,8 @@ Default = 6.</p>
 </dd>
 </dl>
 </section>
-<section id="id53">
-<h3>Returns<a class="headerlink" href="#id53" title="Permalink to this heading">¶</a></h3>
+<section id="id54">
+<h3>Returns<a class="headerlink" href="#id54" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>output<span class="classifier">pyvista.PolyData</span></dt><dd><p>Repaired mesh.</p>
 </dd>
@@ -1062,9 +1122,9 @@ Default = 6.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.mesh.rot_matrix_44">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.mesh.</span></span><span class="sig-name descname"><span class="pre">rot_matrix_44</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh.html#rot_matrix_44"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.mesh.rot_matrix_44" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate a 4x4 rotation matrix for</p>
-<section id="id54">
-<h3>Parameters<a class="headerlink" href="#id54" title="Permalink to this heading">¶</a></h3>
+<dd><p>Generate a 4x4 rotation matrix for.</p>
+<section id="id55">
+<h3>Parameters<a class="headerlink" href="#id55" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>angles<span class="classifier">list, tuple or np.array of length 3</span></dt><dd><p>Input angles in radians. For rotations alpha, beta, gamma, the rotations are applied in
 order beta-gamma-alpha. This ordering is done for historic reasons and may change in future releases.</p>
@@ -1073,8 +1133,8 @@ order beta-gamma-alpha. This ordering is done for historic reasons and may chang
 </dd>
 </dl>
 </section>
-<section id="id55">
-<h3>Returns<a class="headerlink" href="#id55" title="Permalink to this heading">¶</a></h3>
+<section id="id56">
+<h3>Returns<a class="headerlink" href="#id56" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>R<span class="classifier">4x4 np.narray</span></dt><dd><p>The resulting rotation matrix.</p>
 </dd>
@@ -1114,15 +1174,15 @@ ert)</p>
 <dt class="sig sig-object py" id="phenotastic.mesh.vertex_cycles">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.mesh.</span></span><span class="sig-name descname"><span class="pre">vertex_cycles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh.html#vertex_cycles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.mesh.vertex_cycles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find cycles (holes/boundaries) in a mesh.</p>
-<section id="id56">
-<h3>Parameters<a class="headerlink" href="#id56" title="Permalink to this heading">¶</a></h3>
+<section id="id57">
+<h3>Parameters<a class="headerlink" href="#id57" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>mesh<span class="classifier">pyvista.PolyData</span></dt><dd><p>Mesh to operate on.</p>
 </dd>
 </dl>
 </section>
-<section id="id57">
-<h3>Returns<a class="headerlink" href="#id57" title="Permalink to this heading">¶</a></h3>
+<section id="id58">
+<h3>Returns<a class="headerlink" href="#id58" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>cycles<span class="classifier">list</span></dt><dd><p>List of cycles, each cycle is a list of vertex indices.</p>
 </dd>
@@ -1134,8 +1194,8 @@ ert)</p>
 <dt class="sig sig-object py" id="phenotastic.mesh.vertex_neighbors">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.mesh.</span></span><span class="sig-name descname"><span class="pre">vertex_neighbors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_self</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh.html#vertex_neighbors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.mesh.vertex_neighbors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the indices of the vertices connected to a given vertex.</p>
-<section id="id58">
-<h3>Parameters<a class="headerlink" href="#id58" title="Permalink to this heading">¶</a></h3>
+<section id="id59">
+<h3>Parameters<a class="headerlink" href="#id59" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>mesh<span class="classifier">pyvista.PolyData</span></dt><dd><p>Mesh to operate on.</p>
 </dd>
@@ -1146,8 +1206,8 @@ Default = True.</p>
 </dd>
 </dl>
 </section>
-<section id="id59">
-<h3>Returns<a class="headerlink" href="#id59" title="Permalink to this heading">¶</a></h3>
+<section id="id60">
+<h3>Returns<a class="headerlink" href="#id60" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>connected_vertices<span class="classifier">list</span></dt><dd><p>List of indices of the connected vertices.</p>
 </dd>
@@ -1159,8 +1219,8 @@ Default = True.</p>
 <dt class="sig sig-object py" id="phenotastic.mesh.vertex_neighbors_all">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.mesh.</span></span><span class="sig-name descname"><span class="pre">vertex_neighbors_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_self</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/mesh.html#vertex_neighbors_all"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.mesh.vertex_neighbors_all" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get all vertex neighbors.</p>
-<section id="id60">
-<h3>Parameters<a class="headerlink" href="#id60" title="Permalink to this heading">¶</a></h3>
+<section id="id61">
+<h3>Parameters<a class="headerlink" href="#id61" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>mesh<span class="classifier">pyvista.PolyData</span></dt><dd><p>Mesh to operate on.</p>
 </dd>
@@ -1169,8 +1229,8 @@ Default = True.</p>
 </dd>
 </dl>
 </section>
-<section id="id61">
-<h3>Returns<a class="headerlink" href="#id61" title="Permalink to this heading">¶</a></h3>
+<section id="id62">
+<h3>Returns<a class="headerlink" href="#id62" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>connectivities<span class="classifier">list</span></dt><dd><p>List of lists of indices of the connected vertices.</p>
 </dd>
@@ -1181,7 +1241,7 @@ Default = True.</p>
 </section>
 <section id="module-phenotastic.misc">
 <span id="phenotastic-misc-module"></span><h2>phenotastic.misc module<a class="headerlink" href="#module-phenotastic.misc" title="Permalink to this heading">¶</a></h2>
-<p>Created on Tue May 29 20:00:11 2018</p>
+<p>Created on Tue May 29 20:00:11 2018.</p>
 <p>&#64;author: henrik</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.misc.angle">
@@ -1192,9 +1252,10 @@ Default = True.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.misc.angle_difference">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.misc.</span></span><span class="sig-name descname"><span class="pre">angle_difference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ang1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ang2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">period</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">360</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#angle_difference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.misc.angle_difference" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the smallest angle difference on a template with periodic boundary conditions.</p>
-<section id="id62">
-<h3>Parameters<a class="headerlink" href="#id62" title="Permalink to this heading">¶</a></h3>
+<dd><p>Return the smallest angle difference on a template with periodic
+boundary conditions.</p>
+<section id="id63">
+<h3>Parameters<a class="headerlink" href="#id63" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>ang1<span class="classifier">array of floats</span></dt><dd><p>The first angle</p>
 </dd>
@@ -1202,8 +1263,8 @@ Default = True.</p>
 </dd>
 </dl>
 </section>
-<section id="id63">
-<h3>Returns<a class="headerlink" href="#id63" title="Permalink to this heading">¶</a></h3>
+<section id="id64">
+<h3>Returns<a class="headerlink" href="#id64" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>angs<span class="classifier">np.array of floats</span></dt><dd><p>The smallest angles.</p>
 </dd>
@@ -1217,21 +1278,22 @@ Default = True.</p>
 <dd><p>Convert cartesian coordinates into spherical coordinates.</p>
 <p>Convert a list of cartesian coordinates x, y, z to spherical coordinates
 r, theta, phi. theta is defined as 0 along z-axis.</p>
-<section id="id64">
-<h3>Parameters<a class="headerlink" href="#id64" title="Permalink to this heading">¶</a></h3>
+<section id="id65">
+<h3>Parameters<a class="headerlink" href="#id65" title="Permalink to this heading">¶</a></h3>
 <p>xyz :</p>
 </section>
-<section id="id65">
-<h3>Returns<a class="headerlink" href="#id65" title="Permalink to this heading">¶</a></h3>
+<section id="id66">
+<h3>Returns<a class="headerlink" href="#id66" title="Permalink to this heading">¶</a></h3>
 </section>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.misc.coord_array">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.misc.</span></span><span class="sig-name descname"><span class="pre">coord_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#coord_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.misc.coord_array" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a coordinate array (of e.g. same dimensionality as intensity array) of the same dimensions as another array. Only defined for 3D.</p>
-<section id="id66">
-<h3>Parameters<a class="headerlink" href="#id66" title="Permalink to this heading">¶</a></h3>
+<dd><p>Create a coordinate array (of e.g. same dimensionality as intensity
+array) of the same dimensions as another array. Only defined for 3D.</p>
+<section id="id67">
+<h3>Parameters<a class="headerlink" href="#id67" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>arr<span class="classifier">np.ndarray</span></dt><dd><p>Array defining dimensions of coordinate array</p>
 </dd>
@@ -1245,8 +1307,8 @@ r, theta, phi. theta is defined as 0 along z-axis.</p>
 <h3>Note<a class="headerlink" href="#note" title="Permalink to this heading">¶</a></h3>
 <p>Only 3D.</p>
 </section>
-<section id="id67">
-<h3>Returns<a class="headerlink" href="#id67" title="Permalink to this heading">¶</a></h3>
+<section id="id68">
+<h3>Returns<a class="headerlink" href="#id68" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>coords<span class="classifier">np.ndarray</span></dt><dd><p>Vertically stacked coordinate array for the input data.</p>
 </dd>
@@ -1263,13 +1325,13 @@ r, theta, phi. theta is defined as 0 along z-axis.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.misc.divergence_angles">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.misc.</span></span><span class="sig-name descname"><span class="pre">divergence_angles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">period</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">360</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#divergence_angles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.misc.divergence_angles" title="Permalink to this definition">¶</a></dt>
-<dd><p>Divergence angles between an ordered list of angles</p>
+<dd><p>Divergence angles between an ordered list of angles.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.misc.flatten">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.misc.</span></span><span class="sig-name descname"><span class="pre">flatten</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/phenotastic/misc.html#flatten"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.misc.flatten" title="Permalink to this definition">¶</a></dt>
-<dd><p>Flatten an arbitrarily nested iterable</p>
+<dd><p>Flatten an arbitrarily nested iterable.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -1289,15 +1351,15 @@ r, theta, phi. theta is defined as 0 along z-axis.</p>
 <dt class="sig sig-object py" id="phenotastic.misc.get_max_contrast_colours">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.misc.</span></span><span class="sig-name descname"><span class="pre">get_max_contrast_colours</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#get_max_contrast_colours"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.misc.get_max_contrast_colours" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get colors with maximal inter-color contrast.</p>
-<section id="id68">
-<h3>Parameters<a class="headerlink" href="#id68" title="Permalink to this heading">¶</a></h3>
+<section id="id69">
+<h3>Parameters<a class="headerlink" href="#id69" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>n<span class="classifier">Numbers of RGB colors to return.</span></dt><dd><p>(Default value = 64)</p>
 </dd>
 </dl>
 </section>
-<section id="id69">
-<h3>Returns<a class="headerlink" href="#id69" title="Permalink to this heading">¶</a></h3>
+<section id="id70">
+<h3>Returns<a class="headerlink" href="#id70" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>rgbs<span class="classifier">list</span></dt><dd><p>List of colours (RGB) up to a certain n that maximise contrast.</p>
 </dd>
@@ -1309,8 +1371,8 @@ r, theta, phi. theta is defined as 0 along z-axis.</p>
 <dt class="sig sig-object py" id="phenotastic.misc.get_prime_factors">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.misc.</span></span><span class="sig-name descname"><span class="pre">get_prime_factors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">primelist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#get_prime_factors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.misc.get_prime_factors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a list of prime factors and corresponding powers.</p>
-<section id="id70">
-<h3>Example<a class="headerlink" href="#id70" title="Permalink to this heading">¶</a></h3>
+<section id="id71">
+<h3>Example<a class="headerlink" href="#id71" title="Permalink to this heading">¶</a></h3>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_prime_factors</span><span class="p">(</span><span class="mi">140</span><span class="p">)</span> <span class="c1"># 140 = 2^2 * 5^1 * 7^1</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Out</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="p">[(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]</span>
 </pre></div>
@@ -1321,15 +1383,15 @@ r, theta, phi. theta is defined as 0 along z-axis.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.misc.match_shape">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.misc.</span></span><span class="sig-name descname"><span class="pre">match_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">side</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'both'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#match_shape"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.misc.match_shape" title="Permalink to this definition">¶</a></dt>
-<dd><section id="id71">
-<h3>Parameters<a class="headerlink" href="#id71" title="Permalink to this heading">¶</a></h3>
+<dd><section id="id72">
+<h3>Parameters<a class="headerlink" href="#id72" title="Permalink to this heading">¶</a></h3>
 <p>a : np.ndarray
 t : Dimensions to pad/trim to, must be a list or tuple
 side : One of ‘both’, ‘before’, and ‘after’
 val : value to pad with</p>
 </section>
-<section id="id72">
-<h3>Returns<a class="headerlink" href="#id72" title="Permalink to this heading">¶</a></h3>
+<section id="id73">
+<h3>Returns<a class="headerlink" href="#id73" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>b<span class="classifier">np.ndarray</span></dt><dd><p>The padded array</p>
 </dd>
@@ -1347,15 +1409,15 @@ val : value to pad with</p>
 <dt class="sig sig-object py" id="phenotastic.misc.merge">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.misc.</span></span><span class="sig-name descname"><span class="pre">merge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lists</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#merge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.misc.merge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Merge lists based on overlapping elements.</p>
-<section id="id73">
-<h3>Parameters<a class="headerlink" href="#id73" title="Permalink to this heading">¶</a></h3>
+<section id="id74">
+<h3>Parameters<a class="headerlink" href="#id74" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>lists<span class="classifier">list of lists</span></dt><dd><p>Lists to be merged.</p>
 </dd>
 </dl>
 </section>
-<section id="id74">
-<h3>Returns<a class="headerlink" href="#id74" title="Permalink to this heading">¶</a></h3>
+<section id="id75">
+<h3>Returns<a class="headerlink" href="#id75" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>sets<span class="classifier">list</span></dt><dd><p>Minimal list of independent sets.</p>
 </dd>
@@ -1366,16 +1428,17 @@ val : value to pad with</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.misc.mode">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.misc.</span></span><span class="sig-name descname"><span class="pre">mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.misc.mode" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the mode of a sequence of values. Returns nan if sequence too short.</p>
+<dd><p>Compute the mode of a sequence of values.</p>
+<p>Returns nan if sequence too short.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.misc.paraboloid">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.misc.</span></span><span class="sig-name descname"><span class="pre">paraboloid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#paraboloid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.misc.paraboloid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the z-value for a non-rotated paraboloid given input xy-coordinates and
-parameters. Translations are permitted in x, y, and z.</p>
-<section id="id75">
-<h3>Parameters<a class="headerlink" href="#id75" title="Permalink to this heading">¶</a></h3>
+<dd><p>Return the z-value for a non-rotated paraboloid given input xy-
+coordinates and parameters. Translations are permitted in x, y, and z.</p>
+<section id="id76">
+<h3>Parameters<a class="headerlink" href="#id76" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>x<span class="classifier">float</span></dt><dd><p>x-coordinate.</p>
 </dd>
@@ -1385,8 +1448,8 @@ parameters. Translations are permitted in x, y, and z.</p>
 </dd>
 </dl>
 </section>
-<section id="id76">
-<h3>Returns<a class="headerlink" href="#id76" title="Permalink to this heading">¶</a></h3>
+<section id="id77">
+<h3>Returns<a class="headerlink" href="#id77" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>z<span class="classifier">float</span></dt><dd><p>The corresponding z-coordinate of the paraboloid.</p>
 </dd>
@@ -1398,15 +1461,16 @@ parameters. Translations are permitted in x, y, and z.</p>
 <dt class="sig sig-object py" id="phenotastic.misc.prime_sieve">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.misc.</span></span><span class="sig-name descname"><span class="pre">prime_sieve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#prime_sieve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.misc.prime_sieve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a dict or a list of primes up to N create full prime sieve for
-N=10^6 in 1 sec</p>
+N=10^6 in 1 sec.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.misc.rand_cmap">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.misc.</span></span><span class="sig-name descname"><span class="pre">rand_cmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nlabels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bright'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_color_black</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_color_black</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#rand_cmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.misc.rand_cmap" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a random colormap to be used together with matplotlib. Useful for segmentation tasks</p>
-<section id="id77">
-<h3>Parameters<a class="headerlink" href="#id77" title="Permalink to this heading">¶</a></h3>
+<dd><p>Creates a random colormap to be used together with matplotlib. Useful
+for segmentation tasks.</p>
+<section id="id78">
+<h3>Parameters<a class="headerlink" href="#id78" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>nlabels: int</dt><dd><p>Number of labels (size of colormap)</p>
 </dd>
@@ -1420,8 +1484,8 @@ N=10^6 in 1 sec</p>
 </dd>
 </dl>
 </section>
-<section id="id78">
-<h3>Returns<a class="headerlink" href="#id78" title="Permalink to this heading">¶</a></h3>
+<section id="id79">
+<h3>Returns<a class="headerlink" href="#id79" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>random_colormap<span class="classifier">matplotlib.colors.LinearSegmentedColormap</span></dt><dd><p>Colormap for matplotlib</p>
 </dd>
@@ -1433,8 +1497,8 @@ N=10^6 in 1 sec</p>
 <dt class="sig sig-object py" id="phenotastic.misc.reject_outliers">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.misc.</span></span><span class="sig-name descname"><span class="pre">reject_outliers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#reject_outliers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.misc.reject_outliers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove outliers outside of n standard deviations.</p>
-<section id="id79">
-<h3>Parameters<a class="headerlink" href="#id79" title="Permalink to this heading">¶</a></h3>
+<section id="id80">
+<h3>Parameters<a class="headerlink" href="#id80" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>data<span class="classifier">np.array</span></dt><dd><p>1D array containing data to be filtered.</p>
 </dd>
@@ -1443,8 +1507,8 @@ N=10^6 in 1 sec</p>
 </dd>
 </dl>
 </section>
-<section id="id80">
-<h3>Returns<a class="headerlink" href="#id80" title="Permalink to this heading">¶</a></h3>
+<section id="id81">
+<h3>Returns<a class="headerlink" href="#id81" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>filtered_data<span class="classifier">bool, np.array</span></dt><dd><p>Data within the specified range.</p>
 </dd>
@@ -1455,7 +1519,7 @@ N=10^6 in 1 sec</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="phenotastic.misc.remove_empty_slices">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.misc.</span></span><span class="sig-name descname"><span class="pre">remove_empty_slices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keepaxis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#remove_empty_slices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.misc.remove_empty_slices" title="Permalink to this definition">¶</a></dt>
-<dd><p>Remove empty slices (based on the total signal) in an ndarray</p>
+<dd><p>Remove empty slices (based on the total signal) in an ndarray.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -1467,8 +1531,8 @@ N=10^6 in 1 sec</p>
 <dt class="sig sig-object py" id="phenotastic.misc.rotate">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.misc.</span></span><span class="sig-name descname"><span class="pre">rotate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coord</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#rotate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.misc.rotate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rotate given coordinates by specified angles.</p>
-<p>Use rotation matrices to rotate a list of coordinates around the x, y, z axis
-by specified angles alpha, beta, gamma.</p>
+<p>Use rotation matrices to rotate a list of coordinates around the x,
+y, z axis by specified angles alpha, beta, gamma.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -1477,12 +1541,12 @@ by specified angles alpha, beta, gamma.</p>
 <dd><p>Convert spherical coordinates into cartesian coordinates.</p>
 <p>Convert a list of spherical coordinates r, theta, phi to cartesian coordinates
 x, y, z. Theta is defined as 0 along z-axis.</p>
-<section id="id81">
-<h3>Parameters<a class="headerlink" href="#id81" title="Permalink to this heading">¶</a></h3>
+<section id="id82">
+<h3>Parameters<a class="headerlink" href="#id82" title="Permalink to this heading">¶</a></h3>
 <p>rtp :</p>
 </section>
-<section id="id82">
-<h3>Returns<a class="headerlink" href="#id82" title="Permalink to this heading">¶</a></h3>
+<section id="id83">
+<h3>Returns<a class="headerlink" href="#id83" title="Permalink to this heading">¶</a></h3>
 </section>
 </dd></dl>
 
@@ -1490,8 +1554,8 @@ x, y, z. Theta is defined as 0 along z-axis.</p>
 <dt class="sig sig-object py" id="phenotastic.misc.to_uint8">
 <span class="sig-prename descclassname"><span class="pre">phenotastic.misc.</span></span><span class="sig-name descname"><span class="pre">to_uint8</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/phenotastic/misc.html#to_uint8"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#phenotastic.misc.to_uint8" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert image to uint8 format.</p>
-<section id="id83">
-<h3>Parameters<a class="headerlink" href="#id83" title="Permalink to this heading">¶</a></h3>
+<section id="id84">
+<h3>Parameters<a class="headerlink" href="#id84" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>data<span class="classifier">np.ndarray</span></dt><dd><p>The input image.</p>
 </dd>
@@ -1500,8 +1564,8 @@ values are just scaled proportionally.</p>
 </dd>
 </dl>
 </section>
-<section id="id84">
-<h3>Returns<a class="headerlink" href="#id84" title="Permalink to this heading">¶</a></h3>
+<section id="id85">
+<h3>Returns<a class="headerlink" href="#id85" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt>data<span class="classifier">np.ndarray</span></dt><dd><p>The output image</p>
 </dd>
@@ -1544,7 +1608,6 @@ values are just scaled proportionally.</p>
 <li><a class="reference internal" href="#phenotastic.domains.mean"><code class="docutils literal notranslate"><span class="pre">mean()</span></code></a></li>
 <li><a class="reference internal" href="#phenotastic.domains.median"><code class="docutils literal notranslate"><span class="pre">median()</span></code></a></li>
 <li><a class="reference internal" href="#phenotastic.domains.merge_angles"><code class="docutils literal notranslate"><span class="pre">merge_angles()</span></code></a></li>
-<li><a class="reference internal" href="#phenotastic.domains.merge_boas_border_curv"><code class="docutils literal notranslate"><span class="pre">merge_boas_border_curv()</span></code></a></li>
 <li><a class="reference internal" href="#phenotastic.domains.merge_border_length"><code class="docutils literal notranslate"><span class="pre">merge_border_length()</span></code></a></li>
 <li><a class="reference internal" href="#phenotastic.domains.merge_depth"><code class="docutils literal notranslate"><span class="pre">merge_depth()</span></code></a></li>
 <li><a class="reference internal" href="#phenotastic.domains.merge_disconnected"><code class="docutils literal notranslate"><span class="pre">merge_disconnected()</span></code></a></li>

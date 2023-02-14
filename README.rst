@@ -20,7 +20,7 @@ Installation
 
 You can install Phenotastic using pip:
 
-.. code-block:: bash
+.. code-block::
   pip install phenotastic
 
 Phenotastic requires the following dependencies:

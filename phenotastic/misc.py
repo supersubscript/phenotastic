@@ -7,15 +7,18 @@ Created on Tue May 29 20:00:11 2018
 """
 
 import math
-import os
-import re
 
 import numpy as np
+from itertools import from_iterable
 
 
 def cut(img, cuts):
+    """Slice 3D image with supplied cuts."""
+    # TODO this should be written for nD with advanced slicing comprehension
     return img[
-        cuts[0, 0]: cuts[0, 1], cuts[1, 0]: cuts[1, 1], cuts[2, 0]: cuts[2, 1]
+        cuts[0, 0]: cuts[0, 1],
+        cuts[1, 0]: cuts[1, 1],
+        cuts[2, 0]: cuts[2, 1]
     ]
 
 
@@ -53,13 +56,13 @@ def merge(lists):
     return sets
 
 
-def flatten(llist):
-    """Flatten a list of lists"""
-    return [item for sublist in llist for item in sublist]
+def flatten(arr: list[int]) -> list[int]:
+    """ Flatten an arbitrarily nested iterable """
+    return list(from_iterable(arr))
 
 
 def remove_empty_slices(arr, keepaxis=0):
-    """Remove empty slices (based on the total intensity) in an ndarray"""
+    """Remove empty slices (based on the total signal) in an ndarray"""
     not_empty = np.sum(arr, axis=tuple(
         np.delete(list(range(arr.ndim)), keepaxis))) > 0
     arr = arr[not_empty]
@@ -92,6 +95,7 @@ def reject_outliers(data, n=2.0):
 
 
 def angle(v1, v2, acute=False):
+    """ Compute the angle (in radians) between two vectors. """
     angle = np.arccos(
         np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
     return angle if acute else 2 * np.pi - angle
@@ -99,6 +103,13 @@ def angle(v1, v2, acute=False):
 
 def angle_difference(ang1, ang2, period=360):
     """Return the smallest angle difference on a template with periodic boundary conditions.
+
+    Parameters
+    ----------
+    ang1 : array of floats
+        The first angle
+    ang2 : array of floats
+        The second angle
 
     Returns
     -------
@@ -123,8 +134,8 @@ def divergence_angles(angles, period=360):
 
 
 def paraboloid(x, y, p):
-    """Return the z-value for a paraboloid given input xy-coordinates and
-    parameters.
+    """Return the z-value for a non-rotated paraboloid given input xy-coordinates and
+    parameters. Translations are permitted in x, y, and z.
 
     Parameters
     ----------
@@ -137,10 +148,12 @@ def paraboloid(x, y, p):
 
     Returns
     -------
-
+    z : float
+        The corresponding z-coordinate of the paraboloid.
     """
     p1, p2, p3, p4, p5 = p
-    return p1 * x**2 + p2 * y**2 + p3 * x + p4 * y + p5
+    z = p1 * x**2 + p2 * y**2 + p3 * x + p4 * y + p5
+    return z
 
 
 def get_max_contrast_colours(n=64):
@@ -223,7 +236,7 @@ def get_max_contrast_colours(n=64):
         [255, 110, 65],
         [232, 94, 190],
     ]
-    return rgbs[0:n]
+    return rgbs[:n]
 
 
 def prime_sieve(n, output={}):
@@ -313,58 +326,57 @@ def get_prime_factors(n, primelist=None):
     return fs
 
 
-def autocrop(arr, threshold=8e3, channel=-1, n=1, return_cuts=False, offset=None):
+# def autocrop(arr, threshold=8e3, channel=-1, n=1, return_cuts=False, offset=None):
 
-    if offset is None:
-        offset = [[0, 0], [0, 0], [0, 0]]
-    offset = np.array(offset)
+#     if offset is None:
+#         offset = [[0, 0], [0, 0], [0, 0]]
+#     offset = np.array(offset)
 
-    sumarr = arr
-    if arr.ndim > 3:
-        if channel == -1:
-            sumarr = np.max(arr, axis=1)
-        elif isinstance(channel, (list, np.ndarray, tuple)):
-            sumarr = np.max(arr.take(channel, axis=1), axis=1)
-        else:
-            sumarr = sumarr[:, channel]
+#     sumarr = arr
+#     if arr.ndim > 3:
+#         if channel == -1:
+#             sumarr = np.max(arr, axis=1)
+#         elif isinstance(channel, (list, np.ndarray, tuple)):
+#             sumarr = np.max(arr.take(channel, axis=1), axis=1)
+#         else:
+#             sumarr = sumarr[:, channel]
 
-    cp = np.zeros((sumarr.ndim, 2), dtype=np.int)
-    for ii in range(sumarr.ndim):
-        axes = np.array([0, 1, 2])[np.array([0, 1, 2]) != ii]
+#     cp = np.zeros((sumarr.ndim, 2), dtype=np.int)
+#     for ii in range(sumarr.ndim):
+#         axes = np.array([0, 1, 2])[np.array([0, 1, 2]) != ii]
 
-        transposed = np.transpose(sumarr, (ii,) + tuple(axes))
-        nabove = np.sum(
-            np.reshape(transposed, (transposed.shape[0], -1)) > threshold, axis=1
-        )
+#         transposed = np.transpose(sumarr, (ii,) + tuple(axes))
+#         nabove = np.sum(
+#             np.reshape(transposed, (transposed.shape[0], -1)) > threshold, axis=1
+#         )
 
-        first = next((e[0] for e in enumerate(nabove) if e[1] >= n), 0)
-        last = len(nabove) - next(
-            (e[0] for e in enumerate(nabove[::-1]) if e[1] >= n), 0
-        )
+#         first = next((e[0] for e in enumerate(nabove) if e[1] >= n), 0)
+#         last = len(nabove) - next(
+#             (e[0] for e in enumerate(nabove[::-1]) if e[1] >= n), 0
+#         )
 
-        cp[ii] = first, last
-    #    ranges = [range(cp[ii, 0], cp[ii, 1]) for ii in range(len(cp))]
-    cp[0, 0] = np.max([0, cp[0, 0] - offset[0, 0]])
-    cp[0, 1] = np.min([arr.shape[0], cp[0, 1] + offset[0, 1]])
-    cp[1, 0] = np.max([0, cp[1, 0] - offset[1, 0]])
-    cp[1, 1] = np.min([arr.shape[1], cp[1, 1] + offset[1, 1]])
-    cp[2, 0] = np.max([0, cp[2, 0] - offset[2, 0]])
-    cp[2, 1] = np.min([arr.shape[2], cp[2, 1] + offset[2, 1]])
+#         cp[ii] = first, last
+#     #    ranges = [range(cp[ii, 0], cp[ii, 1]) for ii in range(len(cp))]
+#     cp[0, 0] = np.max([0, cp[0, 0] - offset[0, 0]])
+#     cp[0, 1] = np.min([arr.shape[0], cp[0, 1] + offset[0, 1]])
+#     cp[1, 0] = np.max([0, cp[1, 0] - offset[1, 0]])
+#     cp[1, 1] = np.min([arr.shape[1], cp[1, 1] + offset[1, 1]])
+#     cp[2, 0] = np.max([0, cp[2, 0] - offset[2, 0]])
+#     cp[2, 1] = np.min([arr.shape[2], cp[2, 1] + offset[2, 1]])
 
-    if arr.ndim > 3:
-        arr = np.moveaxis(arr, 1, -1)
-    for ii, _range in enumerate(cp):
-        arr = np.swapaxes(arr, 0, ii)
-        arr = arr[_range[0]: _range[1]]
-        arr = np.swapaxes(arr, 0, ii)
-    if arr.ndim > 3:
-        arr = np.moveaxis(arr, -1, 1)
+#     if arr.ndim > 3:
+#         arr = np.moveaxis(arr, 1, -1)
+#     for ii, _range in enumerate(cp):
+#         arr = np.swapaxes(arr, 0, ii)
+#         arr = arr[_range[0]: _range[1]]
+#         arr = np.swapaxes(arr, 0, ii)
+#     if arr.ndim > 3:
+#         arr = np.moveaxis(arr, -1, 1)
 
-    if return_cuts:
-        return arr, cp
-    else:
-        return arr
-
+#     if return_cuts:
+#         return arr, cp
+#     else:
+#         return arr
 
 def coord_array(arr, res=(1, 1, 1), offset=(0, 0, 0)):
     """
@@ -480,88 +492,88 @@ def rotate(coord, angles, invert=False):
     return xyz
 
 
-def mkdir(path):
-    """
-    Make a directory if it doesn't exist already.
+# def mkdir(path):
+#     """
+#     Make a directory if it doesn't exist already.
 
-    Parameters
-    ----------
-    path : str
-        Path to directory.
+#     Parameters
+#     ----------
+#     path : str
+#         Path to directory.
 
-    Returns
-    -------
-    None.
+#     Returns
+#     -------
+#     None.
 
-    """
+#     """
 
-    if not os.path.exists(path):
-        os.makedirs(path)
-
-
-def listdir(path, include=None, exclude=None, full=True, sorting=None):
-    if isinstance(path, (list, np.ndarray)):
-        files = flatten([listdir(ff, include, exclude, full, sorting)
-                        for ff in path])
-        return np.array(files)
-    else:
-        files = os.listdir(path)
-        files = np.array(files)
-
-    if full:
-        files = np.array([os.path.join(path, x) for x in files])
-
-    # Include
-    if isinstance(include, str):
-        files = np.array([x for x in files if include in x])
-    elif isinstance(include, (list, np.ndarray)):
-        matches = np.array([np.array([inc in ii for ii in files])
-                           for inc in include])
-        matches = np.any(matches, axis=0)
-        files = files[matches]
-
-    # Exclude
-    if isinstance(exclude, str):
-        files = np.array([x for x in files if exclude not in x])
-    elif isinstance(exclude, (list, np.ndarray)):
-        matches = np.array([np.array([exc in ii for ii in files])
-                           for exc in exclude])
-        matches = np.logical_not(np.any(matches, axis=0))
-        files = files[matches]
-
-    if sorting == 'natural':
-        files = np.array(natural_sort(files))
-    elif sorting == 'alphabetical':
-        files = np.sort(files)
-    elif sorting == True:
-        files = np.sort(files)
-
-    return files
+#     if not os.path.exists(path):
+#         os.makedirs(path)
 
 
-def natural_sort(l):
-    """
-    Sort a list alphanumerically (natural sorting).
+# def listdir(path, include=None, exclude=None, full=True, sorting=None):
+#     if isinstance(path, (list, np.ndarray)):
+#         files = flatten([listdir(ff, include, exclude, full, sorting)
+#                         for ff in path])
+#         return np.array(files)
+#     else:
+#         files = os.listdir(path)
+#         files = np.array(files)
 
-    Parameters
-    ----------
-    l : list or np.ndarray
-        Structure to sort.
+#     if full:
+#         files = np.array([os.path.join(path, x) for x in files])
 
-    Returns
-    -------
-    list or np.ndarray
-        Sorted list/array.
+#     # Include
+#     if isinstance(include, str):
+#         files = np.array([x for x in files if include in x])
+#     elif isinstance(include, (list, np.ndarray)):
+#         matches = np.array([np.array([inc in ii for ii in files])
+#                            for inc in include])
+#         matches = np.any(matches, axis=0)
+#         files = files[matches]
 
-    """
+#     # Exclude
+#     if isinstance(exclude, str):
+#         files = np.array([x for x in files if exclude not in x])
+#     elif isinstance(exclude, (list, np.ndarray)):
+#         matches = np.array([np.array([exc in ii for ii in files])
+#                            for exc in exclude])
+#         matches = np.logical_not(np.any(matches, axis=0))
+#         files = files[matches]
 
-    def convert(text):
-        return int(text) if text.isdigit() else text.lower()
+#     if sorting == 'natural':
+#         files = np.array(natural_sort(files))
+#     elif sorting == 'alphabetical':
+#         files = np.sort(files)
+#     elif sorting == True:
+#         files = np.sort(files)
 
-    def alphanum_key(key):
-        return [convert(c) for c in re.split('([0-9]+)', key)]
+#     return files
 
-    return sorted(l, key=alphanum_key)
+
+# def natural_sort(l):
+#     """
+#     Sort a list alphanumerically (natural sorting).
+
+#     Parameters
+#     ----------
+#     l : list or np.ndarray
+#         Structure to sort.
+
+#     Returns
+#     -------
+#     list or np.ndarray
+#         Sorted list/array.
+
+#     """
+
+#     def convert(text):
+#         return int(text) if text.isdigit() else text.lower()
+
+#     def alphanum_key(key):
+#         return [convert(c) for c in re.split('([0-9]+)', key)]
+
+#     return sorted(l, key=alphanum_key)
 
 
 def match_shape(a, t, side='both', val=0):
@@ -573,6 +585,12 @@ def match_shape(a, t, side='both', val=0):
     t : Dimensions to pad/trim to, must be a list or tuple
     side : One of 'both', 'before', and 'after'
     val : value to pad with
+
+    Returns
+    -------
+    b : np.ndarray
+        The padded array
+
     """
     try:
         if len(t) != a.ndim:
@@ -634,54 +652,53 @@ def match_shape(a, t, side='both', val=0):
     return b
 
 
-def intensity_projection_series_all(infiles, outname, fct=np.max, normalize='all'):
-    import tifffile as tiff
-    from pystackreg import StackReg
-    from skimage.transform import warp
+# def intensity_projection_series_all(infiles, outname, fct=np.max, normalize='all'):
+#     import tifffile as tiff
+#     from pystackreg import StackReg
+#     from skimage.transform import warp
+#     import phenotastic.file_processing as fp
 
-    import phenotastic.file_processing as fp
+#     fdata = [fp.tiffload(x).data for x in infiles]
+#     shapes = [x.shape for x in fdata]
+#     max_dim = np.max(shapes)
+#     nchannels = fdata[0].shape[1]
+#     ntp = len(fdata)
 
-    fdata = [fp.tiffload(x).data for x in infiles]
-    shapes = [x.shape for x in fdata]
-    max_dim = np.max(shapes)
-    nchannels = fdata[0].shape[1]
-    ntp = len(fdata)
+#     sr = StackReg(StackReg.RIGID_BODY)
+#     stack = np.zeros((nchannels, max_dim * ntp, 3 * max_dim))
+#     for chan in range(nchannels):
+#         cstack = np.zeros((3, max_dim * ntp, max_dim))
+#         for dim in range(3):
+#             cdstack = np.zeros((ntp, max_dim, max_dim))
+#             for tp in range(len(fdata)):
+#                 one_proj = np.max(fdata[tp][:, chan], axis=dim)
+#                 one_proj = match_shape(one_proj, (max_dim, max_dim))
+#                 cdstack[tp] = one_proj
+#             tmats = sr.register_stack(cdstack, moving_average=ntp)
+#             for ii in range(len(tmats)):
+#                 cdstack[ii] = warp(cdstack[ii], tmats[ii], preserve_range=True)
+#             cdstack = np.vstack(cdstack)
+#             cstack[dim] = cdstack
 
-    sr = StackReg(StackReg.RIGID_BODY)
-    stack = np.zeros((nchannels, max_dim * ntp, 3 * max_dim))
-    for chan in range(nchannels):
-        cstack = np.zeros((3, max_dim * ntp, max_dim))
-        for dim in range(3):
-            cdstack = np.zeros((ntp, max_dim, max_dim))
-            for tp in range(len(fdata)):
-                one_proj = np.max(fdata[tp][:, chan], axis=dim)
-                one_proj = match_shape(one_proj, (max_dim, max_dim))
-                cdstack[tp] = one_proj
-            tmats = sr.register_stack(cdstack, moving_average=ntp)
-            for ii in range(len(tmats)):
-                cdstack[ii] = warp(cdstack[ii], tmats[ii], preserve_range=True)
-            cdstack = np.vstack(cdstack)
-            cstack[dim] = cdstack
+#         if normalize == 'all':
+#             cstack /= np.max(cstack)
+#         elif normalize == 'first':
+#             cstack /= np.max(cstack[0])
 
-        if normalize == 'all':
-            cstack /= np.max(cstack)
-        elif normalize == 'first':
-            cstack /= np.max(cstack[0])
+#         cstack = np.hstack(cstack)
+#         stack[chan] = cstack
 
-        cstack = np.hstack(cstack)
-        stack[chan] = cstack
-
-    out = np.hstack(stack)
-    out = out.astype(np.float32)
-    # TODO: Save as png instead
-    tiff.imsave(outname, out)
+#     out = np.hstack(stack)
+#     out = out.astype(np.float32)
+#     # TODO: Save as png instead
+#     tiff.imsave(outname, out)
 
 
 def mode(x):
-    if len(x) > 0:
-        return max(list(x), key=list(x).count)
-    else:
+    """Compute the mode of a sequence of values. Returns nan if sequence too short."""
+    if len(x) < 1:
         return np.nan
+    return max(list(x), key=list(x).count)
 
 
 def car2sph(xyz):
@@ -737,7 +754,24 @@ def sph2car(rtp):
 
 
 def to_uint8(data, normalize=True):
-    data = data.astype('float')
+    """
+    Convert image to uint8 format.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        The input image.
+    normalize : bool, optional
+        Normalise values to be in the range [0, 255]. The default is True. If False
+        values are just scaled proportionally.
+
+    Returns
+    -------
+    data : np.ndarray
+        The output image
+
+    """
+    data = data.astype(float)
     if normalize:
         data = (data - np.min(data)) / (np.max(data) - np.min(data)) * 255
     else:
@@ -747,6 +781,7 @@ def to_uint8(data, normalize=True):
 
 
 def matching_rows(array1, array2):
+    """Find matching rows in a 2D array. """
     return np.array(
         np.all((array1[:, None, :] == array2[None, :, :]), axis=-1).nonzero()
     ).T
@@ -761,16 +796,26 @@ def rand_cmap(
 ):
     """
     Creates a random colormap to be used together with matplotlib. Useful for segmentation tasks
-    :param nlabels: Number of labels (size of colormap)
-    :param type: 'bright' for strong colors, 'soft' for pastel colors
-    :param first_color_black: Option to use first color as black, True or False
-    :param last_color_black: Option to use last color as black, True or False
-    :param verbose: Prints the number of labels and shows the colormap. True or False
-    :return: colormap for matplotlib
+
+    Parameters
+    ----------
+    nlabels: int
+        Number of labels (size of colormap)
+    type: str, optional
+        'bright' for strong colors, 'soft' for pastel colors. Defaults to 'soft'.
+    first_color_black: bool, optional
+        Option to use first color as black. Defaults to True.
+    last_color_black: bool, optional
+        Option to use last color as black. Defaults to False.
+    verbose: bool, optional
+        Prints the number of labels and shows the colormap. Defaults to False
+
+    Returns
+    -------
+    random_colormap : matplotlib.colors.LinearSegmentedColormap
+        Colormap for matplotlib
     """
     import colorsys
-
-    import numpy as np
     from matplotlib.colors import LinearSegmentedColormap
 
     if type not in ('bright', 'soft'):

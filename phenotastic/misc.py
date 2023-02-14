@@ -12,9 +12,10 @@ import re
 
 import numpy as np
 
+
 def cut(img, cuts):
     return img[
-        cuts[0, 0] : cuts[0, 1], cuts[1, 0] : cuts[1, 1], cuts[2, 0] : cuts[2, 1]
+        cuts[0, 0]: cuts[0, 1], cuts[1, 0]: cuts[1, 1], cuts[2, 0]: cuts[2, 1]
     ]
 
 
@@ -59,7 +60,8 @@ def flatten(llist):
 
 def remove_empty_slices(arr, keepaxis=0):
     """Remove empty slices (based on the total intensity) in an ndarray"""
-    not_empty = np.sum(arr, axis=tuple(np.delete(list(range(arr.ndim)), keepaxis))) > 0
+    not_empty = np.sum(arr, axis=tuple(
+        np.delete(list(range(arr.ndim)), keepaxis))) > 0
     arr = arr[not_empty]
     return arr
 
@@ -90,7 +92,8 @@ def reject_outliers(data, n=2.0):
 
 
 def angle(v1, v2, acute=False):
-    angle = np.arccos(np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
+    angle = np.arccos(
+        np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
     return angle if acute else 2 * np.pi - angle
 
 
@@ -105,7 +108,8 @@ def angle_difference(ang1, ang2, period=360):
     """
     difference = np.subtract(ang1, ang2)
     angs = np.array(
-        [np.abs(np.mod(difference, period)), np.abs(np.mod(difference, -period))]
+        [np.abs(np.mod(difference, period)),
+         np.abs(np.mod(difference, -period))]
     )
     angs = np.min(angs, axis=0)
     return angs
@@ -236,7 +240,7 @@ def prime_sieve(n, output={}):
     for i in range(2, nroot + 1):
         if sieve[i] != 0:
             m = n / i - i
-            sieve[i * i : n + 1 : i] = [0] * (m + 1)
+            sieve[i * i: n + 1: i] = [0] * (m + 1)
 
     if type(output) == dict:
         pmap = {}
@@ -351,7 +355,7 @@ def autocrop(arr, threshold=8e3, channel=-1, n=1, return_cuts=False, offset=None
         arr = np.moveaxis(arr, 1, -1)
     for ii, _range in enumerate(cp):
         arr = np.swapaxes(arr, 0, ii)
-        arr = arr[_range[0] : _range[1]]
+        arr = arr[_range[0]: _range[1]]
         arr = np.swapaxes(arr, 0, ii)
     if arr.ndim > 3:
         arr = np.moveaxis(arr, -1, 1)
@@ -360,6 +364,80 @@ def autocrop(arr, threshold=8e3, channel=-1, n=1, return_cuts=False, offset=None
         return arr, cp
     else:
         return arr
+
+
+def coord_array(arr, res=(1, 1, 1), offset=(0, 0, 0)):
+    """
+    Create a coordinate array (of e.g. same dimensionality as intensity array) of the same dimensions as another array. Only defined for 3D.
+
+    Parameters
+    ----------
+    arr : np.ndarray
+        Array defining dimensions of coordinate array
+    res : 3-tuple, optional
+        Resolution of the array in the three dimensions. Default = (1,1,1).
+    offset : 3-tuple, optional
+        Origin offset. Default = (0,0,0).
+
+    Note
+    ----
+    Only 3D.
+
+    Returns
+    -------
+    coords : np.ndarray
+        Vertically stacked coordinate array for the input data.
+    """
+
+    xv = offset[0] + np.arange(0, arr.shape[0] * res[0] - 0.000001, res[0])
+    yv = offset[1] + np.arange(0, arr.shape[1] * res[1] - 0.000001, res[1])
+    zv = offset[2] + np.arange(0, arr.shape[2] * res[2] - 0.000001, res[2])
+    grid = np.meshgrid(xv, yv, zv)
+    grid = np.array(grid)
+    grid = grid.transpose(0, 2, 1, 3)
+    xx, yy, zz = grid
+    xx = xx.ravel()
+    yy = yy.ravel()
+    zz = zz.ravel()
+
+    # Make compatible lists
+    coords = np.vstack((xx.ravel(), yy.ravel(), zz.ravel()))
+    return coords
+
+
+def rot_matrix_44(angles, invert=False):
+    alpha, beta, gamma = angles
+    Rx = np.array(
+        [
+            [1, 0, 0, 0],
+            [0, np.cos(alpha), -np.sin(alpha), 0],
+            [0, np.sin(alpha), np.cos(alpha), 0],
+            [0, 0, 0, 1],
+        ]
+    )
+    Ry = np.array(
+        [
+            [np.cos(beta), 0, np.sin(beta), 0],
+            [0, 1, 0, 0],
+            [-np.sin(beta), 0, np.cos(beta), 0],
+            [0, 0, 0, 1],
+        ]
+    )
+    Rz = np.array(
+        [
+            [np.cos(gamma), -np.sin(gamma), 0, 0],
+            [np.sin(gamma), np.cos(gamma), 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1],
+        ]
+    )
+
+    if invert == True:
+        R = np.linalg.inv(np.matmul(np.matmul(Rz, Ry), Rx))
+    elif invert == False:
+        R = np.matmul(np.matmul(Rz, Ry), Rx)
+
+    return R
 
 
 def rotate(coord, angles, invert=False):
@@ -381,7 +459,8 @@ def rotate(coord, angles, invert=False):
         ]
     )
     Ry = np.array(
-        [[np.cos(beta), 0, np.sin(beta)], [0, 1, 0], [-np.sin(beta), 0, np.cos(beta)]]
+        [[np.cos(beta), 0, np.sin(beta)], [0, 1, 0],
+         [-np.sin(beta), 0, np.cos(beta)]]
     )
     Rz = np.array(
         [
@@ -422,7 +501,8 @@ def mkdir(path):
 
 def listdir(path, include=None, exclude=None, full=True, sorting=None):
     if isinstance(path, (list, np.ndarray)):
-        files = flatten([listdir(ff, include, exclude, full, sorting) for ff in path])
+        files = flatten([listdir(ff, include, exclude, full, sorting)
+                        for ff in path])
         return np.array(files)
     else:
         files = os.listdir(path)
@@ -435,7 +515,8 @@ def listdir(path, include=None, exclude=None, full=True, sorting=None):
     if isinstance(include, str):
         files = np.array([x for x in files if include in x])
     elif isinstance(include, (list, np.ndarray)):
-        matches = np.array([np.array([inc in ii for ii in files]) for inc in include])
+        matches = np.array([np.array([inc in ii for ii in files])
+                           for inc in include])
         matches = np.any(matches, axis=0)
         files = files[matches]
 
@@ -443,13 +524,14 @@ def listdir(path, include=None, exclude=None, full=True, sorting=None):
     if isinstance(exclude, str):
         files = np.array([x for x in files if exclude not in x])
     elif isinstance(exclude, (list, np.ndarray)):
-        matches = np.array([np.array([exc in ii for ii in files]) for exc in exclude])
+        matches = np.array([np.array([exc in ii for ii in files])
+                           for exc in exclude])
         matches = np.logical_not(np.any(matches, axis=0))
         files = files[matches]
 
-    if sorting == "natural":
+    if sorting == 'natural':
         files = np.array(natural_sort(files))
-    elif sorting == "alphabetical":
+    elif sorting == 'alphabetical':
         files = np.sort(files)
     elif sorting == True:
         files = np.sort(files)
@@ -477,12 +559,12 @@ def natural_sort(l):
         return int(text) if text.isdigit() else text.lower()
 
     def alphanum_key(key):
-        return [convert(c) for c in re.split("([0-9]+)", key)]
+        return [convert(c) for c in re.split('([0-9]+)', key)]
 
     return sorted(l, key=alphanum_key)
 
 
-def match_shape(a, t, side="both", val=0):
+def match_shape(a, t, side='both', val=0):
     """
 
     Parameters
@@ -495,62 +577,64 @@ def match_shape(a, t, side="both", val=0):
     try:
         if len(t) != a.ndim:
             raise TypeError(
-                "t shape must have the same number of dimensions as the input"
+                't shape must have the same number of dimensions as the input'
             )
     except TypeError:
-        raise TypeError("t must be array-like")
+        raise TypeError('t must be array-like')
 
     try:
         if isinstance(val, (int, float, complex)):
             b = np.ones(t, a.dtype) * val
-        elif val == "max":
+        elif val == 'max':
             b = np.ones(t, a.dtype) * np.max(a)
-        elif val == "mean":
+        elif val == 'mean':
             b = np.ones(t, a.dtype) * np.mean(a)
-        elif val == "median":
+        elif val == 'median':
             b = np.ones(t, a.dtype) * np.median(a)
-        elif val == "min":
+        elif val == 'min':
             b = np.ones(t, a.dtype) * np.min(a)
     except TypeError:
-        raise TypeError("Pad value must be numeric or string")
+        raise TypeError('Pad value must be numeric or string')
     except ValueError:
-        raise ValueError("Pad value must be scalar or valid string")
+        raise ValueError('Pad value must be scalar or valid string')
 
     aind = [slice(None, None)] * a.ndim
     bind = [slice(None, None)] * a.ndim
 
     # pad/trim comes after the array in each dimension
-    if side == "after":
+    if side == 'after':
         for dd in range(a.ndim):
             if a.shape[dd] > t[dd]:
                 aind[dd] = slice(None, t[dd])
             elif a.shape[dd] < t[dd]:
                 bind[dd] = slice(None, a.shape[dd])
     # pad/trim comes before the array in each dimension
-    elif side == "before":
+    elif side == 'before':
         for dd in range(a.ndim):
             if a.shape[dd] > t[dd]:
                 aind[dd] = slice(int(a.shape[dd] - t[dd]), None)
             elif a.shape[dd] < t[dd]:
                 bind[dd] = slice(int(t[dd] - a.shape[dd]), None)
     # pad/trim both sides of the array in each dimension
-    elif side == "both":
+    elif side == 'both':
         for dd in range(a.ndim):
             if a.shape[dd] > t[dd]:
                 diff = (a.shape[dd] - t[dd]) / 2.0
-                aind[dd] = slice(int(np.floor(diff)), int(a.shape[dd] - np.ceil(diff)))
+                aind[dd] = slice(int(np.floor(diff)), int(
+                    a.shape[dd] - np.ceil(diff)))
             elif a.shape[dd] < t[dd]:
                 diff = (t[dd] - a.shape[dd]) / 2.0
-                bind[dd] = slice(int(np.floor(diff)), int(t[dd] - np.ceil(diff)))
+                bind[dd] = slice(int(np.floor(diff)),
+                                 int(t[dd] - np.ceil(diff)))
     else:
-        raise Exception("Invalid choice of pad type: %s" % side)
+        raise Exception('Invalid choice of pad type: %s' % side)
 
     b[tuple(bind)] = a[tuple(aind)]
 
     return b
 
 
-def intensity_projection_series_all(infiles, outname, fct=np.max, normalize="all"):
+def intensity_projection_series_all(infiles, outname, fct=np.max, normalize='all'):
     import tifffile as tiff
     from pystackreg import StackReg
     from skimage.transform import warp
@@ -579,9 +663,9 @@ def intensity_projection_series_all(infiles, outname, fct=np.max, normalize="all
             cdstack = np.vstack(cdstack)
             cstack[dim] = cdstack
 
-        if normalize == "all":
+        if normalize == 'all':
             cstack /= np.max(cstack)
-        elif normalize == "first":
+        elif normalize == 'first':
             cstack /= np.max(cstack[0])
 
         cstack = np.hstack(cstack)
@@ -653,7 +737,7 @@ def sph2car(rtp):
 
 
 def to_uint8(data, normalize=True):
-    data = data.astype("float")
+    data = data.astype('float')
     if normalize:
         data = (data - np.min(data)) / (np.max(data) - np.min(data)) * 255
     else:
@@ -670,7 +754,7 @@ def matching_rows(array1, array2):
 
 def rand_cmap(
     nlabels,
-    type="bright",
+    type='bright',
     first_color_black=True,
     last_color_black=False,
     verbose=False,
@@ -689,15 +773,15 @@ def rand_cmap(
     import numpy as np
     from matplotlib.colors import LinearSegmentedColormap
 
-    if type not in ("bright", "soft"):
+    if type not in ('bright', 'soft'):
         print('Please choose "bright" or "soft" for type')
         return
 
     if verbose:
-        print("Number of labels: " + str(nlabels))
+        print('Number of labels: ' + str(nlabels))
 
     # Generate color map for bright colors, based on hsv
-    if type == "bright":
+    if type == 'bright':
         randHSVcolors = [
             (
                 np.random.uniform(low=0.0, high=1),
@@ -721,11 +805,11 @@ def rand_cmap(
             randRGBcolors[-1] = [0, 0, 0]
 
         random_colormap = LinearSegmentedColormap.from_list(
-            "new_map", randRGBcolors, N=nlabels
+            'new_map', randRGBcolors, N=nlabels
         )
 
     # Generate soft pastel colors, by limiting the RGB spectrum
-    if type == "soft":
+    if type == 'soft':
         low = 0.6
         high = 0.95
         randRGBcolors = [
@@ -743,7 +827,7 @@ def rand_cmap(
         if last_color_black:
             randRGBcolors[-1] = [0, 0, 0]
         random_colormap = LinearSegmentedColormap.from_list(
-            "new_map", randRGBcolors, N=nlabels
+            'new_map', randRGBcolors, N=nlabels
         )
 
     # Display colorbar
@@ -760,11 +844,11 @@ def rand_cmap(
             ax,
             cmap=random_colormap,
             norm=norm,
-            spacing="proportional",
+            spacing='proportional',
             ticks=None,
             boundaries=bounds,
-            format="%1i",
-            orientation="horizontal",
+            format='%1i',
+            orientation='horizontal',
         )
 
     return random_colormap

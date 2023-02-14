@@ -29,11 +29,11 @@ from scipy.ndimage.morphology import binary_fill_holes
 from scipy.ndimage.morphology import distance_transform_edt
 from scipy.signal import wiener
 from scipy.spatial import cKDTree
-from scipy.spatial import KDTree
 from skimage.measure import marching_cubes
 from skimage.segmentation import morphological_chan_vese
 
-import phenotastic.plot as pl
+# import phenotastic.plot as pl
+from phenotastic.misc import coord_array
 from phenotastic.misc import car2sph
 from phenotastic.misc import rotate
 
@@ -153,9 +153,6 @@ def paraboloid(p, sampling=(200, 200, 200), bounds=None):
     sample.SetImplicitFunction(quadric)
     sample.SetModelBounds(bounds)
     sample.Update()
-    contour = vtk.vtkContourFilter()
-    contour.SetInputData(sample.GetOutput())
-    contour.Update()
 
     # Rotate the mesh so that it is in the optimised orientation
     rotmat = rot_matrix_44([alpha, beta, gamma], invert=True)
@@ -165,6 +162,11 @@ def paraboloid(p, sampling=(200, 200, 200), bounds=None):
             trans.SetElement(ii, jj, rotmat[ii][jj])
     transmat = vtk.vtkMatrixToHomogeneousTransform()
     transmat.SetInput(trans)
+
+    contour = vtk.vtkContourFilter()
+    contour.SetInputData(sample.GetOutput())
+    contour.Update()
+
     transfilter = vtk.vtkTransformPolyDataFilter()
     transfilter.SetInputData(contour.GetOutput())
     transfilter.SetTransform(transmat)
@@ -205,7 +207,7 @@ def create_mesh(contour, resolution=[1, 1, 1], step_size=1):
     return mesh
 
 
-def filter_curvature(mesh, curvature_threshold):
+def filter_curvature(mesh, curvature_threshold, curvatures=None):
     """Remove mesh vertices based on curvatures.
 
     Parameters
@@ -214,6 +216,9 @@ def filter_curvature(mesh, curvature_threshold):
         The input mesh.
     curvature_threshold : tuple of floats
         The curvature threshold.
+    curvatures : np.array, optional
+        The curvatures. Defaults to None. If None, computes the mean vertex
+        curvatures.
 
     Returns
     -------
@@ -222,7 +227,8 @@ def filter_curvature(mesh, curvature_threshold):
     """
     if isinstance(curvature_threshold, (int, float)):
         curvature_threshold = (-curvature_threshold, curvature_threshold)
-    curvature = mesh.curvature()
+    if curvatures is None:
+        curvature = mesh.curvature()
 
     to_remove = curvature < curvature_threshold[0] | curvature > curvature_threshold[1]
     mesh = mesh.remove_points(to_remove)[0]
@@ -695,7 +701,7 @@ def label_mesh(mesh, segm_img, resolution=[1, 1, 1], background=0, mode='point',
     ]
 
     # Get the coordinates of the points in the image
-    coords = pl.coord_array(segm_img, resolution).T
+    coords = coord_array(segm_img, resolution).T
     img_raveled = segm_img.ravel()
     coords = coords[img_raveled != background]
     img_raveled = img_raveled[img_raveled != background]
@@ -740,7 +746,7 @@ def project2surface(
     """
 
     # Get the coordinates and values of the points in the image
-    coords = pl.coord_array(int_img, resolution).T
+    coords = coord_array(int_img, resolution).T
     if mask is not None:
         int_img[~mask] = background
     img_raveled = int_img.ravel()
@@ -1367,7 +1373,7 @@ def remove_tongues(mesh, radius, threshold=6, hole_edges=100, verbose=True):
             cpts = bdpts[cycle]
 
             # Get the boundary points (in same loop) within a certain radius
-            tree = KDTree(cpts)
+            tree = cKDTree(cpts)
             neighs = tree.query_ball_point(cpts, radius)
             neighs = [np.array(neigh) for neigh in neighs]
             neighs = [neigh[neigh != idx] for idx, neigh in enumerate(neighs)]

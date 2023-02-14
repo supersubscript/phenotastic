@@ -3,8 +3,6 @@ Created on Tue May 29 22:10:18 2018
 
 @author: henrik
 """
-from __future__ import annotations
-
 import gc
 
 import mahotas as mh

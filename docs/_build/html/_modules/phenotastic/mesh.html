@@ -42,8 +42,6 @@
 
 <span class="sd">@author: henrik</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
-
 <span class="kn">import</span> <span class="nn">gc</span>
 
 <span class="kn">import</span> <span class="nn">mahotas</span> <span class="k">as</span> <span class="nn">mh</span>
@@ -68,11 +66,11 @@
 <span class="kn">from</span> <span class="nn">scipy.ndimage.morphology</span> <span class="kn">import</span> <span class="n">distance_transform_edt</span>
 <span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">wiener</span>
 <span class="kn">from</span> <span class="nn">scipy.spatial</span> <span class="kn">import</span> <span class="n">cKDTree</span>
-<span class="kn">from</span> <span class="nn">scipy.spatial</span> <span class="kn">import</span> <span class="n">KDTree</span>
 <span class="kn">from</span> <span class="nn">skimage.measure</span> <span class="kn">import</span> <span class="n">marching_cubes</span>
 <span class="kn">from</span> <span class="nn">skimage.segmentation</span> <span class="kn">import</span> <span class="n">morphological_chan_vese</span>
 
-<span class="kn">import</span> <span class="nn">phenotastic.plot</span> <span class="k">as</span> <span class="nn">pl</span>
+<span class="c1"># import phenotastic.plot as pl</span>
+<span class="kn">from</span> <span class="nn">phenotastic.misc</span> <span class="kn">import</span> <span class="n">coord_array</span>
 <span class="kn">from</span> <span class="nn">phenotastic.misc</span> <span class="kn">import</span> <span class="n">car2sph</span>
 <span class="kn">from</span> <span class="nn">phenotastic.misc</span> <span class="kn">import</span> <span class="n">rotate</span>
 
@@ -136,7 +134,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    p : 5-tuple of the paraboloid parameters</span>
-<span class="sd">        Parameters satisfying the equation</span>
+<span class="sd">        Parameters of the folliwing equation:</span>
 
 <span class="sd">        .. math::</span>
 <span class="sd">            z = p_0 x^2 + p_1 y^2 + p_2 x + p_3 y + p_4</span>
@@ -144,7 +142,7 @@
 <span class="sd">    sampling : 3-tuple of ints, optional</span>
 <span class="sd">        The sampling in XYZ. The default is (200, 200, 200).</span>
 <span class="sd">    bounds : float or 6-tuple, optional</span>
-<span class="sd">        The cut-off bounds for the paraboloid in format [X0,X1, Y0,Y1, Z0,Z1]. The default is None.</span>
+<span class="sd">        The cut-off bounds for the paraboloid in format [X0,X1,Y0,Y1,Z0,Z1]. The default is None.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -192,9 +190,6 @@
     <span class="n">sample</span><span class="o">.</span><span class="n">SetImplicitFunction</span><span class="p">(</span><span class="n">quadric</span><span class="p">)</span>
     <span class="n">sample</span><span class="o">.</span><span class="n">SetModelBounds</span><span class="p">(</span><span class="n">bounds</span><span class="p">)</span>
     <span class="n">sample</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
-    <span class="n">contour</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkContourFilter</span><span class="p">()</span>
-    <span class="n">contour</span><span class="o">.</span><span class="n">SetInputData</span><span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">())</span>
-    <span class="n">contour</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
 
     <span class="c1"># Rotate the mesh so that it is in the optimised orientation</span>
     <span class="n">rotmat</span> <span class="o">=</span> <span class="n">rot_matrix_44</span><span class="p">([</span><span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span><span class="p">],</span> <span class="n">invert</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -204,6 +199,11 @@
             <span class="n">trans</span><span class="o">.</span><span class="n">SetElement</span><span class="p">(</span><span class="n">ii</span><span class="p">,</span> <span class="n">jj</span><span class="p">,</span> <span class="n">rotmat</span><span class="p">[</span><span class="n">ii</span><span class="p">][</span><span class="n">jj</span><span class="p">])</span>
     <span class="n">transmat</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkMatrixToHomogeneousTransform</span><span class="p">()</span>
     <span class="n">transmat</span><span class="o">.</span><span class="n">SetInput</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>
+
+    <span class="n">contour</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkContourFilter</span><span class="p">()</span>
+    <span class="n">contour</span><span class="o">.</span><span class="n">SetInputData</span><span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">())</span>
+    <span class="n">contour</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+
     <span class="n">transfilter</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkTransformPolyDataFilter</span><span class="p">()</span>
     <span class="n">transfilter</span><span class="o">.</span><span class="n">SetInputData</span><span class="p">(</span><span class="n">contour</span><span class="o">.</span><span class="n">GetOutput</span><span class="p">())</span>
     <span class="n">transfilter</span><span class="o">.</span><span class="n">SetTransform</span><span class="p">(</span><span class="n">transmat</span><span class="p">)</span>
@@ -215,6 +215,24 @@
 
 
 <div class="viewcode-block" id="create_mesh"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.create_mesh">[docs]</a><span class="k">def</span> <span class="nf">create_mesh</span><span class="p">(</span><span class="n">contour</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">step_size</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a polydata mesh from a binary contour.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    contour : np.array of type bool, int or float</span>
+<span class="sd">        The binary mask of the contour.</span>
+<span class="sd">    resolution : 3-tuple, optional</span>
+<span class="sd">        The spatial resolution. The default is [1, 1, 1].</span>
+<span class="sd">    step_size : float, optional</span>
+<span class="sd">        Step size of the marching cubes method. The default is 1.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    mesh : pyvista.PolyData</span>
+<span class="sd">        The output mesh.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">v</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">marching_cubes</span><span class="p">(</span>
         <span class="n">contour</span><span class="p">,</span>
         <span class="mi">0</span><span class="p">,</span>
@@ -226,18 +244,56 @@
     <span class="k">return</span> <span class="n">mesh</span></div>
 
 
-<div class="viewcode-block" id="filter_curvature"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.filter_curvature">[docs]</a><span class="k">def</span> <span class="nf">filter_curvature</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">curvature_threshold</span><span class="p">):</span>
+<div class="viewcode-block" id="filter_curvature"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.filter_curvature">[docs]</a><span class="k">def</span> <span class="nf">filter_curvature</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">curvature_threshold</span><span class="p">,</span> <span class="n">curvatures</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove mesh vertices based on curvatures.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mesh : pyvista.PolyData</span>
+<span class="sd">        The input mesh.</span>
+<span class="sd">    curvature_threshold : tuple of floats</span>
+<span class="sd">        The curvature threshold.</span>
+<span class="sd">    curvatures : np.array, optional</span>
+<span class="sd">        The curvatures. Defaults to None. If None, computes the mean vertex</span>
+<span class="sd">        curvatures.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    mesh : pyvista.PolyData</span>
+<span class="sd">        The filtered mesh.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">curvature_threshold</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
         <span class="n">curvature_threshold</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">curvature_threshold</span><span class="p">,</span> <span class="n">curvature_threshold</span><span class="p">)</span>
-    <span class="n">curvature</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">curvature</span><span class="p">()</span>
-    <span class="n">to_remove</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span>
-        <span class="n">curvature</span> <span class="o">&lt;</span> <span class="n">curvature_threshold</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">curvature</span> <span class="o">&gt;</span> <span class="n">curvature_threshold</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">curvatures</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">curvature</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">curvature</span><span class="p">()</span>
+
+    <span class="n">to_remove</span> <span class="o">=</span> <span class="n">curvature</span> <span class="o">&lt;</span> <span class="n">curvature_threshold</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">|</span> <span class="n">curvature</span> <span class="o">&gt;</span> <span class="n">curvature_threshold</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">mesh</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">remove_points</span><span class="p">(</span><span class="n">to_remove</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
     <span class="k">return</span> <span class="n">mesh</span></div>
 
 
 <div class="viewcode-block" id="label_cellular_mesh"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.label_cellular_mesh">[docs]</a><span class="k">def</span> <span class="nf">label_cellular_mesh</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">value_tag</span><span class="o">=</span><span class="s1">&#39;values&#39;</span><span class="p">,</span> <span class="n">id_tag</span><span class="o">=</span><span class="s1">&#39;cell_id&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Label the mesh with unique cell identifiers with the given values.</span>
+
+<span class="sd">    Parameter</span>
+<span class="sd">    ---------</span>
+
+<span class="sd">    mesh : pyvista.PolyData</span>
+<span class="sd">        The input mesh.</span>
+<span class="sd">    values : np.array</span>
+<span class="sd">        The values to be assigned to the mesh.</span>
+<span class="sd">    value_tag : str, optional</span>
+<span class="sd">        The array name for the values in the input mesh. The default is &#39;values&#39;.</span>
+<span class="sd">    id_tag : str, optional</span>
+<span class="sd">        The array name for the cell ids in the input mesh. The default is &#39;cell_id&#39;.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    mesh : pyvista.PolyData</span>
+<span class="sd">        The output mesh.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">mesh</span><span class="p">[</span><span class="n">value_tag</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">n_points</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">mesh</span><span class="p">[</span><span class="n">id_tag</span><span class="p">]):</span>
         <span class="n">mesh</span><span class="p">[</span><span class="n">value_tag</span><span class="p">][</span><span class="n">mesh</span><span class="p">[</span><span class="n">id_tag</span><span class="p">]</span> <span class="o">==</span> <span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
@@ -245,13 +301,30 @@
 
 
 <div class="viewcode-block" id="create_cellular_mesh"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.create_cellular_mesh">[docs]</a><span class="k">def</span> <span class="nf">create_cellular_mesh</span><span class="p">(</span><span class="n">seg_img</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a cellular mesh from a segmentation image.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    seg_img : 3D np.array</span>
+<span class="sd">        The segmentated image.</span>
+<span class="sd">    resolution : 3-tuple, optional</span>
+<span class="sd">        The spatial resolution. The default is [1, 1, 1].</span>
+<span class="sd">    verbose : bool, optional</span>
+<span class="sd">        Whether to print the progress. The default is True.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    mesh : pyvista.MultiBlock</span>
+<span class="sd">        The output mesh object, with each block corresponding to a single cell.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">cells</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">n_cells</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">seg_img</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
-    <span class="k">for</span> <span class="n">c_idx</span><span class="p">,</span> <span class="n">cell_id</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">seg_img</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]):</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">seg_img</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="n">n_cells</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">c_idx</span><span class="p">,</span> <span class="n">cell_id</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">labels</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s1">&#39;Now meshing cell </span><span class="si">{</span><span class="n">c_idx</span><span class="si">}</span><span class="s1"> (label: </span><span class="si">{</span><span class="n">cell_id</span><span class="si">}</span><span class="s1">) out of </span><span class="si">{</span><span class="n">n_cells</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
-            <span class="p">)</span>
+                <span class="sa">f</span><span class="s1">&#39;Now meshing cell </span><span class="si">{</span><span class="n">c_idx</span><span class="si">}</span><span class="s1"> (label: </span><span class="si">{</span><span class="n">cell_id</span><span class="si">}</span><span class="s1">) out of </span><span class="si">{</span><span class="n">n_cells</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="n">cell_img</span><span class="p">,</span> <span class="n">cell_cuts</span> <span class="o">=</span> <span class="n">autocrop</span><span class="p">(</span>
             <span class="n">seg_img</span> <span class="o">==</span> <span class="n">cell_id</span><span class="p">,</span>
             <span class="n">threshold</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
@@ -282,6 +355,7 @@
     <span class="n">poly</span> <span class="o">=</span> <span class="n">pv</span><span class="o">.</span><span class="n">PolyData</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">multi</span><span class="o">.</span><span class="n">n_blocks</span><span class="p">):</span>
         <span class="n">poly</span> <span class="o">+=</span> <span class="n">multi</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span>
+
     <span class="k">return</span> <span class="n">poly</span></div>
 
 
@@ -301,10 +375,55 @@
     <span class="n">lambda1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">lambda2</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">stackreg</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">target_resolution</span><span class="o">=</span><span class="p">[</span><span class="mf">.5</span><span class="p">,</span> <span class="mf">.5</span><span class="p">,</span> <span class="mf">.5</span><span class="p">],</span>
     <span class="n">fill_inland_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">return_resolution</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a contour from a 3D image.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fin : str or 3D np.array</span>
+<span class="sd">        The input image or path to file.</span>
+<span class="sd">    iterations : int, optional</span>
+<span class="sd">        The number of iterations for the morphosnakes algorithm. The default is 25.</span>
+<span class="sd">    smoothing : int, optional</span>
+<span class="sd">        The number of morphosnakes smoothing iterations per cycle. The default is 1.</span>
+<span class="sd">    masking : float, optional</span>
+<span class="sd">        The masking threshold. The default is 0.75.</span>
+<span class="sd">    crop : bool, optional</span>
+<span class="sd">        Whether to crop the image. The default is True.</span>
+<span class="sd">    resolution : 3-tuple, optional</span>
+<span class="sd">        The spatial resolution. The default is None.</span>
+<span class="sd">    clahe_window : int, optional</span>
+<span class="sd">        The window/histogram size for the CLAHE algorithm. The default is None.</span>
+<span class="sd">    clahe_clip_limit : float, optional</span>
+<span class="sd">        The clip limit for the CLAHE algorithm. The default is None.</span>
+<span class="sd">    gaussian_sigma : float, optional</span>
+<span class="sd">        The sigma for the Gaussian filter. The default is None.</span>
+<span class="sd">    gaussian_iterations : int, optional</span>
+<span class="sd">        The number of iterations for the Gaussian filter. The default is 5.</span>
+<span class="sd">    interpolate_slices : bool, optional</span>
+<span class="sd">        Whether to interpolate the slices. The default is True.</span>
+<span class="sd">    fill_slices : bool, optional</span>
+<span class="sd">        Whether to fill holes in the XY slices. The default is True.</span>
+<span class="sd">    lambda1 : float, optional</span>
+<span class="sd">        The lambda1 parameter for the morphosnakes algorithm. The default is 1.</span>
+<span class="sd">    lambda2 : float, optional</span>
+<span class="sd">        The lambda2 parameter for the morphosnakes algorithm. The default is 1.</span>
+<span class="sd">    stackreg : bool, optional</span>
+<span class="sd">        Whether to run stackreg. The default is True.</span>
+<span class="sd">    target_resolution : 3-tuple, optional</span>
+<span class="sd">        The target resolution for the output. The default is [.5,.5,.5].</span>
+<span class="sd">    fill_inland_threshold : float, optional</span>
+<span class="sd">        The distance threshold from the object XY periphery to fill. The default is None, which results in no filling.</span>
+<span class="sd">    return_resolution : bool, optional</span>
+<span class="sd">        Whether to return the resolution. The default is False.</span>
+<span class="sd">    verbose : bool, optional</span>
+<span class="sd">        Whether to print the progress. The default is True.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Reading in data for </span><span class="si">{</span><span class="n">fin</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -320,8 +439,9 @@
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Resolution for </span><span class="si">{</span><span class="n">fin</span><span class="si">}</span><span class="s1"> is </span><span class="si">{</span><span class="n">resolution</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
-    <span class="n">data</span> <span class="o">=</span> <span class="n">zoom</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">resolution</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">]),</span> <span class="n">order</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">zoom</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">resolution</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">target_resolution</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 
+    <span class="c1"># Perform stack regularisation</span>
     <span class="k">if</span> <span class="n">stackreg</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Running stackreg for </span><span class="si">{</span><span class="n">fin</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -338,6 +458,7 @@
         <span class="n">data</span><span class="p">[</span><span class="n">data</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">pretype</span><span class="p">)</span>
 
+    <span class="c1"># Autocrop the image</span>
     <span class="k">if</span> <span class="n">crop</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Running autocrop for </span><span class="si">{</span><span class="n">fin</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -356,6 +477,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">autocrop</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">mh</span><span class="o">.</span><span class="n">otsu</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">)</span>
 
+    <span class="c1"># Perform Wiener filtering</span>
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Running wiener filtering for </span><span class="si">{</span><span class="n">fin</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
@@ -368,6 +490,7 @@
     <span class="n">data</span> <span class="o">=</span> <span class="n">to_uint8</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
     <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
 
+    <span class="c1"># Performing CLAHE</span>
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Running CLAHE for </span><span class="si">{</span><span class="n">fin</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">clahe_window</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -377,18 +500,16 @@
     <span class="n">data</span> <span class="o">=</span> <span class="n">clahe</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">win_shape</span><span class="o">=</span><span class="n">clahe_window</span><span class="p">,</span> <span class="n">clip_limit</span><span class="o">=</span><span class="n">clahe_clip_limit</span><span class="p">)</span>
     <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
 
+    <span class="c1"># Performing Gaussian smoothing</span>
     <span class="k">if</span> <span class="n">gaussian_sigma</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># A good reference unit is ~.25 micron for smoothing</span>
         <span class="n">gaussian_sigma</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
-        <span class="c1"># gaussian_sigma = [1. * .25 / resolution[0],</span>
-        <span class="c1">#                   1. * .25 / resolution[1],</span>
-        <span class="c1">#                   1. * .25 / resolution[2]]</span>
     <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">gaussian_iterations</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Smoothing out </span><span class="si">{</span><span class="n">fin</span><span class="si">}</span><span class="s1"> with gaussian smoothing&#39;</span><span class="p">)</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">gaussian_filter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">gaussian_sigma</span><span class="p">)</span>
 
-    <span class="c1"># if interpolate_slices:</span>
+    <span class="k">if</span> <span class="n">interpolate_slices</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Interpolation not implemented yet&#39;</span><span class="p">)</span>
     <span class="c1">#     if verbose:</span>
     <span class="c1">#         print(f&#39;Interpolating slices for {fin}&#39;)</span>
     <span class="c1">#     resolution = np.array(resolution)</span>
@@ -396,12 +517,12 @@
     <span class="c1">#     resolution = resolution / (np.round(data.shape * resolution / np.min(resolution)) / data.shape)</span>
     <span class="c1"># gc.collect()</span>
 
+    <span class="c1"># Perform morphological chan-vese</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Running morphological chan-vese for </span><span class="si">{</span><span class="n">fin</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">masking</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
         <span class="n">masking</span> <span class="o">=</span> <span class="n">to_uint8</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">masking</span> <span class="o">*</span> \
             <span class="n">mh</span><span class="o">.</span><span class="n">otsu</span><span class="p">(</span><span class="n">to_uint8</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
-
-    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Running morphological chan-vese for </span><span class="si">{</span><span class="n">fin</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="n">contour</span> <span class="o">=</span> <span class="n">morphological_chan_vese</span><span class="p">(</span>
         <span class="n">data</span><span class="p">,</span>
         <span class="n">iterations</span><span class="o">=</span><span class="n">iterations</span><span class="p">,</span>
@@ -411,6 +532,7 @@
         <span class="n">lambda2</span><span class="o">=</span><span class="n">lambda2</span><span class="p">,</span>
     <span class="p">)</span>
 
+    <span class="c1"># Postprocess the contour by filling etc.</span>
     <span class="n">contour</span> <span class="o">=</span> <span class="n">fill_contour</span><span class="p">(</span><span class="n">contour</span><span class="p">,</span> <span class="n">fill_xy</span><span class="o">=</span><span class="n">fill_slices</span><span class="p">,</span> <span class="n">fill_zx_zy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">fill_inland_threshold</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -418,30 +540,48 @@
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Filling inland for </span><span class="si">{</span><span class="n">fin</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="n">contour</span> <span class="o">=</span> <span class="n">fill_inland</span><span class="p">(</span><span class="n">contour</span><span class="p">,</span> <span class="n">fill_inland_threshold</span><span class="p">)</span>
 
+    <span class="c1"># Return outputs</span>
     <span class="k">if</span> <span class="n">return_resolution</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">contour</span><span class="p">,</span> <span class="n">resolution</span>
     <span class="k">return</span> <span class="n">contour</span></div>
 
 
 <div class="viewcode-block" id="fill_beneath"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.fill_beneath">[docs]</a><span class="k">def</span> <span class="nf">fill_beneath</span><span class="p">(</span><span class="n">contour</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;bottom&#39;</span><span class="p">):</span>
-    <span class="n">contour</span> <span class="o">=</span> <span class="n">contour</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="n">contour</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">contour</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fill the contour beneath the XY periphery. of a binary object</span>
 
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    contour : np.ndarray</span>
+<span class="sd">        The contour to fill beneath.</span>
+<span class="sd">    mode : str, optional</span>
+<span class="sd">        Whether to fill from the bottom or the top. The default is &#39;bottom&#39;.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cimg : np.ndarray</span>
+<span class="sd">        The filled contour.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cimg</span> <span class="o">=</span> <span class="n">contour</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">cimg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">cimg</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Get the indices for the first and last non-zero elements</span>
     <span class="n">first</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">contour</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">cimg</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;first&#39;</span>
-        <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">contour</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">)</span>
+        <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">cimg</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">)</span>
     <span class="p">)</span>
-    <span class="n">last</span> <span class="o">=</span> <span class="n">contour</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">contour</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
-    <span class="n">last</span><span class="p">[</span><span class="n">last</span> <span class="o">==</span> <span class="n">contour</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">last</span> <span class="o">=</span> <span class="n">cimg</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">cimg</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">last</span><span class="p">[</span><span class="n">last</span> <span class="o">==</span> <span class="n">cimg</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
-    <span class="c1"># mask = np.zeros_like(contour)</span>
-    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">contour</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
-        <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">contour</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
-            <span class="n">contour</span><span class="p">[</span><span class="n">first</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="n">jj</span><span class="p">]:</span> <span class="n">last</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="n">jj</span><span class="p">],</span> <span class="n">ii</span><span class="p">,</span> <span class="n">jj</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">contour</span><span class="p">[:,</span> <span class="n">last</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">contour</span> <span class="o">=</span> <span class="n">contour</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">contour</span></div>
+    <span class="c1"># Fill the contour</span>
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cimg</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cimg</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
+            <span class="n">cimg</span><span class="p">[</span><span class="n">first</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="n">jj</span><span class="p">]:</span> <span class="n">last</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="n">jj</span><span class="p">],</span> <span class="n">ii</span><span class="p">,</span> <span class="n">jj</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">cimg</span><span class="p">[:,</span> <span class="n">last</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">cimg</span> <span class="o">=</span> <span class="n">cimg</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">cimg</span></div>
 
 
 <div class="viewcode-block" id="fill_contour"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.fill_contour">[docs]</a><span class="k">def</span> <span class="nf">fill_contour</span><span class="p">(</span>
@@ -544,28 +684,34 @@
     <span class="n">new_contour</span> <span class="o">=</span> <span class="n">binary_fill_holes</span><span class="p">(</span><span class="n">new_contour</span><span class="p">)</span>
     <span class="n">new_contour</span> <span class="o">=</span> <span class="n">new_contour</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
-    <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
-        <span class="k">return</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">new_contour</span></div>
+    <span class="k">return</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">inplace</span> <span class="k">else</span> <span class="n">new_contour</span></div>
 
 
-<div class="viewcode-block" id="label_mesh"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.label_mesh">[docs]</a><span class="k">def</span> <span class="nf">label_mesh</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">segm_img</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">bg</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;point&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Label a mesh using the closest (by euclidean distance) voxel in a segmented image.&quot;&quot;&quot;</span>
-    <span class="n">coords</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">coord_array</span><span class="p">(</span><span class="n">segm_img</span><span class="p">,</span> <span class="n">resolution</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
-    <span class="c1"># I, J, K = segm_img.shape</span>
-    <span class="c1"># i_coords, j_coords, k_coords = np.meshgrid(range(I),</span>
-    <span class="c1">#                                            range(J),</span>
-    <span class="c1">#                                            range(K),</span>
-    <span class="c1">#                                            indexing=&#39;ij&#39;)</span>
-    <span class="c1"># coordinate_grid = np.array([i_coords, j_coords, k_coords])</span>
-    <span class="c1"># coordinate_grid = np.multiply(coordinate_grid, resolution)</span>
-    <span class="n">img_raveled</span> <span class="o">=</span> <span class="n">segm_img</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-    <span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="n">img_raveled</span> <span class="o">!=</span> <span class="n">bg</span><span class="p">]</span>
-    <span class="n">img_raveled</span> <span class="o">=</span> <span class="n">img_raveled</span><span class="p">[</span><span class="n">img_raveled</span> <span class="o">!=</span> <span class="n">bg</span><span class="p">]</span>
+<div class="viewcode-block" id="label_mesh"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.label_mesh">[docs]</a><span class="k">def</span> <span class="nf">label_mesh</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">segm_img</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">background</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;point&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Label a mesh using the closest (by euclidean distance) voxel in a segmented image.</span>
 
-    <span class="n">tree</span> <span class="o">=</span> <span class="n">cKDTree</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mesh : pyvista.PolyData</span>
+<span class="sd">        Mesh to label.</span>
+<span class="sd">    segm_img : np.ndarray</span>
+<span class="sd">        Segmented image to use for labeling.</span>
+<span class="sd">    resolution : list, optional</span>
+<span class="sd">        Resolution of the segmented image.</span>
+<span class="sd">    background : int, optional</span>
+<span class="sd">        Background value in the segmented image.</span>
+<span class="sd">    mode : str, optional</span>
+<span class="sd">        Mode to use for labeling. Can be &#39;point&#39; or &#39;face&#39;.</span>
+<span class="sd">    inplace : bool, optional</span>
+<span class="sd">        Flag to modify object in place.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    new_mesh : pyvista.PolyData</span>
+<span class="sd">        Mesh after modification. If inplace is True, nothing is returned.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">vertex_flags</span> <span class="o">=</span> <span class="p">[</span>
         <span class="s1">&#39;point&#39;</span><span class="p">,</span>
         <span class="s1">&#39;points&#39;</span><span class="p">,</span>
         <span class="s1">&#39;pts&#39;</span><span class="p">,</span>
@@ -576,9 +722,8 @@
         <span class="s1">&#39;vert&#39;</span><span class="p">,</span>
         <span class="s1">&#39;verts&#39;</span><span class="p">,</span>
         <span class="s1">&#39;v&#39;</span><span class="p">,</span>
-    <span class="p">]:</span>
-        <span class="n">closest</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
-    <span class="k">elif</span> <span class="n">mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span>
+    <span class="p">]</span>
+    <span class="n">triangle_flags</span> <span class="o">=</span> <span class="p">[</span>
         <span class="s1">&#39;cell&#39;</span><span class="p">,</span>
         <span class="s1">&#39;cells&#39;</span><span class="p">,</span>
         <span class="s1">&#39;c&#39;</span><span class="p">,</span>
@@ -590,12 +735,24 @@
         <span class="s1">&#39;polygons&#39;</span><span class="p">,</span>
         <span class="s1">&#39;poly&#39;</span><span class="p">,</span>
         <span class="s1">&#39;polys&#39;</span><span class="p">,</span>
-    <span class="p">]:</span>
+    <span class="p">]</span>
+
+    <span class="c1"># Get the coordinates of the points in the image</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">coord_array</span><span class="p">(</span><span class="n">segm_img</span><span class="p">,</span> <span class="n">resolution</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">img_raveled</span> <span class="o">=</span> <span class="n">segm_img</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="n">img_raveled</span> <span class="o">!=</span> <span class="n">background</span><span class="p">]</span>
+    <span class="n">img_raveled</span> <span class="o">=</span> <span class="n">img_raveled</span><span class="p">[</span><span class="n">img_raveled</span> <span class="o">!=</span> <span class="n">background</span><span class="p">]</span>
+
+    <span class="c1"># Compute the closest coodinate to each point</span>
+    <span class="n">tree</span> <span class="o">=</span> <span class="n">cKDTree</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">vertex_flags</span><span class="p">:</span>
+        <span class="n">closest</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">triangle_flags</span><span class="p">:</span>
         <span class="n">centers</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">cell_centers</span><span class="p">()</span><span class="o">.</span><span class="n">points</span>
         <span class="n">closest</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">centers</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
 
+    <span class="c1"># Get the values of the closest points and either assign them to the mesh, or return them</span>
     <span class="n">values</span> <span class="o">=</span> <span class="n">img_raveled</span><span class="p">[</span><span class="n">closest</span><span class="p">]</span>
-
     <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
         <span class="n">mesh</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span>
     <span class="k">else</span><span class="p">:</span>
@@ -603,83 +760,110 @@
 
 
 <div class="viewcode-block" id="project2surface"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.project2surface">[docs]</a><span class="k">def</span> <span class="nf">project2surface</span><span class="p">(</span>
-    <span class="n">mesh</span><span class="p">,</span> <span class="n">int_img</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">fct</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span>
+    <span class="n">mesh</span><span class="p">,</span> <span class="n">int_img</span><span class="p">,</span> <span class="n">distance_threshold</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">fct</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="mi">0</span>
 <span class="p">):</span>
-    <span class="n">coords</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">coord_array</span><span class="p">(</span><span class="n">int_img</span><span class="p">,</span> <span class="n">resolution</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Project values to a surface using a distance map. Values are aggregated per vertex in the mesh.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mesh : pyvista.PolyData</span>
+<span class="sd">        Mesh to project values to.</span>
+<span class="sd">    int_img : np.ndarray</span>
+<span class="sd">        Image values to project.</span>
+<span class="sd">    distance_threshold : np.ndarray</span>
+<span class="sd">        Distance threshold from the surface of values to use for projection.</span>
+<span class="sd">    mask : np.ndarray, optional</span>
+<span class="sd">        Mask to apply to the image.</span>
+<span class="sd">    resolution : list, optional</span>
+<span class="sd">        Resolution of the image. Default is [1, 1, 1].</span>
+<span class="sd">    fct : function, optional</span>
+<span class="sd">        Function to use for aggregation of values. Applies to each vertex in the mesh Default is np.sum.</span>
+<span class="sd">    background : int, optional</span>
+<span class="sd">        Background value in the image. Default is 0.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Get the coordinates and values of the points in the image</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">coord_array</span><span class="p">(</span><span class="n">int_img</span><span class="p">,</span> <span class="n">resolution</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
     <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">int_img</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">mask</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
-
+        <span class="n">int_img</span><span class="p">[</span><span class="o">~</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">background</span>
     <span class="n">img_raveled</span> <span class="o">=</span> <span class="n">int_img</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-    <span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="n">img_raveled</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
-    <span class="n">img_raveled</span> <span class="o">=</span> <span class="n">img_raveled</span><span class="p">[</span><span class="n">img_raveled</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
 
-    <span class="c1"># Limit scope a little</span>
+    <span class="c1"># Don&#39;t consider background values</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="n">img_raveled</span> <span class="o">!=</span> <span class="n">background</span><span class="p">]</span>
+    <span class="n">img_raveled</span> <span class="o">=</span> <span class="n">img_raveled</span><span class="p">[</span><span class="n">img_raveled</span> <span class="o">!=</span> <span class="n">background</span><span class="p">]</span>
+
+    <span class="c1"># Filter out points clearly outside of the mesh to reduce computation time</span>
     <span class="n">bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">bound_pair</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">bounds</span><span class="p">):</span>
-        <span class="n">img_raveled</span> <span class="o">=</span> <span class="n">img_raveled</span><span class="p">[</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
-                <span class="n">coords</span><span class="p">[:,</span> <span class="n">ii</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">bound_pair</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">coords</span><span class="p">[:,</span> <span class="n">ii</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">bound_pair</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-            <span class="p">)</span>
-        <span class="p">]</span>
-        <span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
-                <span class="n">coords</span><span class="p">[:,</span> <span class="n">ii</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">bound_pair</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">coords</span><span class="p">[:,</span> <span class="n">ii</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">bound_pair</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-            <span class="p">)</span>
-        <span class="p">]</span>
-
-    <span class="n">ipd</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkImplicitPolyDataDistance</span><span class="p">()</span>
-    <span class="n">ipd</span><span class="o">.</span><span class="n">SetInput</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
+        <span class="n">within_bounds</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[:,</span>
+                               <span class="n">ii</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">bound_pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">coords</span><span class="p">[:,</span> <span class="n">ii</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">bound_pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">img_raveled</span> <span class="o">=</span> <span class="n">img_raveled</span><span class="p">[</span><span class="n">within_bounds</span><span class="p">]</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="n">within_bounds</span><span class="p">]</span>
 
     <span class="c1"># Get distance</span>
+    <span class="c1"># Updating the normals is needed for the distance orientation</span>
+    <span class="n">mesh</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">compute_normals</span><span class="p">()</span>
+    <span class="n">ipd</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkImplicitPolyDataDistance</span><span class="p">()</span>
+    <span class="n">ipd</span><span class="o">.</span><span class="n">SetInput</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
     <span class="n">dists</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">),))</span>
     <span class="n">pts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">)):</span>
         <span class="n">dists</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">ipd</span><span class="o">.</span><span class="n">EvaluateFunctionAndGetClosestPoint</span><span class="p">(</span><span class="n">coords</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">pts</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span>
 
-    <span class="c1"># Filter out</span>
-    <span class="c1"># internal</span>
-    <span class="n">mesh</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">compute_normals</span><span class="p">()</span>
-    <span class="n">internal_filter</span> <span class="o">=</span> <span class="n">dists</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">distance</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">dists</span> <span class="o">&lt;</span> <span class="mi">0</span>
-    <span class="c1"># internal_coords = coords[internal_filter]</span>
-    <span class="c1"># internal_vals = img_raveled[internal_filter]</span>
+   <span class="c1"># Filter out the external values</span>
+    <span class="n">internal_filter</span> <span class="o">=</span> <span class="n">dists</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">distance_threshold</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">dists</span> <span class="o">&lt;</span> <span class="mi">0</span>
     <span class="n">l1_coords</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="n">internal_filter</span><span class="p">]</span>
 
-    <span class="c1"># l1</span>
-    <span class="n">layer_threshold</span> <span class="o">=</span> <span class="n">distance</span>
-    <span class="k">if</span> <span class="n">distance</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">l1_filter</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">dists</span> <span class="o">&gt;</span> <span class="n">layer_threshold</span><span class="p">,</span> <span class="n">dists</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="c1"># Now filter out the values that are too far away</span>
+    <span class="k">if</span> <span class="n">distance_threshold</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">l1_filter</span> <span class="o">=</span> <span class="n">dists</span> <span class="o">&gt;</span> <span class="n">distance_threshold</span> <span class="o">&amp;</span> <span class="n">dists</span> <span class="o">&lt;</span> <span class="mi">0</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">l1_filter</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">dists</span> <span class="o">&lt;</span> <span class="n">layer_threshold</span><span class="p">,</span> <span class="n">dists</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">l1_filter</span> <span class="o">=</span> <span class="n">dists</span> <span class="o">&lt;</span> <span class="n">distance_threshold</span> <span class="o">&amp;</span> <span class="n">dists</span> <span class="o">&gt;</span> <span class="mi">0</span>
     <span class="n">l1_coords</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="n">l1_filter</span><span class="p">]</span>
     <span class="n">l1_vals</span> <span class="o">=</span> <span class="n">img_raveled</span><span class="p">[</span><span class="n">l1_filter</span><span class="p">]</span>
 
-    <span class="c1"># l1_dists = dists[l1_filter]</span>
+    <span class="c1"># Get the closest point to each vertex and sum up the values for the vertex</span>
+    <span class="k">if</span> <span class="n">fct</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;fct : Only np.sum is implemented for now.&#39;</span><span class="p">)</span>
 
-    <span class="c1"># if mode.lower() == &#39;closest&#39;:</span>
     <span class="n">tree</span> <span class="o">=</span> <span class="n">cKDTree</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
     <span class="n">closest</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">l1_coords</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">n_points</span><span class="p">)</span>
+
     <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">l1_vals</span><span class="p">):</span>
         <span class="n">values</span><span class="p">[</span><span class="n">closest</span><span class="p">[</span><span class="n">ii</span><span class="p">]]</span> <span class="o">+=</span> <span class="n">val</span>
-
-    <span class="c1"># pobj = pv.Plotter(notebook=False)</span>
-    <span class="c1"># pobj.add_mesh(mesh, opacity=1, scalars=values, clim=[np.quantile(values, .01), np.quantile(values, .99)])</span>
-    <span class="c1"># # pobj.add_points(internal_coords, scalars=internal_vals, opacity=&#39;sigmoid&#39;)</span>
-    <span class="c1"># # pobj.add_points(l1_coords, scalars=l1_vals, opacity=&#39;sigmoid&#39;)</span>
-    <span class="c1"># # pobj.add_points(non_l1_coords, scalars=non_l1_vals, opacity=1)</span>
-    <span class="c1"># pobj.show()</span>
 
     <span class="k">return</span> <span class="n">values</span></div>
 
 
-<span class="c1"># Actual mesh processing</span>
-
-
 <div class="viewcode-block" id="remove_inland_under"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.remove_inland_under">[docs]</a><span class="k">def</span> <span class="nf">remove_inland_under</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">contour</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">invert</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="c1"># TODO: Only use mesh instead of contour</span>
-    <span class="c1"># TODO: Add size threshold on segments</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Remove the part of the mesh that is under the contour and that may have arisen</span>
+<span class="sd">    due to holes in the contour.</span>
 
-    <span class="c1"># Find max projection</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mesh : pyvista.PolyData</span>
+<span class="sd">        Mesh to remove the inland part from.</span>
+<span class="sd">    contour : np.ndarray</span>
+<span class="sd">        Contour to use for the removal.</span>
+<span class="sd">    threshold : int</span>
+<span class="sd">        Threshold distance from the contour XY periphery to use for the removal.</span>
+<span class="sd">    resolution : list, optional</span>
+<span class="sd">        Resolution of the image. Default is [1, 1, 1].</span>
+<span class="sd">    invert : bool, optional</span>
+<span class="sd">        Invert the mesh normals. Default is False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">   output : pyvista.PolyData</span>
+<span class="sd">        Mesh with the inland part removed.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This function is in development and may not work as expected.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Compute the domain of interest</span>
     <span class="n">cont2d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">contour</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
     <span class="n">cont2d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">cont2d</span><span class="p">,</span> <span class="n">pad_width</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">constant_values</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">)</span>
     <span class="n">distance_map</span> <span class="o">=</span> <span class="n">distance_transform_edt</span><span class="p">(</span><span class="n">cont2d</span><span class="p">)</span>
@@ -694,12 +878,10 @@
     <span class="n">xycoords</span><span class="p">[</span><span class="n">xycoords</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">contour</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">contour</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
     <span class="n">xycoords</span><span class="p">[</span><span class="n">xycoords</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">contour</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">contour</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
     <span class="n">inside</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="n">xycoords</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">xycoords</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]]</span> <span class="o">==</span> <span class="mi">2</span>
-    <span class="c1">#    inside = c==2</span>
-
-    <span class="c1">#    mesh[&#39;inside&#39;] = inside</span>
     <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">inside</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">under_indices</span> <span class="o">=</span> <span class="p">[]</span>
 
+    <span class="c1"># Use ray-tracing to identify if the point is under the mesh surface or not</span>
+    <span class="n">under_indices</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">target</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> \
         <span class="mf">0.00001</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">invert</span> <span class="k">else</span> <span class="n">mesh</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.00001</span>
     <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">:</span>
@@ -709,43 +891,78 @@
         <span class="k">if</span> <span class="n">pt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">under_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span>
     <span class="n">under_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">under_indices</span><span class="p">)</span>
-    <span class="n">under</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">n_points</span><span class="p">,</span> <span class="s1">&#39;bool&#39;</span><span class="p">)</span>
+    <span class="n">under</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">n_points</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">under_indices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">under</span><span class="p">[</span><span class="n">under_indices</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">mesh</span><span class="p">[</span><span class="s1">&#39;under&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">under</span>
-    <span class="c1">#    mesh.plot(notebook=False, scalars=&#39;under&#39;)</span>
-    <span class="n">mesh</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">remove_points</span><span class="p">(</span><span class="n">under</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
-    <span class="k">return</span> <span class="n">mesh</span></div>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">remove_points</span><span class="p">(</span><span class="n">under</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">output</span></div>
 
 
-<div class="viewcode-block" id="fill_inland"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.fill_inland">[docs]</a><span class="k">def</span> <span class="nf">fill_inland</span><span class="p">(</span><span class="n">contour</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="fill_inland"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.fill_inland">[docs]</a><span class="k">def</span> <span class="nf">fill_inland</span><span class="p">(</span><span class="n">contour</span><span class="p">,</span> <span class="n">threshold_distance</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Fill the contour based on the distance to the contour XY periphery.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    contour : np.ndarray</span>
+<span class="sd">        Contour to fill.</span>
+<span class="sd">    threshold_distance : int, optional</span>
+<span class="sd">        Threshold distance from the contour XY periphery to use for the filling.</span>
+<span class="sd">        Default is 0.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    filled_contour : np.ndarray</span>
+<span class="sd">        Filled contour.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Get a maximum projection of the contour and compute the distane map</span>
     <span class="n">cont2d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">contour</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
     <span class="n">cont2d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">cont2d</span><span class="p">,</span> <span class="n">pad_width</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">constant_values</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">)</span>
     <span class="n">distance_map</span> <span class="o">=</span> <span class="n">distance_transform_edt</span><span class="p">(</span><span class="n">cont2d</span><span class="p">)</span>
     <span class="n">distance_map</span> <span class="o">=</span> <span class="n">distance_map</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">larger</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">distance_map</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">larger</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">distance_map</span> <span class="o">&gt;</span> <span class="n">threshold_distance</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
     <span class="n">c</span> <span class="o">=</span> <span class="n">cont2d</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
     <span class="n">c</span><span class="p">[</span><span class="n">larger</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">larger</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">2</span>
 
+    <span class="c1"># Get the first and last indices in the Z-direction for each XY pixel</span>
     <span class="n">first_occurence</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">contour</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
     <span class="n">last_occurence</span> <span class="o">=</span> <span class="n">contour</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">contour</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
     <span class="n">last_occurence</span><span class="p">[</span><span class="n">last_occurence</span> <span class="o">==</span> <span class="n">contour</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
+    <span class="c1"># Fill in the mask</span>
     <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">contour</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
         <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
             <span class="n">mask</span><span class="p">[</span><span class="n">first_occurence</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="n">jj</span><span class="p">]:</span> <span class="n">last_occurence</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="n">jj</span><span class="p">],</span> <span class="n">ii</span><span class="p">,</span> <span class="n">jj</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span>
 
-    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">contour</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">output</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">fill_contour</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 
-    <span class="n">contour</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">contour</span> <span class="o">=</span> <span class="n">fill_contour</span><span class="p">(</span><span class="n">contour</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">contour</span></div>
+    <span class="k">return</span> <span class="n">output</span></div>
 
 
 <div class="viewcode-block" id="repair_small"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.repair_small">[docs]</a><span class="k">def</span> <span class="nf">repair_small</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">nbe</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">refine</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Repair small holes in a mesh based on the number of edges</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mesh : pyvista.PolyData</span>
+<span class="sd">        Mesh to repair.</span>
+<span class="sd">    nbe : int, optional</span>
+<span class="sd">        Number of edges to use for the repair. Default is 100.</span>
+<span class="sd">    refine : bool, optional</span>
+<span class="sd">        Refine the mesh. Default is True.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    output : pyvista.PolyData</span>
+<span class="sd">        Repaired mesh.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">mfix</span> <span class="o">=</span> <span class="n">PyTMesh</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">mfix</span><span class="o">.</span><span class="n">load_array</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">faces</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">:])</span>
@@ -753,10 +970,11 @@
         <span class="n">nbe</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
     <span class="n">mfix</span><span class="o">.</span><span class="n">fill_small_boundaries</span><span class="p">(</span><span class="n">nbe</span><span class="o">=</span><span class="n">nbe</span><span class="p">,</span> <span class="n">refine</span><span class="o">=</span><span class="n">refine</span><span class="p">)</span>
     <span class="n">vert</span><span class="p">,</span> <span class="n">faces</span> <span class="o">=</span> <span class="n">mfix</span><span class="o">.</span><span class="n">return_arrays</span><span class="p">()</span>
-    <span class="n">mesh</span> <span class="o">=</span> <span class="n">pv</span><span class="o">.</span><span class="n">PolyData</span><span class="p">(</span><span class="n">vert</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[[[</span><span class="mi">3</span><span class="p">]]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">faces</span><span class="p">),</span> <span class="n">faces</span><span class="p">]))</span>
-    <span class="n">mesh</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
-    <span class="n">mesh</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">triangulate</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">mesh</span></div>
+
+    <span class="n">output</span> <span class="o">=</span> <span class="n">pv</span><span class="o">.</span><span class="n">PolyData</span><span class="p">(</span><span class="n">vert</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[[[</span><span class="mi">3</span><span class="p">]]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">faces</span><span class="p">),</span> <span class="n">faces</span><span class="p">]))</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">triangulate</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">output</span></div>
 
 
 <div class="viewcode-block" id="correct_bad_mesh"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.correct_bad_mesh">[docs]</a><span class="k">def</span> <span class="nf">correct_bad_mesh</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
@@ -784,6 +1002,8 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
+<span class="sd">    new_poly : pyvista.PolyData</span>
+<span class="sd">        Corrected mesh.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
@@ -834,9 +1054,6 @@
     <span class="n">new_poly</span> <span class="o">=</span> <span class="n">ECFT</span><span class="p">(</span><span class="n">new_poly</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">new_poly</span></div>
-
-
-<span class="c1"># TODO: Add inplace argument</span>
 
 
 <div class="viewcode-block" id="remove_bridges"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.remove_bridges">[docs]</a><span class="k">def</span> <span class="nf">remove_bridges</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
@@ -939,28 +1156,51 @@
 
 
 <div class="viewcode-block" id="smooth_boundary"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.smooth_boundary">[docs]</a><span class="k">def</span> <span class="nf">smooth_boundary</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Smooth the boundary of a mesh using Laplacian smoothing:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        x_{n+1} = x_n - \sigma (x_n - \sum_{j \in \mathcal{N}_x} x_j} / \vert \mathcal{N}_x \vert)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mesh : pyvista.PolyData</span>
+<span class="sd">        Mesh to smooth.</span>
+<span class="sd">    iterations : int, optional</span>
+<span class="sd">        Number of smoothing iterations.  Default is 20.</span>
+<span class="sd">    sigma : float, optional</span>
+<span class="sd">        Smoothing sigma.  Default is 0.1.</span>
+<span class="sd">    inplace : bool, optional</span>
+<span class="sd">        Update mesh in-place.  Default is False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pyvista.PolyData</span>
+<span class="sd">        Smoothed mesh.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">mesh</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">inplace</span> <span class="k">else</span> <span class="n">mesh</span>
 
     <span class="c1"># Get boundary information and index correspondences</span>
     <span class="n">boundary</span> <span class="o">=</span> <span class="n">boundary_edges</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
     <span class="n">bdpts</span> <span class="o">=</span> <span class="n">boundary</span><span class="o">.</span><span class="n">points</span>
     <span class="n">from_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">mesh</span><span class="o">.</span><span class="n">FindPoint</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">bdpts</span><span class="p">])</span>
-    <span class="c1"># npts = boundary.n_points</span>
 
-    <span class="c1">#     Find the cycles, i.e. the different boundaries we have</span>
-    <span class="c1"># list(get_connected_vertices_all(boundary, include_self=False))</span>
+    <span class="c1"># TODO this method does not work on a skeletonized mesh, but it would be far more</span>
+    <span class="c1"># computationally effective doing that</span>
     <span class="n">neighs</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">boundary</span><span class="o">.</span><span class="n">n_points</span><span class="p">):</span>
         <span class="n">pt_neighs</span> <span class="o">=</span> <span class="n">vertex_neighbors</span><span class="p">(</span><span class="n">boundary</span><span class="p">,</span> <span class="n">ii</span><span class="p">,</span> <span class="n">include_self</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">pt_neighs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
             <span class="n">neighs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ii</span><span class="p">,</span> <span class="n">pt_neighs</span><span class="p">[</span><span class="n">jj</span><span class="p">]))</span>
 
+    <span class="c1"># Find holes (cycles) in the mesh</span>
     <span class="n">net</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">(</span><span class="n">neighs</span><span class="p">)</span>
     <span class="n">cycles</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">cycle_basis</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
     <span class="n">cycles</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">cycles</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">cycles</span><span class="p">]</span>
 
+    <span class="c1"># Smooth boundary using Laplacian smoothing:</span>
+    <span class="c1"># x_new = x_old - sigma * (x_old - mean(x_xneighs))</span>
     <span class="n">new_pts_prev</span> <span class="o">=</span> <span class="n">bdpts</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">new_pts_now</span> <span class="o">=</span> <span class="n">bdpts</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="k">for</span> <span class="nb">iter</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iterations</span><span class="p">):</span>
@@ -984,7 +1224,7 @@
                     <span class="p">)</span>
                 <span class="p">)</span>
 
-    <span class="c1"># update coordinates</span>
+    <span class="c1"># Update coordinates</span>
     <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cycles</span><span class="p">)):</span>
         <span class="n">mesh</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="n">from_</span><span class="p">[</span><span class="n">cycles</span><span class="p">[</span><span class="n">ii</span><span class="p">]]]</span> <span class="o">=</span> <span class="n">new_pts_now</span><span class="p">[</span><span class="n">cycles</span><span class="p">[</span><span class="n">ii</span><span class="p">]]</span>
 
@@ -1006,14 +1246,52 @@
     <span class="n">inland_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">contour</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Convenience function for postprocessing a mesh.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mesh : pyvista.PolyData</span>
+<span class="sd">        Mesh to process.</span>
+<span class="sd">    hole_repair_threshold : float, optional</span>
+<span class="sd">        Threshold for the hole repair algorithm.  Default is 100.</span>
+<span class="sd">    downscaling : float, optional</span>
+<span class="sd">        Downscaling factor for the mesh.  Default is 0.01.</span>
+<span class="sd">    upscaling : float, optional</span>
+<span class="sd">        Upscaling factor for the mesh.  Default is 2.</span>
+<span class="sd">    threshold_angle : float, optional</span>
+<span class="sd">        Threshold for the polar angle (theta). Values smaller than this will be</span>
+<span class="sd">        removed. Default = 60.</span>
+<span class="sd">    top_cut : str or tuple, optional</span>
+<span class="sd">        Top cut location.  Default is &#39;center&#39;.</span>
+<span class="sd">    tongues_radius : float, optional</span>
+<span class="sd">        Radius of the tongues.  Default is None.</span>
+<span class="sd">    tongues_ratio : float, optional</span>
+<span class="sd">        Ratio of the tongues.  Default is 4.</span>
+<span class="sd">    smooth_iter : int, optional</span>
+<span class="sd">        Number of smoothing iterations.  Default is 200.</span>
+<span class="sd">    smooth_relax : float, optional</span>
+<span class="sd">        Smoothing relaxation factor.  Default is 0.01.</span>
+<span class="sd">    curvature_threshold : float, optional</span>
+<span class="sd">        Threshold for the curvature.  Default is 0.4.</span>
+<span class="sd">    inland_threshold : float, optional</span>
+<span class="sd">        Threshold for the inland removal.  Default is None.</span>
+<span class="sd">    contour : pyvista.PolyData, optional</span>
+<span class="sd">        Contour to use for the inland removal.  Default is None.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">   mesh :  pyvista.PolyData</span>
+<span class="sd">        Processed mesh.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="n">top_cut</span> <span class="o">==</span> <span class="s1">&#39;center&#39;</span><span class="p">:</span>
         <span class="n">top_cut</span> <span class="o">=</span> <span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
-    <span class="c1">#    mesh = repair_small(mesh, hole_repair_threshold)</span>
+    <span class="c1"># Scale the mest and repair small holes</span>
     <span class="n">mesh</span> <span class="o">=</span> <span class="n">remesh</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">n_points</span> <span class="o">*</span> <span class="n">downscaling</span><span class="p">),</span> <span class="n">sub</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">mesh</span> <span class="o">=</span> <span class="n">repair_small</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">hole_repair_threshold</span><span class="p">)</span>
 
+    <span class="c1"># Remove vertices based on the vertex normal angle</span>
     <span class="k">if</span> <span class="n">threshold_angle</span><span class="p">:</span>
         <span class="n">mesh</span><span class="o">.</span><span class="n">rotate_y</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">)</span>
         <span class="n">mesh</span> <span class="o">=</span> <span class="n">remove_normals</span><span class="p">(</span>
@@ -1025,11 +1303,14 @@
         <span class="n">mesh</span><span class="o">.</span><span class="n">clear_arrays</span><span class="p">()</span>
         <span class="n">mesh</span> <span class="o">=</span> <span class="n">correct_normal_orientation_topcut</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">top_cut</span><span class="p">)</span>
 
+    <span class="c1"># Remove vertices based on whether they are &quot;inside the contour&quot;</span>
     <span class="k">if</span> <span class="n">inland_threshold</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">mesh</span> <span class="o">=</span> <span class="n">remove_inland_under</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">contour</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="n">inland_threshold</span><span class="p">)</span>
         <span class="n">mesh</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">extract_largest</span><span class="p">()</span>
         <span class="n">mesh</span> <span class="o">=</span> <span class="n">repair_small</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">hole_repair_threshold</span><span class="p">)</span>
     <span class="n">mesh</span> <span class="o">=</span> <span class="n">ECFT</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">hole_repair_threshold</span><span class="p">)</span>
+
+    <span class="c1"># Remove &quot;tongues&quot; from the mesh</span>
     <span class="k">if</span> <span class="n">tongues_radius</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">mesh</span> <span class="o">=</span> <span class="n">remove_tongues</span><span class="p">(</span>
             <span class="n">mesh</span><span class="p">,</span>
@@ -1037,18 +1318,17 @@
             <span class="n">threshold</span><span class="o">=</span><span class="n">tongues_ratio</span><span class="p">,</span>
             <span class="n">hole_edges</span><span class="o">=</span><span class="n">hole_repair_threshold</span><span class="p">,</span>
         <span class="p">)</span>
+
+    <span class="c1"># General post-processing. Smooth the mesh, remove small holes, and regularise the faces.</span>
     <span class="n">mesh</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">extract_largest</span><span class="p">()</span>
     <span class="n">mesh</span> <span class="o">=</span> <span class="n">repair_small</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">hole_repair_threshold</span><span class="p">)</span>
-
     <span class="n">mesh</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">smooth</span><span class="p">(</span><span class="n">smooth_iter</span><span class="p">,</span> <span class="n">smooth_relax</span><span class="p">)</span>
     <span class="n">mesh</span> <span class="o">=</span> <span class="n">remesh</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">upscaling</span> <span class="o">*</span> <span class="n">mesh</span><span class="o">.</span><span class="n">n_points</span><span class="p">)</span>
-
     <span class="n">mesh</span> <span class="o">=</span> <span class="n">smooth_boundary</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">smooth_iter</span><span class="p">,</span> <span class="n">smooth_relax</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">mesh</span></div>
 
 
-<span class="c1"># TODO: Add inplace argument</span>
 <div class="viewcode-block" id="remove_tongues"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.remove_tongues">[docs]</a><span class="k">def</span> <span class="nf">remove_tongues</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">hole_edges</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Remove &quot;tongues&quot; in mesh.</span>
@@ -1075,6 +1355,7 @@
 <span class="sd">        Resulting mesh.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
         <span class="c1"># Get boundary information and index correspondences</span>
         <span class="n">boundary</span> <span class="o">=</span> <span class="n">boundary_edges</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
@@ -1131,7 +1412,7 @@
             <span class="n">cpts</span> <span class="o">=</span> <span class="n">bdpts</span><span class="p">[</span><span class="n">cycle</span><span class="p">]</span>
 
             <span class="c1"># Get the boundary points (in same loop) within a certain radius</span>
-            <span class="n">tree</span> <span class="o">=</span> <span class="n">KDTree</span><span class="p">(</span><span class="n">cpts</span><span class="p">)</span>
+            <span class="n">tree</span> <span class="o">=</span> <span class="n">cKDTree</span><span class="p">(</span><span class="n">cpts</span><span class="p">)</span>
             <span class="n">neighs</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">query_ball_point</span><span class="p">(</span><span class="n">cpts</span><span class="p">,</span> <span class="n">radius</span><span class="p">)</span>
             <span class="n">neighs</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">neigh</span><span class="p">)</span> <span class="k">for</span> <span class="n">neigh</span> <span class="ow">in</span> <span class="n">neighs</span><span class="p">]</span>
             <span class="n">neighs</span> <span class="o">=</span> <span class="p">[</span><span class="n">neigh</span><span class="p">[</span><span class="n">neigh</span> <span class="o">!=</span> <span class="n">idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">neigh</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">neighs</span><span class="p">)]</span>
@@ -1162,17 +1443,6 @@
                 <span class="n">int_path_lengths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">int_path_lengths</span><span class="p">)</span>
                 <span class="n">bd_dists</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bd_path_lengths</span><span class="p">)</span>
                 <span class="n">int_dists</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">int_path_lengths</span><span class="p">)</span>
-            <span class="c1"># p = pv.Plotter(notebook=False)</span>
-            <span class="c1"># p.add_mesh(mesh)</span>
-            <span class="c1"># p.add_points(mesh.points[6403], render_points_as_spheres=True, point_size=20, color=&#39;red&#39;)</span>
-            <span class="c1"># p.add_points(mesh.points[44], render_points_as_spheres=True, point_size=20, color=&#39;green&#39;)</span>
-            <span class="c1"># # p.add_points(mesh.points[from_[cycle]], render_points_as_spheres=True, point_size=20, color=&#39;blue&#39;)</span>
-            <span class="c1"># # p.add_points(mesh.points[from_[cycle[jj]]], render_points_as_spheres=True, point_size=20, color=&#39;blue&#39;)</span>
-            <span class="c1"># # p.add_points(mesh.points[from_[cycle[neighs[jj][kk]]]], render_points_as_spheres=True, point_size=20, color=&#39;red&#39;)</span>
-            <span class="c1"># # p.add_points(cpts[100], render_points_as_spheres=True, point_size=20, color=&#39;blue&#39;)</span>
-            <span class="c1"># # p.add_points(mesh.points[from_[cycles[ii][neighs[jj][kk]]]], render_points_as_spheres=True, point_size=20, color=&#39;red&#39;)</span>
-            <span class="c1"># # p.add_points(mesh.points[from_[cycles[ii][jj]]], render_points_as_spheres=True, point_size=20, color=&#39;green&#39;)</span>
-            <span class="c1"># p.show()</span>
 
             <span class="n">frac</span> <span class="o">=</span> <span class="p">[</span><span class="n">bd_dists</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span> <span class="o">/</span> <span class="n">int_dists</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span> <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">neighs</span><span class="p">))]</span>
 
@@ -1183,11 +1453,6 @@
                     <span class="k">if</span> <span class="n">frac</span><span class="p">[</span><span class="n">kk</span><span class="p">][</span><span class="n">jj</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">:</span>
                         <span class="n">removal_anchors</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">kk</span><span class="p">,</span> <span class="n">neighs</span><span class="p">[</span><span class="n">kk</span><span class="p">][</span><span class="n">jj</span><span class="p">]))</span>
             <span class="n">removal_anchors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">removal_anchors</span><span class="p">)</span>
-
-            <span class="c1"># p = pv.Plotter(notebook=False)</span>
-            <span class="c1"># p.add_points(cpts[removal_anchors.ravel()], color=&#39;r&#39;)</span>
-            <span class="c1"># p.add_mesh(boundary)</span>
-            <span class="c1"># p.show()</span>
 
             <span class="c1"># Recalculate the geodesic path between two points</span>
             <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">removal_anchors</span><span class="p">)):</span>
@@ -1202,22 +1467,13 @@
 
         <span class="n">to_remove</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">to_remove</span><span class="p">)</span>
 
-        <span class="c1"># if len(to_remove) &gt; 0:</span>
-        <span class="c1">#     break</span>
-        <span class="c1"># p = pv.Plotter(notebook=False)</span>
-        <span class="c1"># p.add_mesh(mesh)</span>
-        <span class="c1"># p.add_points(mesh.points[to_remove], render_points_as_spheres=True, point_size=20, color=&#39;red&#39;)</span>
-        <span class="c1"># p.show()</span>
-
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">to_remove</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">break</span>
 
-        <span class="c1"># Remove points</span>
+        <span class="c1"># Remove points and do some cleanup</span>
         <span class="n">mesh</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">remove_points</span><span class="p">(</span><span class="n">to_remove</span><span class="p">,</span> <span class="n">keep_scalars</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="c1">#        mesh = remove_bridges(mesh)</span>
         <span class="n">mesh</span> <span class="o">=</span> <span class="n">repair_small</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">hole_edges</span><span class="p">)</span>
         <span class="n">mesh</span> <span class="o">=</span> <span class="n">make_manifold</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">hole_edges</span><span class="p">)</span>
-        <span class="c1"># mesh = correct_bad_mesh(mesh)</span>
         <span class="n">mesh</span> <span class="o">=</span> <span class="n">ECFT</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">hole_edges</span><span class="p">)</span>
 
     <span class="n">mesh</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
@@ -1225,12 +1481,30 @@
 
 
 <div class="viewcode-block" id="repair"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.repair">[docs]</a><span class="k">def</span> <span class="nf">repair</span><span class="p">(</span><span class="n">mesh</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Repair a mesh using MeshFix&quot;&quot;&quot;</span>
+
     <span class="n">tmp</span> <span class="o">=</span> <span class="n">pmf</span><span class="o">.</span><span class="n">MeshFix</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
     <span class="n">tmp</span><span class="o">.</span><span class="n">repair</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">tmp</span><span class="o">.</span><span class="n">mesh</span></div>
 
 
 <div class="viewcode-block" id="remesh"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.remesh">[docs]</a><span class="k">def</span> <span class="nf">remesh</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">sub</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Regularise the mesh faces using the ACVD algorithm.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mesh : pyvista.PolyData</span>
+<span class="sd">        The mesh to regularise.</span>
+<span class="sd">    n : int</span>
+<span class="sd">        The number of clusters (i.e. output number of faces) to use.</span>
+<span class="sd">    sub : int, optional</span>
+<span class="sd">        The number of subdivisions to use when clustering.  The default is 3.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    output : pyvista.PolyData</span>
+<span class="sd">        The regularised mesh.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">clus</span> <span class="o">=</span> <span class="n">clustering</span><span class="o">.</span><span class="n">Clustering</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
     <span class="n">clus</span><span class="o">.</span><span class="n">subdivide</span><span class="p">(</span><span class="n">sub</span><span class="p">)</span>  <span class="c1"># 2 also works</span>
@@ -1241,6 +1515,8 @@
 
 
 <div class="viewcode-block" id="make_manifold"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.make_manifold">[docs]</a><span class="k">def</span> <span class="nf">make_manifold</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">hole_edges</span><span class="o">=</span><span class="mi">300</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a mesh manifold by removing non-manifold edges.&quot;&quot;&quot;</span>
+
     <span class="n">mesh</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">edges</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">extract_feature_edges</span><span class="p">(</span>
         <span class="n">boundary_edges</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -1299,26 +1575,9 @@
     <span class="k">return</span> <span class="n">new_mesh</span></div>
 
 
-<div class="viewcode-block" id="downproject_border"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.downproject_border">[docs]</a><span class="k">def</span> <span class="nf">downproject_border</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">flip</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
-
-    <span class="n">lowest</span> <span class="o">=</span> <span class="n">value</span>
-    <span class="n">boundary</span> <span class="o">=</span> <span class="n">boundary_edges</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
-
-    <span class="n">mpts</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">points</span>
-    <span class="n">bdpts</span> <span class="o">=</span> <span class="n">boundary</span><span class="o">.</span><span class="n">points</span>
-    <span class="n">idx_in_parent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">mesh</span><span class="o">.</span><span class="n">FindPoint</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">bdpts</span><span class="p">])</span>
-
-    <span class="n">to_adjust</span> <span class="o">=</span> <span class="n">idx_in_parent</span><span class="p">[</span><span class="n">bdpts</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">value</span><span class="p">]</span>
-    <span class="n">mpts</span><span class="p">[</span><span class="n">to_adjust</span><span class="p">,</span> <span class="n">axis</span><span class="p">]</span> <span class="o">=</span> <span class="n">lowest</span>
-
-    <span class="n">new_mesh</span> <span class="o">=</span> <span class="n">pv</span><span class="o">.</span><span class="n">PolyData</span><span class="p">(</span><span class="n">mpts</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">faces</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">new_mesh</span></div>
-
-
 <div class="viewcode-block" id="boundary_points"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.boundary_points">[docs]</a><span class="k">def</span> <span class="nf">boundary_points</span><span class="p">(</span><span class="n">mesh</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get indices of points in the boundary.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get vertex indices of points in the boundary.&quot;&quot;&quot;</span>
+
     <span class="n">boundary</span> <span class="o">=</span> <span class="n">boundary_edges</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
     <span class="n">bdpts</span> <span class="o">=</span> <span class="n">boundary</span><span class="o">.</span><span class="n">points</span>
     <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">mesh</span><span class="o">.</span><span class="n">FindPoint</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">bdpts</span><span class="p">])</span>
@@ -1357,6 +1616,7 @@
 <span class="sd">        Processed mesh.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iters</span><span class="p">):</span>
         <span class="n">mesh</span> <span class="o">=</span> <span class="n">correct_bad_mesh</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
         <span class="n">mesh</span> <span class="o">=</span> <span class="n">ECFT</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
@@ -1374,6 +1634,7 @@
 
 <div class="viewcode-block" id="non_manifold_edges"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.non_manifold_edges">[docs]</a><span class="k">def</span> <span class="nf">non_manifold_edges</span><span class="p">(</span><span class="n">mesh</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get non-manifold edges.&quot;&quot;&quot;</span>
+
     <span class="n">edges</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">extract_feature_edges</span><span class="p">(</span>
         <span class="n">boundary_edges</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">non_manifold_edges</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -1385,6 +1646,7 @@
 
 <div class="viewcode-block" id="boundary_edges"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.boundary_edges">[docs]</a><span class="k">def</span> <span class="nf">boundary_edges</span><span class="p">(</span><span class="n">mesh</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get boundary edges.&quot;&quot;&quot;</span>
+
     <span class="n">edges</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">extract_feature_edges</span><span class="p">(</span>
         <span class="n">boundary_edges</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">non_manifold_edges</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -1396,6 +1658,7 @@
 
 <div class="viewcode-block" id="manifold_edges"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.manifold_edges">[docs]</a><span class="k">def</span> <span class="nf">manifold_edges</span><span class="p">(</span><span class="n">mesh</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get manifold edges.&quot;&quot;&quot;</span>
+
     <span class="n">edges</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">extract_feature_edges</span><span class="p">(</span>
         <span class="n">boundary_edges</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">non_manifold_edges</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -1407,6 +1670,7 @@
 
 <div class="viewcode-block" id="feature_edges"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.feature_edges">[docs]</a><span class="k">def</span> <span class="nf">feature_edges</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="mi">30</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get feature edges defined by given angle.&quot;&quot;&quot;</span>
+
     <span class="n">edges</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">extract_feature_edges</span><span class="p">(</span>
         <span class="n">feature_angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span>
         <span class="n">boundary_edges</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -1418,6 +1682,24 @@
 
 
 <div class="viewcode-block" id="vertex_neighbors"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.vertex_neighbors">[docs]</a><span class="k">def</span> <span class="nf">vertex_neighbors</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">include_self</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the indices of the vertices connected to a given vertex.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mesh : pyvista.PolyData</span>
+<span class="sd">        Mesh to operate on.</span>
+<span class="sd">    index : int</span>
+<span class="sd">        Index of the vertex.</span>
+<span class="sd">    include_self : bool, optional</span>
+<span class="sd">        Whether to include the vertex itself in the list of neighbors.</span>
+<span class="sd">        Default = True.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    connected_vertices : list</span>
+<span class="sd">        List of indices of the connected vertices.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">connected_vertices</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">if</span> <span class="n">include_self</span><span class="p">:</span>
@@ -1459,6 +1741,23 @@
 
 
 <div class="viewcode-block" id="vertex_neighbors_all"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.vertex_neighbors_all">[docs]</a><span class="k">def</span> <span class="nf">vertex_neighbors_all</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">include_self</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get all vertex neighbors.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mesh : pyvista.PolyData</span>
+<span class="sd">        Mesh to operate on.</span>
+<span class="sd">    include_self : bool, optional</span>
+<span class="sd">        Whether to include the vertex itself in the list of neighbors.</span>
+<span class="sd">        Default = True.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    connectivities : list</span>
+<span class="sd">        List of lists of indices of the connected vertices.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">connectivities</span> <span class="o">=</span> <span class="p">[[]]</span> <span class="o">*</span> <span class="n">mesh</span><span class="o">.</span><span class="n">n_points</span>
     <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">n_points</span><span class="p">):</span>
         <span class="n">connectivities</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">vertex_neighbors</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">ii</span><span class="p">,</span> <span class="n">include_self</span><span class="p">)</span>
@@ -1467,8 +1766,10 @@
 
 
 <div class="viewcode-block" id="correct_normal_orientation_topcut"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.correct_normal_orientation_topcut">[docs]</a><span class="k">def</span> <span class="nf">correct_normal_orientation_topcut</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">origin</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Correct normal orientation of a mesh by flipping normals if the sum of the normals is negative</span>
+<span class="sd">    after having cropped off the top of the mesh. &quot;&quot;&quot;</span>
+
     <span class="n">mesh</span><span class="o">.</span><span class="n">clear_arrays</span><span class="p">()</span>
-    <span class="c1"># mesh = mesh.compute_normals(auto_orient_normals=True)</span>
     <span class="k">if</span> <span class="n">mesh</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">normal</span><span class="o">=</span><span class="s1">&#39;-x&#39;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">)</span><span class="o">.</span><span class="n">point_normals</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">mesh</span><span class="o">.</span><span class="n">flip_normals</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">mesh</span></div>
@@ -1496,6 +1797,7 @@
 <span class="sd">        Mesh after operation. Returns None if inplace == True.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
         <span class="n">new_mesh</span> <span class="o">=</span> <span class="n">mesh</span>
     <span class="k">else</span><span class="p">:</span>
@@ -1539,6 +1841,7 @@
 <span class="sd">        the given method.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="c1"># TODO: Sort out this function</span>
     <span class="n">ccoord</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,))</span>
     <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;central_mass&#39;</span><span class="p">:</span>
@@ -1593,6 +1896,7 @@
 <span class="sd">        Parameters after optimisation.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="nf">errfunc</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">coord</span><span class="p">):</span>
         <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">p4</span><span class="p">,</span> <span class="n">p5</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="n">p</span>
         <span class="n">coord</span> <span class="o">=</span> <span class="n">rotate</span><span class="p">(</span><span class="n">coord</span><span class="p">,</span> <span class="p">[</span><span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span><span class="p">])</span>
@@ -1609,6 +1913,20 @@
 
 
 <div class="viewcode-block" id="vertex_cycles"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.vertex_cycles">[docs]</a><span class="k">def</span> <span class="nf">vertex_cycles</span><span class="p">(</span><span class="n">mesh</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Find cycles (holes/boundaries) in a mesh.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mesh : pyvista.PolyData</span>
+<span class="sd">        Mesh to operate on.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cycles : list</span>
+<span class="sd">        List of cycles, each cycle is a list of vertex indices.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">neighs</span> <span class="o">=</span> <span class="n">vertex_neighbors</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
     <span class="n">pairs</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">n_points</span><span class="p">):</span>
@@ -1620,44 +1938,47 @@
     <span class="k">return</span> <span class="n">cycles</span></div>
 
 
-<div class="viewcode-block" id="connect_bottom"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.connect_bottom">[docs]</a><span class="k">def</span> <span class="nf">connect_bottom</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">invert</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="n">boundary</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">extract_feature_edges</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">extract_largest</span><span class="p">()</span>
+<span class="sd">&quot;&quot;&quot; def connect_bottom(mesh, offset=0, invert=False, inplace=False):</span>
+<span class="sd">    boundary = mesh.extract_feature_edges(0, 1, 0, 0, 0).extract_largest()</span>
 
-    <span class="n">cycles</span> <span class="o">=</span> <span class="n">vertex_cycles</span><span class="p">(</span><span class="n">boundary</span><span class="p">)</span>
-    <span class="n">cycle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cycles</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="sd">    cycles = vertex_cycles(boundary)</span>
+<span class="sd">    cycle = np.array(cycles[0])</span>
 
-    <span class="n">corresp_in_orig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
-        <span class="n">mesh</span><span class="o">.</span><span class="n">FindPoint</span><span class="p">(</span><span class="n">pp</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">pp</span> <span class="ow">in</span> <span class="n">boundary</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="n">cycle</span><span class="p">]</span>
-    <span class="p">])</span>
+<span class="sd">    corresp_in_orig = np.array([</span>
+<span class="sd">        mesh.FindPoint(pp)</span>
+<span class="sd">        for pp in boundary.points[cycle]</span>
+<span class="sd">    ])</span>
 
-    <span class="n">pts</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">points</span>
-    <span class="n">faces</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">faces</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">))[:,</span> <span class="mi">1</span><span class="p">:]</span>
+<span class="sd">    pts = mesh.points</span>
+<span class="sd">    faces = mesh.faces.reshape((-1, 4))[:, 1:]</span>
 
-    <span class="n">pts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">mesh</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">boundary</span><span class="o">.</span><span class="n">center_of_mass</span><span class="p">()])</span>
-    <span class="k">if</span> <span class="n">invert</span><span class="p">:</span>
-        <span class="n">pts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">points</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="n">offset</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">pts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">points</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">offset</span>
+<span class="sd">    pts = np.vstack([mesh.points, boundary.center_of_mass()])</span>
+<span class="sd">    if invert:</span>
+<span class="sd">        pts[-1, 0] = np.min(mesh.points[:, 0]) - offset</span>
+<span class="sd">    else:</span>
+<span class="sd">        pts[-1, 0] = np.max(mesh.points[:, 0]) + offset</span>
 
-    <span class="n">faces_to_append</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">corresp_in_orig</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-        <span class="n">faces_to_append</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">corresp_in_orig</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">corresp_in_orig</span><span class="p">[</span><span class="n">ii</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">pts</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span>
-        <span class="p">)</span>
-    <span class="n">faces</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">faces</span><span class="p">,</span> <span class="n">faces_to_append</span><span class="p">])</span>
-    <span class="n">faces</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([[[</span><span class="mi">3</span><span class="p">]]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">faces</span><span class="p">),</span> <span class="n">faces</span><span class="p">])</span>
-    <span class="n">faces</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">faces</span><span class="p">)</span>
+<span class="sd">    faces_to_append = []</span>
+<span class="sd">    for ii in range(corresp_in_orig.shape[0]):</span>
+<span class="sd">        faces_to_append.append(</span>
+<span class="sd">            [corresp_in_orig[ii], corresp_in_orig[ii - 1], len(pts) - 1],</span>
+<span class="sd">        )</span>
+<span class="sd">    faces = np.vstack([faces, faces_to_append])</span>
+<span class="sd">    faces = np.hstack([[[3]] * len(faces), faces])</span>
+<span class="sd">    faces = np.ravel(faces)</span>
 
-    <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
-        <span class="n">mesh</span><span class="o">.</span><span class="n">points</span> <span class="o">=</span> <span class="n">pts</span>
-        <span class="n">mesh</span><span class="o">.</span><span class="n">faces</span> <span class="o">=</span> <span class="n">faces</span>
-        <span class="k">return</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">pv</span><span class="o">.</span><span class="n">PolyData</span><span class="p">(</span><span class="n">pts</span><span class="p">,</span> <span class="n">faces</span><span class="p">)</span></div>
+<span class="sd">    if inplace:</span>
+<span class="sd">        mesh.points = pts</span>
+<span class="sd">        mesh.faces = faces</span>
+<span class="sd">        return</span>
+<span class="sd">    else:</span>
+<span class="sd">        return pv.PolyData(pts, faces)</span>
+<span class="sd"> &quot;&quot;&quot;</span>
 
 
 <div class="viewcode-block" id="correct_normal_orientation"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.mesh.correct_normal_orientation">[docs]</a><span class="k">def</span> <span class="nf">correct_normal_orientation</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">relative</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Correct the orientation of the normals of a mesh. &quot;&quot;&quot;</span>
+
     <span class="n">mesh</span> <span class="o">=</span> <span class="n">mesh</span> <span class="k">if</span> <span class="n">inplace</span> <span class="k">else</span> <span class="n">mesh</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">normals</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">point_normals</span>
 
@@ -1687,6 +2008,7 @@
 <span class="sd">        paraboloid apex.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">popt</span> <span class="o">=</span> <span class="n">fit_paraboloid</span><span class="p">(</span>
         <span class="n">mesh</span><span class="o">.</span><span class="n">points</span><span class="p">,</span>
     <span class="p">)</span>
@@ -1733,6 +2055,24 @@
     <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="k">return</span> <span class="n">coords</span></div>
+
+
+<span class="sd">&quot;&quot;&quot; def downproject_border(mesh, value, axis=0, flip=False):</span>
+
+<span class="sd">    lowest = value</span>
+<span class="sd">    boundary = boundary_edges(mesh)</span>
+
+<span class="sd">    mpts = mesh.points</span>
+<span class="sd">    bdpts = boundary.points</span>
+<span class="sd">    idx_in_parent = np.array([mesh.FindPoint(ii) for ii in bdpts])</span>
+
+<span class="sd">    to_adjust = idx_in_parent[bdpts[:, 0] &gt; value]</span>
+<span class="sd">    mpts[to_adjust, axis] = lowest</span>
+
+<span class="sd">    new_mesh = pv.PolyData(mpts, mesh.faces)</span>
+
+<span class="sd">    return new_mesh</span>
+<span class="sd"> &quot;&quot;&quot;</span>
 </pre></div>
 
             <div class="clearer"></div>

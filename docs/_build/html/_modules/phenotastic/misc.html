@@ -46,14 +46,16 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">math</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">re</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <div class="viewcode-block" id="cut"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.cut">[docs]</a><span class="k">def</span> <span class="nf">cut</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">cuts</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Slice 3D image with supplied cuts.&quot;&quot;&quot;</span>
+    <span class="c1"># TODO this should be written for nD with advanced slicing comprehension</span>
     <span class="k">return</span> <span class="n">img</span><span class="p">[</span>
-        <span class="n">cuts</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">cuts</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">cuts</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">cuts</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">cuts</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">cuts</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">cuts</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]:</span> <span class="n">cuts</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+        <span class="n">cuts</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]:</span> <span class="n">cuts</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+        <span class="n">cuts</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]:</span> <span class="n">cuts</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
     <span class="p">]</span></div>
 
 
@@ -91,14 +93,16 @@
     <span class="k">return</span> <span class="n">sets</span></div>
 
 
-<div class="viewcode-block" id="flatten"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.flatten">[docs]</a><span class="k">def</span> <span class="nf">flatten</span><span class="p">(</span><span class="n">llist</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Flatten a list of lists&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">sublist</span> <span class="ow">in</span> <span class="n">llist</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">]</span></div>
+<div class="viewcode-block" id="flatten"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.flatten">[docs]</a><span class="k">def</span> <span class="nf">flatten</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Flatten an arbitrarily nested iterable &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">itertools</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">arr</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="remove_empty_slices"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.remove_empty_slices">[docs]</a><span class="k">def</span> <span class="nf">remove_empty_slices</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">keepaxis</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove empty slices (based on the total intensity) in an ndarray&quot;&quot;&quot;</span>
-    <span class="n">not_empty</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">ndim</span><span class="p">)),</span> <span class="n">keepaxis</span><span class="p">)))</span> <span class="o">&gt;</span> <span class="mi">0</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove empty slices (based on the total signal) in an ndarray&quot;&quot;&quot;</span>
+    <span class="n">not_empty</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">ndim</span><span class="p">)),</span> <span class="n">keepaxis</span><span class="p">)))</span> <span class="o">&gt;</span> <span class="mi">0</span>
     <span class="n">arr</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">not_empty</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">arr</span></div>
 
@@ -129,12 +133,21 @@
 
 
 <div class="viewcode-block" id="angle"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.angle">[docs]</a><span class="k">def</span> <span class="nf">angle</span><span class="p">(</span><span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">acute</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v1</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v2</span><span class="p">)))</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Compute the angle (in radians) between two vectors. &quot;&quot;&quot;</span>
+    <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v1</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v2</span><span class="p">)))</span>
     <span class="k">return</span> <span class="n">angle</span> <span class="k">if</span> <span class="n">acute</span> <span class="k">else</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">-</span> <span class="n">angle</span></div>
 
 
 <div class="viewcode-block" id="angle_difference"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.angle_difference">[docs]</a><span class="k">def</span> <span class="nf">angle_difference</span><span class="p">(</span><span class="n">ang1</span><span class="p">,</span> <span class="n">ang2</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="mi">360</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the smallest angle difference on a template with periodic boundary conditions.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ang1 : array of floats</span>
+<span class="sd">        The first angle</span>
+<span class="sd">    ang2 : array of floats</span>
+<span class="sd">        The second angle</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -144,7 +157,8 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">difference</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">ang1</span><span class="p">,</span> <span class="n">ang2</span><span class="p">)</span>
     <span class="n">angs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-        <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">difference</span><span class="p">,</span> <span class="n">period</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">difference</span><span class="p">,</span> <span class="o">-</span><span class="n">period</span><span class="p">))]</span>
+        <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">difference</span><span class="p">,</span> <span class="n">period</span><span class="p">)),</span>
+         <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">difference</span><span class="p">,</span> <span class="o">-</span><span class="n">period</span><span class="p">))]</span>
     <span class="p">)</span>
     <span class="n">angs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">angs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">angs</span></div>
@@ -158,8 +172,8 @@
 
 
 <div class="viewcode-block" id="paraboloid"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.paraboloid">[docs]</a><span class="k">def</span> <span class="nf">paraboloid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the z-value for a paraboloid given input xy-coordinates and</span>
-<span class="sd">    parameters.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the z-value for a non-rotated paraboloid given input xy-coordinates and</span>
+<span class="sd">    parameters. Translations are permitted in x, y, and z.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -172,10 +186,12 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-
+<span class="sd">    z : float</span>
+<span class="sd">        The corresponding z-coordinate of the paraboloid.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">p4</span><span class="p">,</span> <span class="n">p5</span> <span class="o">=</span> <span class="n">p</span>
-    <span class="k">return</span> <span class="n">p1</span> <span class="o">*</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">p2</span> <span class="o">*</span> <span class="n">y</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">p3</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="n">p4</span> <span class="o">*</span> <span class="n">y</span> <span class="o">+</span> <span class="n">p5</span></div>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">p1</span> <span class="o">*</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">p2</span> <span class="o">*</span> <span class="n">y</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">p3</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="n">p4</span> <span class="o">*</span> <span class="n">y</span> <span class="o">+</span> <span class="n">p5</span>
+    <span class="k">return</span> <span class="n">z</span></div>
 
 
 <div class="viewcode-block" id="get_max_contrast_colours"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.get_max_contrast_colours">[docs]</a><span class="k">def</span> <span class="nf">get_max_contrast_colours</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">64</span><span class="p">):</span>
@@ -258,7 +274,7 @@
         <span class="p">[</span><span class="mi">255</span><span class="p">,</span> <span class="mi">110</span><span class="p">,</span> <span class="mi">65</span><span class="p">],</span>
         <span class="p">[</span><span class="mi">232</span><span class="p">,</span> <span class="mi">94</span><span class="p">,</span> <span class="mi">190</span><span class="p">],</span>
     <span class="p">]</span>
-    <span class="k">return</span> <span class="n">rgbs</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">n</span><span class="p">]</span></div>
+    <span class="k">return</span> <span class="n">rgbs</span><span class="p">[:</span><span class="n">n</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="prime_sieve"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.prime_sieve">[docs]</a><span class="k">def</span> <span class="nf">prime_sieve</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="p">{}):</span>
@@ -275,7 +291,7 @@
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">nroot</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">sieve</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">m</span> <span class="o">=</span> <span class="n">n</span> <span class="o">/</span> <span class="n">i</span> <span class="o">-</span> <span class="n">i</span>
-            <span class="n">sieve</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">i</span> <span class="p">:</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">sieve</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">i</span><span class="p">:</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">output</span><span class="p">)</span> <span class="o">==</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="n">pmap</span> <span class="o">=</span> <span class="p">{}</span>
@@ -348,57 +364,130 @@
     <span class="k">return</span> <span class="n">fs</span></div>
 
 
-<div class="viewcode-block" id="autocrop"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.autocrop">[docs]</a><span class="k">def</span> <span class="nf">autocrop</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">8e3</span><span class="p">,</span> <span class="n">channel</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">return_cuts</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="c1"># def autocrop(arr, threshold=8e3, channel=-1, n=1, return_cuts=False, offset=None):</span>
 
-    <span class="k">if</span> <span class="n">offset</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">offset</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span>
-    <span class="n">offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
+<span class="c1">#     if offset is None:</span>
+<span class="c1">#         offset = [[0, 0], [0, 0], [0, 0]]</span>
+<span class="c1">#     offset = np.array(offset)</span>
 
-    <span class="n">sumarr</span> <span class="o">=</span> <span class="n">arr</span>
-    <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">channel</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
-            <span class="n">sumarr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
-            <span class="n">sumarr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">sumarr</span> <span class="o">=</span> <span class="n">sumarr</span><span class="p">[:,</span> <span class="n">channel</span><span class="p">]</span>
+<span class="c1">#     sumarr = arr</span>
+<span class="c1">#     if arr.ndim &gt; 3:</span>
+<span class="c1">#         if channel == -1:</span>
+<span class="c1">#             sumarr = np.max(arr, axis=1)</span>
+<span class="c1">#         elif isinstance(channel, (list, np.ndarray, tuple)):</span>
+<span class="c1">#             sumarr = np.max(arr.take(channel, axis=1), axis=1)</span>
+<span class="c1">#         else:</span>
+<span class="c1">#             sumarr = sumarr[:, channel]</span>
 
-    <span class="n">cp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">sumarr</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sumarr</span><span class="o">.</span><span class="n">ndim</span><span class="p">):</span>
-        <span class="n">axes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span> <span class="o">!=</span> <span class="n">ii</span><span class="p">]</span>
+<span class="c1">#     cp = np.zeros((sumarr.ndim, 2), dtype=np.int)</span>
+<span class="c1">#     for ii in range(sumarr.ndim):</span>
+<span class="c1">#         axes = np.array([0, 1, 2])[np.array([0, 1, 2]) != ii]</span>
 
-        <span class="n">transposed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">sumarr</span><span class="p">,</span> <span class="p">(</span><span class="n">ii</span><span class="p">,)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">axes</span><span class="p">))</span>
-        <span class="n">nabove</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">transposed</span><span class="p">,</span> <span class="p">(</span><span class="n">transposed</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span>
-        <span class="p">)</span>
+<span class="c1">#         transposed = np.transpose(sumarr, (ii,) + tuple(axes))</span>
+<span class="c1">#         nabove = np.sum(</span>
+<span class="c1">#             np.reshape(transposed, (transposed.shape[0], -1)) &gt; threshold, axis=1</span>
+<span class="c1">#         )</span>
 
-        <span class="n">first</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">nabove</span><span class="p">)</span> <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">n</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="n">last</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nabove</span><span class="p">)</span> <span class="o">-</span> <span class="nb">next</span><span class="p">(</span>
-            <span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">nabove</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">n</span><span class="p">),</span> <span class="mi">0</span>
-        <span class="p">)</span>
+<span class="c1">#         first = next((e[0] for e in enumerate(nabove) if e[1] &gt;= n), 0)</span>
+<span class="c1">#         last = len(nabove) - next(</span>
+<span class="c1">#             (e[0] for e in enumerate(nabove[::-1]) if e[1] &gt;= n), 0</span>
+<span class="c1">#         )</span>
 
-        <span class="n">cp</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">first</span><span class="p">,</span> <span class="n">last</span>
-    <span class="c1">#    ranges = [range(cp[ii, 0], cp[ii, 1]) for ii in range(len(cp))]</span>
-    <span class="n">cp</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">cp</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
-    <span class="n">cp</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">cp</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
-    <span class="n">cp</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">cp</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
-    <span class="n">cp</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">cp</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
-    <span class="n">cp</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">cp</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">offset</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
-    <span class="n">cp</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">cp</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">offset</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+<span class="c1">#         cp[ii] = first, last</span>
+<span class="c1">#     #    ranges = [range(cp[ii, 0], cp[ii, 1]) for ii in range(len(cp))]</span>
+<span class="c1">#     cp[0, 0] = np.max([0, cp[0, 0] - offset[0, 0]])</span>
+<span class="c1">#     cp[0, 1] = np.min([arr.shape[0], cp[0, 1] + offset[0, 1]])</span>
+<span class="c1">#     cp[1, 0] = np.max([0, cp[1, 0] - offset[1, 0]])</span>
+<span class="c1">#     cp[1, 1] = np.min([arr.shape[1], cp[1, 1] + offset[1, 1]])</span>
+<span class="c1">#     cp[2, 0] = np.max([0, cp[2, 0] - offset[2, 0]])</span>
+<span class="c1">#     cp[2, 1] = np.min([arr.shape[2], cp[2, 1] + offset[2, 1]])</span>
 
-    <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
-        <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">_range</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cp</span><span class="p">):</span>
-        <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ii</span><span class="p">)</span>
-        <span class="n">arr</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
-        <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ii</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
-        <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="c1">#     if arr.ndim &gt; 3:</span>
+<span class="c1">#         arr = np.moveaxis(arr, 1, -1)</span>
+<span class="c1">#     for ii, _range in enumerate(cp):</span>
+<span class="c1">#         arr = np.swapaxes(arr, 0, ii)</span>
+<span class="c1">#         arr = arr[_range[0]: _range[1]]</span>
+<span class="c1">#         arr = np.swapaxes(arr, 0, ii)</span>
+<span class="c1">#     if arr.ndim &gt; 3:</span>
+<span class="c1">#         arr = np.moveaxis(arr, -1, 1)</span>
 
-    <span class="k">if</span> <span class="n">return_cuts</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">arr</span><span class="p">,</span> <span class="n">cp</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">arr</span></div>
+<span class="c1">#     if return_cuts:</span>
+<span class="c1">#         return arr, cp</span>
+<span class="c1">#     else:</span>
+<span class="c1">#         return arr</span>
+
+<div class="viewcode-block" id="coord_array"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.coord_array">[docs]</a><span class="k">def</span> <span class="nf">coord_array</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">res</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">offset</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a coordinate array (of e.g. same dimensionality as intensity array) of the same dimensions as another array. Only defined for 3D.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    arr : np.ndarray</span>
+<span class="sd">        Array defining dimensions of coordinate array</span>
+<span class="sd">    res : 3-tuple, optional</span>
+<span class="sd">        Resolution of the array in the three dimensions. Default = (1,1,1).</span>
+<span class="sd">    offset : 3-tuple, optional</span>
+<span class="sd">        Origin offset. Default = (0,0,0).</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    Only 3D.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    coords : np.ndarray</span>
+<span class="sd">        Vertically stacked coordinate array for the input data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">xv</span> <span class="o">=</span> <span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.000001</span><span class="p">,</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">yv</span> <span class="o">=</span> <span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.000001</span><span class="p">,</span> <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">zv</span> <span class="o">=</span> <span class="n">offset</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">res</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.000001</span><span class="p">,</span> <span class="n">res</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">zv</span><span class="p">)</span>
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">zz</span> <span class="o">=</span> <span class="n">grid</span>
+    <span class="n">xx</span> <span class="o">=</span> <span class="n">xx</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    <span class="n">yy</span> <span class="o">=</span> <span class="n">yy</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    <span class="n">zz</span> <span class="o">=</span> <span class="n">zz</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+    <span class="c1"># Make compatible lists</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">xx</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">yy</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">zz</span><span class="o">.</span><span class="n">ravel</span><span class="p">()))</span>
+    <span class="k">return</span> <span class="n">coords</span></div>
+
+
+<div class="viewcode-block" id="rot_matrix_44"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.rot_matrix_44">[docs]</a><span class="k">def</span> <span class="nf">rot_matrix_44</span><span class="p">(</span><span class="n">angles</span><span class="p">,</span> <span class="n">invert</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="n">angles</span>
+    <span class="n">Rx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">alpha</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">alpha</span><span class="p">),</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">alpha</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">alpha</span><span class="p">),</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+    <span class="n">Ry</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">beta</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">beta</span><span class="p">),</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="p">[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">beta</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">beta</span><span class="p">),</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+    <span class="n">Rz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">gamma</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">gamma</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">gamma</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">gamma</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">invert</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">Rz</span><span class="p">,</span> <span class="n">Ry</span><span class="p">),</span> <span class="n">Rx</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">invert</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">Rz</span><span class="p">,</span> <span class="n">Ry</span><span class="p">),</span> <span class="n">Rx</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">R</span></div>
 
 
 <div class="viewcode-block" id="rotate"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.rotate">[docs]</a><span class="k">def</span> <span class="nf">rotate</span><span class="p">(</span><span class="n">coord</span><span class="p">,</span> <span class="n">angles</span><span class="p">,</span> <span class="n">invert</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -420,7 +509,8 @@
         <span class="p">]</span>
     <span class="p">)</span>
     <span class="n">Ry</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-        <span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">beta</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">beta</span><span class="p">)],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">beta</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">beta</span><span class="p">)]]</span>
+        <span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">beta</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">beta</span><span class="p">)],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+         <span class="p">[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">beta</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">beta</span><span class="p">)]]</span>
     <span class="p">)</span>
     <span class="n">Rz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
         <span class="p">[</span>
@@ -440,88 +530,91 @@
     <span class="k">return</span> <span class="n">xyz</span></div>
 
 
-<div class="viewcode-block" id="mkdir"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.mkdir">[docs]</a><span class="k">def</span> <span class="nf">mkdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Make a directory if it doesn&#39;t exist already.</span>
+<span class="c1"># def mkdir(path):</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     Make a directory if it doesn&#39;t exist already.</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    path : str</span>
-<span class="sd">        Path to directory.</span>
+<span class="c1">#     Parameters</span>
+<span class="c1">#     ----------</span>
+<span class="c1">#     path : str</span>
+<span class="c1">#         Path to directory.</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    None.</span>
+<span class="c1">#     Returns</span>
+<span class="c1">#     -------</span>
+<span class="c1">#     None.</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="listdir"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.listdir">[docs]</a><span class="k">def</span> <span class="nf">listdir</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">include</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">full</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sorting</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
-        <span class="n">files</span> <span class="o">=</span> <span class="n">flatten</span><span class="p">([</span><span class="n">listdir</span><span class="p">(</span><span class="n">ff</span><span class="p">,</span> <span class="n">include</span><span class="p">,</span> <span class="n">exclude</span><span class="p">,</span> <span class="n">full</span><span class="p">,</span> <span class="n">sorting</span><span class="p">)</span> <span class="k">for</span> <span class="n">ff</span> <span class="ow">in</span> <span class="n">path</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">files</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">files</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-        <span class="n">files</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">files</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">full</span><span class="p">:</span>
-        <span class="n">files</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">files</span><span class="p">])</span>
-
-    <span class="c1"># Include</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">include</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">files</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">files</span> <span class="k">if</span> <span class="n">include</span> <span class="ow">in</span> <span class="n">x</span><span class="p">])</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">include</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
-        <span class="n">matches</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">inc</span> <span class="ow">in</span> <span class="n">ii</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">files</span><span class="p">])</span> <span class="k">for</span> <span class="n">inc</span> <span class="ow">in</span> <span class="n">include</span><span class="p">])</span>
-        <span class="n">matches</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">matches</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="n">files</span> <span class="o">=</span> <span class="n">files</span><span class="p">[</span><span class="n">matches</span><span class="p">]</span>
-
-    <span class="c1"># Exclude</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exclude</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">files</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">files</span> <span class="k">if</span> <span class="n">exclude</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">x</span><span class="p">])</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exclude</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
-        <span class="n">matches</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">exc</span> <span class="ow">in</span> <span class="n">ii</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">files</span><span class="p">])</span> <span class="k">for</span> <span class="n">exc</span> <span class="ow">in</span> <span class="n">exclude</span><span class="p">])</span>
-        <span class="n">matches</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">matches</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
-        <span class="n">files</span> <span class="o">=</span> <span class="n">files</span><span class="p">[</span><span class="n">matches</span><span class="p">]</span>
-
-    <span class="k">if</span> <span class="n">sorting</span> <span class="o">==</span> <span class="s2">&quot;natural&quot;</span><span class="p">:</span>
-        <span class="n">files</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">natural_sort</span><span class="p">(</span><span class="n">files</span><span class="p">))</span>
-    <span class="k">elif</span> <span class="n">sorting</span> <span class="o">==</span> <span class="s2">&quot;alphabetical&quot;</span><span class="p">:</span>
-        <span class="n">files</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">files</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">sorting</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
-        <span class="n">files</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">files</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">files</span></div>
+<span class="c1">#     if not os.path.exists(path):</span>
+<span class="c1">#         os.makedirs(path)</span>
 
 
-<div class="viewcode-block" id="natural_sort"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.natural_sort">[docs]</a><span class="k">def</span> <span class="nf">natural_sort</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Sort a list alphanumerically (natural sorting).</span>
+<span class="c1"># def listdir(path, include=None, exclude=None, full=True, sorting=None):</span>
+<span class="c1">#     if isinstance(path, (list, np.ndarray)):</span>
+<span class="c1">#         files = flatten([listdir(ff, include, exclude, full, sorting)</span>
+<span class="c1">#                         for ff in path])</span>
+<span class="c1">#         return np.array(files)</span>
+<span class="c1">#     else:</span>
+<span class="c1">#         files = os.listdir(path)</span>
+<span class="c1">#         files = np.array(files)</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    l : list or np.ndarray</span>
-<span class="sd">        Structure to sort.</span>
+<span class="c1">#     if full:</span>
+<span class="c1">#         files = np.array([os.path.join(path, x) for x in files])</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    list or np.ndarray</span>
-<span class="sd">        Sorted list/array.</span>
+<span class="c1">#     # Include</span>
+<span class="c1">#     if isinstance(include, str):</span>
+<span class="c1">#         files = np.array([x for x in files if include in x])</span>
+<span class="c1">#     elif isinstance(include, (list, np.ndarray)):</span>
+<span class="c1">#         matches = np.array([np.array([inc in ii for ii in files])</span>
+<span class="c1">#                            for inc in include])</span>
+<span class="c1">#         matches = np.any(matches, axis=0)</span>
+<span class="c1">#         files = files[matches]</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="c1">#     # Exclude</span>
+<span class="c1">#     if isinstance(exclude, str):</span>
+<span class="c1">#         files = np.array([x for x in files if exclude not in x])</span>
+<span class="c1">#     elif isinstance(exclude, (list, np.ndarray)):</span>
+<span class="c1">#         matches = np.array([np.array([exc in ii for ii in files])</span>
+<span class="c1">#                            for exc in exclude])</span>
+<span class="c1">#         matches = np.logical_not(np.any(matches, axis=0))</span>
+<span class="c1">#         files = files[matches]</span>
 
-    <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="k">if</span> <span class="n">text</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="k">else</span> <span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+<span class="c1">#     if sorting == &#39;natural&#39;:</span>
+<span class="c1">#         files = np.array(natural_sort(files))</span>
+<span class="c1">#     elif sorting == &#39;alphabetical&#39;:</span>
+<span class="c1">#         files = np.sort(files)</span>
+<span class="c1">#     elif sorting == True:</span>
+<span class="c1">#         files = np.sort(files)</span>
 
-    <span class="k">def</span> <span class="nf">alphanum_key</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">convert</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;([0-9]+)&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">)]</span>
-
-    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">alphanum_key</span><span class="p">)</span></div>
+<span class="c1">#     return files</span>
 
 
-<div class="viewcode-block" id="match_shape"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.match_shape">[docs]</a><span class="k">def</span> <span class="nf">match_shape</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="c1"># def natural_sort(l):</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     Sort a list alphanumerically (natural sorting).</span>
+
+<span class="c1">#     Parameters</span>
+<span class="c1">#     ----------</span>
+<span class="c1">#     l : list or np.ndarray</span>
+<span class="c1">#         Structure to sort.</span>
+
+<span class="c1">#     Returns</span>
+<span class="c1">#     -------</span>
+<span class="c1">#     list or np.ndarray</span>
+<span class="c1">#         Sorted list/array.</span>
+
+<span class="c1">#     &quot;&quot;&quot;</span>
+
+<span class="c1">#     def convert(text):</span>
+<span class="c1">#         return int(text) if text.isdigit() else text.lower()</span>
+
+<span class="c1">#     def alphanum_key(key):</span>
+<span class="c1">#         return [convert(c) for c in re.split(&#39;([0-9]+)&#39;, key)]</span>
+
+<span class="c1">#     return sorted(l, key=alphanum_key)</span>
+
+
+<div class="viewcode-block" id="match_shape"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.match_shape">[docs]</a><span class="k">def</span> <span class="nf">match_shape</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    Parameters</span>
@@ -530,113 +623,120 @@
 <span class="sd">    t : Dimensions to pad/trim to, must be a list or tuple</span>
 <span class="sd">    side : One of &#39;both&#39;, &#39;before&#39;, and &#39;after&#39;</span>
 <span class="sd">    val : value to pad with</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    b : np.ndarray</span>
+<span class="sd">        The padded array</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">!=</span> <span class="n">a</span><span class="o">.</span><span class="n">ndim</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="s2">&quot;t shape must have the same number of dimensions as the input&quot;</span>
+                <span class="s1">&#39;t shape must have the same number of dimensions as the input&#39;</span>
             <span class="p">)</span>
     <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;t must be array-like&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;t must be array-like&#39;</span><span class="p">)</span>
 
     <span class="k">try</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">complex</span><span class="p">)):</span>
             <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="o">*</span> <span class="n">val</span>
-        <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span>
             <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="s2">&quot;mean&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="s1">&#39;mean&#39;</span><span class="p">:</span>
             <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="s2">&quot;median&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="s1">&#39;median&#39;</span><span class="p">:</span>
             <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="s2">&quot;min&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="s1">&#39;min&#39;</span><span class="p">:</span>
             <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Pad value must be numeric or string&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Pad value must be numeric or string&#39;</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Pad value must be scalar or valid string&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Pad value must be scalar or valid string&#39;</span><span class="p">)</span>
 
     <span class="n">aind</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)]</span> <span class="o">*</span> <span class="n">a</span><span class="o">.</span><span class="n">ndim</span>
     <span class="n">bind</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)]</span> <span class="o">*</span> <span class="n">a</span><span class="o">.</span><span class="n">ndim</span>
 
     <span class="c1"># pad/trim comes after the array in each dimension</span>
-    <span class="k">if</span> <span class="n">side</span> <span class="o">==</span> <span class="s2">&quot;after&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">side</span> <span class="o">==</span> <span class="s1">&#39;after&#39;</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">dd</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">ndim</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">t</span><span class="p">[</span><span class="n">dd</span><span class="p">]:</span>
                 <span class="n">aind</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="n">dd</span><span class="p">])</span>
             <span class="k">elif</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">t</span><span class="p">[</span><span class="n">dd</span><span class="p">]:</span>
                 <span class="n">bind</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dd</span><span class="p">])</span>
     <span class="c1"># pad/trim comes before the array in each dimension</span>
-    <span class="k">elif</span> <span class="n">side</span> <span class="o">==</span> <span class="s2">&quot;before&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">side</span> <span class="o">==</span> <span class="s1">&#39;before&#39;</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">dd</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">ndim</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">t</span><span class="p">[</span><span class="n">dd</span><span class="p">]:</span>
                 <span class="n">aind</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="n">dd</span><span class="p">]),</span> <span class="kc">None</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">t</span><span class="p">[</span><span class="n">dd</span><span class="p">]:</span>
                 <span class="n">bind</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">-</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dd</span><span class="p">]),</span> <span class="kc">None</span><span class="p">)</span>
     <span class="c1"># pad/trim both sides of the array in each dimension</span>
-    <span class="k">elif</span> <span class="n">side</span> <span class="o">==</span> <span class="s2">&quot;both&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">side</span> <span class="o">==</span> <span class="s1">&#39;both&#39;</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">dd</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">ndim</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">t</span><span class="p">[</span><span class="n">dd</span><span class="p">]:</span>
                 <span class="n">diff</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="n">dd</span><span class="p">])</span> <span class="o">/</span> <span class="mf">2.0</span>
-                <span class="n">aind</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">diff</span><span class="p">)),</span> <span class="nb">int</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">diff</span><span class="p">)))</span>
+                <span class="n">aind</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">diff</span><span class="p">)),</span> <span class="nb">int</span><span class="p">(</span>
+                    <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">diff</span><span class="p">)))</span>
             <span class="k">elif</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">t</span><span class="p">[</span><span class="n">dd</span><span class="p">]:</span>
                 <span class="n">diff</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">-</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dd</span><span class="p">])</span> <span class="o">/</span> <span class="mf">2.0</span>
-                <span class="n">bind</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">diff</span><span class="p">)),</span> <span class="nb">int</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">diff</span><span class="p">)))</span>
+                <span class="n">bind</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">diff</span><span class="p">)),</span>
+                                 <span class="nb">int</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">dd</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">diff</span><span class="p">)))</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Invalid choice of pad type: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">side</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Invalid choice of pad type: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">side</span><span class="p">)</span>
 
     <span class="n">b</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">bind</span><span class="p">)]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">aind</span><span class="p">)]</span>
 
     <span class="k">return</span> <span class="n">b</span></div>
 
 
-<div class="viewcode-block" id="intensity_projection_series_all"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.intensity_projection_series_all">[docs]</a><span class="k">def</span> <span class="nf">intensity_projection_series_all</span><span class="p">(</span><span class="n">infiles</span><span class="p">,</span> <span class="n">outname</span><span class="p">,</span> <span class="n">fct</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">):</span>
-    <span class="kn">import</span> <span class="nn">tifffile</span> <span class="k">as</span> <span class="nn">tiff</span>
-    <span class="kn">from</span> <span class="nn">pystackreg</span> <span class="kn">import</span> <span class="n">StackReg</span>
-    <span class="kn">from</span> <span class="nn">skimage.transform</span> <span class="kn">import</span> <span class="n">warp</span>
+<span class="c1"># def intensity_projection_series_all(infiles, outname, fct=np.max, normalize=&#39;all&#39;):</span>
+<span class="c1">#     import tifffile as tiff</span>
+<span class="c1">#     from pystackreg import StackReg</span>
+<span class="c1">#     from skimage.transform import warp</span>
+<span class="c1">#     import phenotastic.file_processing as fp</span>
 
-    <span class="kn">import</span> <span class="nn">phenotastic.file_processing</span> <span class="k">as</span> <span class="nn">fp</span>
+<span class="c1">#     fdata = [fp.tiffload(x).data for x in infiles]</span>
+<span class="c1">#     shapes = [x.shape for x in fdata]</span>
+<span class="c1">#     max_dim = np.max(shapes)</span>
+<span class="c1">#     nchannels = fdata[0].shape[1]</span>
+<span class="c1">#     ntp = len(fdata)</span>
 
-    <span class="n">fdata</span> <span class="o">=</span> <span class="p">[</span><span class="n">fp</span><span class="o">.</span><span class="n">tiffload</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">data</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">infiles</span><span class="p">]</span>
-    <span class="n">shapes</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">fdata</span><span class="p">]</span>
-    <span class="n">max_dim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">shapes</span><span class="p">)</span>
-    <span class="n">nchannels</span> <span class="o">=</span> <span class="n">fdata</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">ntp</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">fdata</span><span class="p">)</span>
+<span class="c1">#     sr = StackReg(StackReg.RIGID_BODY)</span>
+<span class="c1">#     stack = np.zeros((nchannels, max_dim * ntp, 3 * max_dim))</span>
+<span class="c1">#     for chan in range(nchannels):</span>
+<span class="c1">#         cstack = np.zeros((3, max_dim * ntp, max_dim))</span>
+<span class="c1">#         for dim in range(3):</span>
+<span class="c1">#             cdstack = np.zeros((ntp, max_dim, max_dim))</span>
+<span class="c1">#             for tp in range(len(fdata)):</span>
+<span class="c1">#                 one_proj = np.max(fdata[tp][:, chan], axis=dim)</span>
+<span class="c1">#                 one_proj = match_shape(one_proj, (max_dim, max_dim))</span>
+<span class="c1">#                 cdstack[tp] = one_proj</span>
+<span class="c1">#             tmats = sr.register_stack(cdstack, moving_average=ntp)</span>
+<span class="c1">#             for ii in range(len(tmats)):</span>
+<span class="c1">#                 cdstack[ii] = warp(cdstack[ii], tmats[ii], preserve_range=True)</span>
+<span class="c1">#             cdstack = np.vstack(cdstack)</span>
+<span class="c1">#             cstack[dim] = cdstack</span>
 
-    <span class="n">sr</span> <span class="o">=</span> <span class="n">StackReg</span><span class="p">(</span><span class="n">StackReg</span><span class="o">.</span><span class="n">RIGID_BODY</span><span class="p">)</span>
-    <span class="n">stack</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nchannels</span><span class="p">,</span> <span class="n">max_dim</span> <span class="o">*</span> <span class="n">ntp</span><span class="p">,</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">max_dim</span><span class="p">))</span>
-    <span class="k">for</span> <span class="n">chan</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nchannels</span><span class="p">):</span>
-        <span class="n">cstack</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="n">max_dim</span> <span class="o">*</span> <span class="n">ntp</span><span class="p">,</span> <span class="n">max_dim</span><span class="p">))</span>
-        <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
-            <span class="n">cdstack</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">ntp</span><span class="p">,</span> <span class="n">max_dim</span><span class="p">,</span> <span class="n">max_dim</span><span class="p">))</span>
-            <span class="k">for</span> <span class="n">tp</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">fdata</span><span class="p">)):</span>
-                <span class="n">one_proj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">fdata</span><span class="p">[</span><span class="n">tp</span><span class="p">][:,</span> <span class="n">chan</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span>
-                <span class="n">one_proj</span> <span class="o">=</span> <span class="n">match_shape</span><span class="p">(</span><span class="n">one_proj</span><span class="p">,</span> <span class="p">(</span><span class="n">max_dim</span><span class="p">,</span> <span class="n">max_dim</span><span class="p">))</span>
-                <span class="n">cdstack</span><span class="p">[</span><span class="n">tp</span><span class="p">]</span> <span class="o">=</span> <span class="n">one_proj</span>
-            <span class="n">tmats</span> <span class="o">=</span> <span class="n">sr</span><span class="o">.</span><span class="n">register_stack</span><span class="p">(</span><span class="n">cdstack</span><span class="p">,</span> <span class="n">moving_average</span><span class="o">=</span><span class="n">ntp</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tmats</span><span class="p">)):</span>
-                <span class="n">cdstack</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">warp</span><span class="p">(</span><span class="n">cdstack</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">tmats</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">preserve_range</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">cdstack</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">cdstack</span><span class="p">)</span>
-            <span class="n">cstack</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">cdstack</span>
+<span class="c1">#         if normalize == &#39;all&#39;:</span>
+<span class="c1">#             cstack /= np.max(cstack)</span>
+<span class="c1">#         elif normalize == &#39;first&#39;:</span>
+<span class="c1">#             cstack /= np.max(cstack[0])</span>
 
-        <span class="k">if</span> <span class="n">normalize</span> <span class="o">==</span> <span class="s2">&quot;all&quot;</span><span class="p">:</span>
-            <span class="n">cstack</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">cstack</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">normalize</span> <span class="o">==</span> <span class="s2">&quot;first&quot;</span><span class="p">:</span>
-            <span class="n">cstack</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">cstack</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="c1">#         cstack = np.hstack(cstack)</span>
+<span class="c1">#         stack[chan] = cstack</span>
 
-        <span class="n">cstack</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">cstack</span><span class="p">)</span>
-        <span class="n">stack</span><span class="p">[</span><span class="n">chan</span><span class="p">]</span> <span class="o">=</span> <span class="n">cstack</span>
-
-    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
-    <span class="n">out</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-    <span class="c1"># TODO: Save as png instead</span>
-    <span class="n">tiff</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">outname</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span></div>
+<span class="c1">#     out = np.hstack(stack)</span>
+<span class="c1">#     out = out.astype(np.float32)</span>
+<span class="c1">#     # TODO: Save as png instead</span>
+<span class="c1">#     tiff.imsave(outname, out)</span>
 
 
 <div class="viewcode-block" id="mode"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.mode">[docs]</a><span class="k">def</span> <span class="nf">mode</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the mode of a sequence of values. Returns nan if sequence too short.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="car2sph"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.car2sph">[docs]</a><span class="k">def</span> <span class="nf">car2sph</span><span class="p">(</span><span class="n">xyz</span><span class="p">):</span>
@@ -692,7 +792,24 @@
 
 
 <div class="viewcode-block" id="to_uint8"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.to_uint8">[docs]</a><span class="k">def</span> <span class="nf">to_uint8</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert image to uint8 format.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : np.ndarray</span>
+<span class="sd">        The input image.</span>
+<span class="sd">    normalize : bool, optional</span>
+<span class="sd">        Normalise values to be in the range [0, 255]. The default is True. If False</span>
+<span class="sd">        values are just scaled proportionally.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    data : np.ndarray</span>
+<span class="sd">        The output image</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">normalize</span><span class="p">:</span>
         <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">data</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">data</span><span class="p">))</span> <span class="o">*</span> <span class="mi">255</span>
     <span class="k">else</span><span class="p">:</span>
@@ -702,6 +819,7 @@
 
 
 <div class="viewcode-block" id="matching_rows"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.matching_rows">[docs]</a><span class="k">def</span> <span class="nf">matching_rows</span><span class="p">(</span><span class="n">array1</span><span class="p">,</span> <span class="n">array2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find matching rows in a 2D array. &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
         <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">((</span><span class="n">array1</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:]</span> <span class="o">==</span> <span class="n">array2</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()</span>
     <span class="p">)</span><span class="o">.</span><span class="n">T</span></div>
@@ -709,34 +827,44 @@
 
 <div class="viewcode-block" id="rand_cmap"><a class="viewcode-back" href="../../phenotastic.html#phenotastic.misc.rand_cmap">[docs]</a><span class="k">def</span> <span class="nf">rand_cmap</span><span class="p">(</span>
     <span class="n">nlabels</span><span class="p">,</span>
-    <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;bright&quot;</span><span class="p">,</span>
+    <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;bright&#39;</span><span class="p">,</span>
     <span class="n">first_color_black</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">last_color_black</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Creates a random colormap to be used together with matplotlib. Useful for segmentation tasks</span>
-<span class="sd">    :param nlabels: Number of labels (size of colormap)</span>
-<span class="sd">    :param type: &#39;bright&#39; for strong colors, &#39;soft&#39; for pastel colors</span>
-<span class="sd">    :param first_color_black: Option to use first color as black, True or False</span>
-<span class="sd">    :param last_color_black: Option to use last color as black, True or False</span>
-<span class="sd">    :param verbose: Prints the number of labels and shows the colormap. True or False</span>
-<span class="sd">    :return: colormap for matplotlib</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    nlabels: int</span>
+<span class="sd">        Number of labels (size of colormap)</span>
+<span class="sd">    type: str, optional</span>
+<span class="sd">        &#39;bright&#39; for strong colors, &#39;soft&#39; for pastel colors. Defaults to &#39;soft&#39;.</span>
+<span class="sd">    first_color_black: bool, optional</span>
+<span class="sd">        Option to use first color as black. Defaults to True.</span>
+<span class="sd">    last_color_black: bool, optional</span>
+<span class="sd">        Option to use last color as black. Defaults to False.</span>
+<span class="sd">    verbose: bool, optional</span>
+<span class="sd">        Prints the number of labels and shows the colormap. Defaults to False</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    random_colormap : matplotlib.colors.LinearSegmentedColormap</span>
+<span class="sd">        Colormap for matplotlib</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">import</span> <span class="nn">colorsys</span>
-
-    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
     <span class="kn">from</span> <span class="nn">matplotlib.colors</span> <span class="kn">import</span> <span class="n">LinearSegmentedColormap</span>
 
-    <span class="k">if</span> <span class="nb">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;bright&quot;</span><span class="p">,</span> <span class="s2">&quot;soft&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;bright&#39;</span><span class="p">,</span> <span class="s1">&#39;soft&#39;</span><span class="p">):</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Please choose &quot;bright&quot; or &quot;soft&quot; for type&#39;</span><span class="p">)</span>
         <span class="k">return</span>
 
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of labels: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nlabels</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of labels: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nlabels</span><span class="p">))</span>
 
     <span class="c1"># Generate color map for bright colors, based on hsv</span>
-    <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;bright&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;bright&#39;</span><span class="p">:</span>
         <span class="n">randHSVcolors</span> <span class="o">=</span> <span class="p">[</span>
             <span class="p">(</span>
                 <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
@@ -760,11 +888,11 @@
             <span class="n">randRGBcolors</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
 
         <span class="n">random_colormap</span> <span class="o">=</span> <span class="n">LinearSegmentedColormap</span><span class="o">.</span><span class="n">from_list</span><span class="p">(</span>
-            <span class="s2">&quot;new_map&quot;</span><span class="p">,</span> <span class="n">randRGBcolors</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="n">nlabels</span>
+            <span class="s1">&#39;new_map&#39;</span><span class="p">,</span> <span class="n">randRGBcolors</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="n">nlabels</span>
         <span class="p">)</span>
 
     <span class="c1"># Generate soft pastel colors, by limiting the RGB spectrum</span>
-    <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;soft&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;soft&#39;</span><span class="p">:</span>
         <span class="n">low</span> <span class="o">=</span> <span class="mf">0.6</span>
         <span class="n">high</span> <span class="o">=</span> <span class="mf">0.95</span>
         <span class="n">randRGBcolors</span> <span class="o">=</span> <span class="p">[</span>
@@ -782,7 +910,7 @@
         <span class="k">if</span> <span class="n">last_color_black</span><span class="p">:</span>
             <span class="n">randRGBcolors</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
         <span class="n">random_colormap</span> <span class="o">=</span> <span class="n">LinearSegmentedColormap</span><span class="o">.</span><span class="n">from_list</span><span class="p">(</span>
-            <span class="s2">&quot;new_map&quot;</span><span class="p">,</span> <span class="n">randRGBcolors</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="n">nlabels</span>
+            <span class="s1">&#39;new_map&#39;</span><span class="p">,</span> <span class="n">randRGBcolors</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="n">nlabels</span>
         <span class="p">)</span>
 
     <span class="c1"># Display colorbar</span>
@@ -799,11 +927,11 @@
             <span class="n">ax</span><span class="p">,</span>
             <span class="n">cmap</span><span class="o">=</span><span class="n">random_colormap</span><span class="p">,</span>
             <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">,</span>
-            <span class="n">spacing</span><span class="o">=</span><span class="s2">&quot;proportional&quot;</span><span class="p">,</span>
+            <span class="n">spacing</span><span class="o">=</span><span class="s1">&#39;proportional&#39;</span><span class="p">,</span>
             <span class="n">ticks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">boundaries</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
-            <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%1i</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="n">orientation</span><span class="o">=</span><span class="s2">&quot;horizontal&quot;</span><span class="p">,</span>
+            <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%1i</span><span class="s1">&#39;</span><span class="p">,</span>
+            <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;horizontal&#39;</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">random_colormap</span></div>

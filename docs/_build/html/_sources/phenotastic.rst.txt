@@ -28,14 +28,6 @@ phenotastic.misc module
    :undoc-members:
    :show-inheritance:
 
-phenotastic.plot module
------------------------
-
-.. automodule:: phenotastic.plot
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 Module contents
 ---------------
 

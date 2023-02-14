@@ -1,5 +1,5 @@
 Welcome to Phenotastic's documentation!
-======================================
+=======================================
 
 .. toctree::
    :maxdepth: 2

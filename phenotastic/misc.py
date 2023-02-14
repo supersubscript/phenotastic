@@ -1,7 +1,6 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
-"""
-Created on Tue May 29 20:00:11 2018
+"""Created on Tue May 29 20:00:11 2018.
 
 @author: henrik
 """
@@ -9,22 +8,18 @@ Created on Tue May 29 20:00:11 2018
 import math
 
 import numpy as np
-from itertools import from_iterable
 
 
 def cut(img, cuts):
     """Slice 3D image with supplied cuts."""
     # TODO this should be written for nD with advanced slicing comprehension
     return img[
-        cuts[0, 0]: cuts[0, 1],
-        cuts[1, 0]: cuts[1, 1],
-        cuts[2, 0]: cuts[2, 1]
+        cuts[0, 0] : cuts[0, 1], cuts[1, 0] : cuts[1, 1], cuts[2, 0] : cuts[2, 1]
     ]
 
 
 def merge(lists):
-    """
-    Merge lists based on overlapping elements.
+    """Merge lists based on overlapping elements.
 
     Parameters
     ----------
@@ -35,7 +30,6 @@ def merge(lists):
     -------
     sets : list
         Minimal list of independent sets.
-
     """
     sets = [set(lst) for lst in lists if lst]
     merged = 1
@@ -57,14 +51,15 @@ def merge(lists):
 
 
 def flatten(arr: list[int]) -> list[int]:
-    """ Flatten an arbitrarily nested iterable """
-    return list(from_iterable(arr))
+    """Flatten an arbitrarily nested iterable."""
+    import itertools
+
+    return list(itertools.chain.from_iterable(arr))
 
 
 def remove_empty_slices(arr, keepaxis=0):
-    """Remove empty slices (based on the total signal) in an ndarray"""
-    not_empty = np.sum(arr, axis=tuple(
-        np.delete(list(range(arr.ndim)), keepaxis))) > 0
+    """Remove empty slices (based on the total signal) in an ndarray."""
+    not_empty = np.sum(arr, axis=tuple(np.delete(list(range(arr.ndim)), keepaxis))) > 0
     arr = arr[not_empty]
     return arr
 
@@ -85,7 +80,6 @@ def reject_outliers(data, n=2.0):
     -------
     filtered_data : bool, np.array
         Data within the specified range.
-
     """
     d = np.abs(data - np.median(data))
     mdev = np.median(d)
@@ -95,14 +89,14 @@ def reject_outliers(data, n=2.0):
 
 
 def angle(v1, v2, acute=False):
-    """ Compute the angle (in radians) between two vectors. """
-    angle = np.arccos(
-        np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
+    """Compute the angle (in radians) between two vectors."""
+    angle = np.arccos(np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
     return angle if acute else 2 * np.pi - angle
 
 
 def angle_difference(ang1, ang2, period=360):
-    """Return the smallest angle difference on a template with periodic boundary conditions.
+    """Return the smallest angle difference on a template with periodic
+    boundary conditions.
 
     Parameters
     ----------
@@ -115,27 +109,25 @@ def angle_difference(ang1, ang2, period=360):
     -------
     angs : np.array of floats
         The smallest angles.
-
     """
     difference = np.subtract(ang1, ang2)
     angs = np.array(
-        [np.abs(np.mod(difference, period)),
-         np.abs(np.mod(difference, -period))]
+        [np.abs(np.mod(difference, period)), np.abs(np.mod(difference, -period))]
     )
     angs = np.min(angs, axis=0)
     return angs
 
 
 def divergence_angles(angles, period=360):
-    """Divergence angles between an ordered list of angles"""
+    """Divergence angles between an ordered list of angles."""
     div_angs = angle_difference(angles, np.roll(angles, 1), period=period)[1:]
 
     return div_angs
 
 
 def paraboloid(x, y, p):
-    """Return the z-value for a non-rotated paraboloid given input xy-coordinates and
-    parameters. Translations are permitted in x, y, and z.
+    """Return the z-value for a non-rotated paraboloid given input xy-
+    coordinates and parameters. Translations are permitted in x, y, and z.
 
     Parameters
     ----------
@@ -168,7 +160,6 @@ def get_max_contrast_colours(n=64):
     -------
     rgbs : list
         List of colours (RGB) up to a certain n that maximise contrast.
-
     """
     rgbs = [
         [0, 0, 0],
@@ -240,12 +231,8 @@ def get_max_contrast_colours(n=64):
 
 
 def prime_sieve(n, output={}):
-    """
-    Return a dict or a list of primes up to N create full prime sieve for
-    N=10^6 in 1 sec
-
-    """
-
+    """Return a dict or a list of primes up to N create full prime sieve for
+    N=10^6 in 1 sec."""
     nroot = int(math.sqrt(n))
     sieve = list(range(n + 1))
     sieve[1] = 0
@@ -253,7 +240,7 @@ def prime_sieve(n, output={}):
     for i in range(2, nroot + 1):
         if sieve[i] != 0:
             m = n / i - i
-            sieve[i * i: n + 1: i] = [0] * (m + 1)
+            sieve[i * i : n + 1 : i] = [0] * (m + 1)
 
     if type(output) == dict:
         pmap = {}
@@ -268,14 +255,12 @@ def prime_sieve(n, output={}):
 
 
 def get_factors(n, primelist=None):
-    """
-    Get a list of all factors for N.
+    """Get a list of all factors for N.
 
     Example
     -------
     >>> get_factors(10)
     >>> Out[1]: [1, 2, 5, 10]
-
     """
     if primelist is None:
         primelist = prime_sieve(n, output=[])
@@ -309,7 +294,6 @@ def get_prime_factors(n, primelist=None):
     -------
     >>> get_prime_factors(140) # 140 = 2^2 * 5^1 * 7^1
     >>> Out[1]: [(2, 2), (5, 1), (7, 1)]
-
     """
     if primelist is None:
         primelist = prime_sieve(n, output=[])
@@ -378,9 +362,10 @@ def get_prime_factors(n, primelist=None):
 #     else:
 #         return arr
 
+
 def coord_array(arr, res=(1, 1, 1), offset=(0, 0, 0)):
-    """
-    Create a coordinate array (of e.g. same dimensionality as intensity array) of the same dimensions as another array. Only defined for 3D.
+    """Create a coordinate array (of e.g. same dimensionality as intensity
+    array) of the same dimensions as another array. Only defined for 3D.
 
     Parameters
     ----------
@@ -400,7 +385,6 @@ def coord_array(arr, res=(1, 1, 1), offset=(0, 0, 0)):
     coords : np.ndarray
         Vertically stacked coordinate array for the input data.
     """
-
     xv = offset[0] + np.arange(0, arr.shape[0] * res[0] - 0.000001, res[0])
     yv = offset[1] + np.arange(0, arr.shape[1] * res[1] - 0.000001, res[1])
     zv = offset[2] + np.arange(0, arr.shape[2] * res[2] - 0.000001, res[2])
@@ -453,14 +437,11 @@ def rot_matrix_44(angles, invert=False):
 
 
 def rotate(coord, angles, invert=False):
+    """Rotate given coordinates by specified angles.
+
+    Use rotation matrices to rotate a list of coordinates around the x,
+    y, z axis by specified angles alpha, beta, gamma.
     """
-    Rotate given coordinates by specified angles.
-
-    Use rotation matrices to rotate a list of coordinates around the x, y, z axis
-    by specified angles alpha, beta, gamma.
-
-    """
-
     alpha, beta, gamma = angles
     xyz = np.zeros(np.shape(coord))
     Rx = np.array(
@@ -471,8 +452,7 @@ def rotate(coord, angles, invert=False):
         ]
     )
     Ry = np.array(
-        [[np.cos(beta), 0, np.sin(beta)], [0, 1, 0],
-         [-np.sin(beta), 0, np.cos(beta)]]
+        [[np.cos(beta), 0, np.sin(beta)], [0, 1, 0], [-np.sin(beta), 0, np.cos(beta)]]
     )
     Rz = np.array(
         [
@@ -576,7 +556,7 @@ def rotate(coord, angles, invert=False):
 #     return sorted(l, key=alphanum_key)
 
 
-def match_shape(a, t, side='both', val=0):
+def match_shape(a, t, side="both", val=0):
     """
 
     Parameters
@@ -595,57 +575,55 @@ def match_shape(a, t, side='both', val=0):
     try:
         if len(t) != a.ndim:
             raise TypeError(
-                't shape must have the same number of dimensions as the input'
+                "t shape must have the same number of dimensions as the input"
             )
     except TypeError:
-        raise TypeError('t must be array-like')
+        raise TypeError("t must be array-like")
 
     try:
         if isinstance(val, (int, float, complex)):
             b = np.ones(t, a.dtype) * val
-        elif val == 'max':
+        elif val == "max":
             b = np.ones(t, a.dtype) * np.max(a)
-        elif val == 'mean':
+        elif val == "mean":
             b = np.ones(t, a.dtype) * np.mean(a)
-        elif val == 'median':
+        elif val == "median":
             b = np.ones(t, a.dtype) * np.median(a)
-        elif val == 'min':
+        elif val == "min":
             b = np.ones(t, a.dtype) * np.min(a)
     except TypeError:
-        raise TypeError('Pad value must be numeric or string')
+        raise TypeError("Pad value must be numeric or string")
     except ValueError:
-        raise ValueError('Pad value must be scalar or valid string')
+        raise ValueError("Pad value must be scalar or valid string")
 
     aind = [slice(None, None)] * a.ndim
     bind = [slice(None, None)] * a.ndim
 
     # pad/trim comes after the array in each dimension
-    if side == 'after':
+    if side == "after":
         for dd in range(a.ndim):
             if a.shape[dd] > t[dd]:
                 aind[dd] = slice(None, t[dd])
             elif a.shape[dd] < t[dd]:
                 bind[dd] = slice(None, a.shape[dd])
     # pad/trim comes before the array in each dimension
-    elif side == 'before':
+    elif side == "before":
         for dd in range(a.ndim):
             if a.shape[dd] > t[dd]:
                 aind[dd] = slice(int(a.shape[dd] - t[dd]), None)
             elif a.shape[dd] < t[dd]:
                 bind[dd] = slice(int(t[dd] - a.shape[dd]), None)
     # pad/trim both sides of the array in each dimension
-    elif side == 'both':
+    elif side == "both":
         for dd in range(a.ndim):
             if a.shape[dd] > t[dd]:
                 diff = (a.shape[dd] - t[dd]) / 2.0
-                aind[dd] = slice(int(np.floor(diff)), int(
-                    a.shape[dd] - np.ceil(diff)))
+                aind[dd] = slice(int(np.floor(diff)), int(a.shape[dd] - np.ceil(diff)))
             elif a.shape[dd] < t[dd]:
                 diff = (t[dd] - a.shape[dd]) / 2.0
-                bind[dd] = slice(int(np.floor(diff)),
-                                 int(t[dd] - np.ceil(diff)))
+                bind[dd] = slice(int(np.floor(diff)), int(t[dd] - np.ceil(diff)))
     else:
-        raise Exception('Invalid choice of pad type: %s' % side)
+        raise Exception("Invalid choice of pad type: %s" % side)
 
     b[tuple(bind)] = a[tuple(aind)]
 
@@ -695,15 +673,17 @@ def match_shape(a, t, side='both', val=0):
 
 
 def mode(x):
-    """Compute the mode of a sequence of values. Returns nan if sequence too short."""
+    """Compute the mode of a sequence of values.
+
+    Returns nan if sequence too short.
+    """
     if len(x) < 1:
         return np.nan
     return max(list(x), key=list(x).count)
 
 
 def car2sph(xyz):
-    """
-    Convert cartesian coordinates into spherical coordinates.
+    """Convert cartesian coordinates into spherical coordinates.
 
     Convert a list of cartesian coordinates x, y, z to spherical coordinates
     r, theta, phi. theta is defined as 0 along z-axis.
@@ -714,8 +694,6 @@ def car2sph(xyz):
 
     Returns
     -------
-
-
     """
     x = xyz[:, 0]
     y = xyz[:, 1]
@@ -730,8 +708,7 @@ def car2sph(xyz):
 
 
 def sph2car(rtp):
-    """
-    Convert spherical coordinates into cartesian coordinates.
+    """Convert spherical coordinates into cartesian coordinates.
 
     Convert a list of spherical coordinates r, theta, phi to cartesian coordinates
     x, y, z. Theta is defined as 0 along z-axis.
@@ -743,8 +720,6 @@ def sph2car(rtp):
 
     Returns
     -------
-
-
     """
     xyz = np.zeros(rtp.shape)
     xyz[:, 0] = rtp[:, 0] * np.sin(rtp[:, 1]) * np.cos(rtp[:, 2])
@@ -754,8 +729,7 @@ def sph2car(rtp):
 
 
 def to_uint8(data, normalize=True):
-    """
-    Convert image to uint8 format.
+    """Convert image to uint8 format.
 
     Parameters
     ----------
@@ -769,7 +743,6 @@ def to_uint8(data, normalize=True):
     -------
     data : np.ndarray
         The output image
-
     """
     data = data.astype(float)
     if normalize:
@@ -781,7 +754,7 @@ def to_uint8(data, normalize=True):
 
 
 def matching_rows(array1, array2):
-    """Find matching rows in a 2D array. """
+    """Find matching rows in a 2D array."""
     return np.array(
         np.all((array1[:, None, :] == array2[None, :, :]), axis=-1).nonzero()
     ).T
@@ -789,13 +762,13 @@ def matching_rows(array1, array2):
 
 def rand_cmap(
     nlabels,
-    type='bright',
+    type="bright",
     first_color_black=True,
     last_color_black=False,
     verbose=False,
 ):
-    """
-    Creates a random colormap to be used together with matplotlib. Useful for segmentation tasks
+    """Creates a random colormap to be used together with matplotlib. Useful
+    for segmentation tasks.
 
     Parameters
     ----------
@@ -816,17 +789,18 @@ def rand_cmap(
         Colormap for matplotlib
     """
     import colorsys
+
     from matplotlib.colors import LinearSegmentedColormap
 
-    if type not in ('bright', 'soft'):
+    if type not in ("bright", "soft"):
         print('Please choose "bright" or "soft" for type')
         return
 
     if verbose:
-        print('Number of labels: ' + str(nlabels))
+        print("Number of labels: " + str(nlabels))
 
     # Generate color map for bright colors, based on hsv
-    if type == 'bright':
+    if type == "bright":
         randHSVcolors = [
             (
                 np.random.uniform(low=0.0, high=1),
@@ -850,11 +824,11 @@ def rand_cmap(
             randRGBcolors[-1] = [0, 0, 0]
 
         random_colormap = LinearSegmentedColormap.from_list(
-            'new_map', randRGBcolors, N=nlabels
+            "new_map", randRGBcolors, N=nlabels
         )
 
     # Generate soft pastel colors, by limiting the RGB spectrum
-    if type == 'soft':
+    if type == "soft":
         low = 0.6
         high = 0.95
         randRGBcolors = [
@@ -872,7 +846,7 @@ def rand_cmap(
         if last_color_black:
             randRGBcolors[-1] = [0, 0, 0]
         random_colormap = LinearSegmentedColormap.from_list(
-            'new_map', randRGBcolors, N=nlabels
+            "new_map", randRGBcolors, N=nlabels
         )
 
     # Display colorbar
@@ -889,11 +863,11 @@ def rand_cmap(
             ax,
             cmap=random_colormap,
             norm=norm,
-            spacing='proportional',
+            spacing="proportional",
             ticks=None,
             boundaries=bounds,
-            format='%1i',
-            orientation='horizontal',
+            format="%1i",
+            orientation="horizontal",
         )
 
     return random_colormap

@@ -50,8 +50,8 @@ master_doc = "index"
 
 # General information about the project.
 project = "Phenotastic"
-copyright = "2018, Henrik Ahl"
-author = "Henrik Ahl"
+copyright = "2013, Henrik Åhl"
+author = "Henrik Åhl"
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -132,7 +132,7 @@ latex_documents = [
         master_doc,
         "phenotastic.tex",
         "Phenotastic Documentation",
-        "Henrik Ahl",
+        "Henrik Åhl",
         "manual",
     ),
 ]

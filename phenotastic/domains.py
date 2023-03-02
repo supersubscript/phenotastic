@@ -12,6 +12,7 @@ import pandas as pd
 import pyvista
 import scipy
 from imgmisc import flatten, merge
+from loguru import logger
 
 import phenotastic.mesh as mp
 
@@ -88,8 +89,8 @@ def steepest_ascent(mesh, scalars, neighbours=None, verbose=False):
     output = np.zeros(mesh.n_points, int)
     for ii, domain_members in enumerate(domains):
         output[domain_members] = ii
-    if verbose:
-        print(f"Found {len(domains)} domains")
+
+    logger.info(f"Found {len(domains)} domains")
 
     return output
 
@@ -211,10 +212,11 @@ def merge_angles(
         changed = True if len(domain_labels) < len(np.unique(new_domains)) else False
 
     # Set domain values
-    if verbose:
-        n_domains_new = len(np.unique(new_domains))
-        print(f"Merging {n_domains_initial} domains to {n_domains_new}.")
+    n_domains_new = len(np.unique(new_domains))
+    logger.info(f"Merging {n_domains_initial} domains to {n_domains_new}.")
+
     output = domains
+
     return output
 
 
@@ -299,8 +301,7 @@ def merge_distance(
     groups = np.array([np.array(list(ii)) for ii in groups])
 
     # Merge domains
-    if verbose:
-        print("Merging {} domains to {}.".format(n_domains_initial, len(groups)))
+    logger.info(f"Merging {n_domains_initial} domains to {len(groups)}.")
     output = relabel(domains, groups)
 
     return output
@@ -427,8 +428,7 @@ def merge_engulfing(mesh, domains, threshold=0.9, neighbours=None, verbose=False
                 domains[domains == domain] = new_domain
                 changed = True
 
-    if verbose:
-        print(f"Merging {n_domains_initial} domains to {len(np.unique(domains))}")
+    logger.info(f"Merging {n_domains_initial} domains to {len(np.unique(domains))}")
     output = np.zeros(mesh.n_points, "float")
     for new_domain, old_domain in enumerate(np.unique(domains)):
         output[domains == old_domain] = new_domain
@@ -497,12 +497,7 @@ def merge_small(
 
             domains = domains_overwrite
 
-    if verbose:
-        print(
-            "Merging {} domains to {}.".format(
-                n_domains_initial, len(np.unique(domains))
-            )
-        )
+    logger.info(f"Merging {n_domains_initial} domains to {len(np.unique(domains))}.")
     output = np.zeros(mesh.n_points, "float")
     for new_domain, old_domain in enumerate(np.unique(domains)):
         output[domains == old_domain] = new_domain
@@ -567,12 +562,7 @@ def merge_disconnected(
 
             domains = domains_overwrite
 
-    if verbose:
-        print(
-            "Merging {} domains to {}.".format(
-                n_domains_initial, len(np.unique(domains))
-            )
-        )
+    logger.info(f"Merging {n_domains_initial} domains to {len(np.unique(domains))}.")
     output = np.zeros(mesh.n_points, "float")
     for new_domain, old_domain in enumerate(np.unique(domains)):
         output[domains == old_domain] = new_domain
@@ -675,10 +665,7 @@ def merge_depth(
             break
 
     # Relabel between 0 and len(domains)
-    if verbose:
-        print(
-            f"Merging {n_domains_initial} domains to {len(np.unique(domains))} domains"
-        )
+    logger.info(f"Merging {n_domains_initial} domains to {len(np.unique(domains))}.")
     new_domains = domains.copy()
     for ii, domain in enumerate(np.unique(domains)):
         new_domains[domains == domain] = ii
@@ -749,10 +736,7 @@ def merge_border_length(mesh, domains, threshold=0.0, neighbours=None, verbose=F
             break
 
     # Relabel between 0 and len(domains)
-    if verbose:
-        print(
-            f"Merging {n_domains_initial} domains to {len(np.unique(domains))} domains"
-        )
+    logger.info(f"Merging {n_domains_initial} domains to {len(np.unique(domains))}.")
     new_domains = domains.copy()
     for ii, domain in enumerate(np.unique(domains)):
         new_domains[domains == domain] = ii

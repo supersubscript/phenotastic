@@ -1244,7 +1244,8 @@ def process_mesh(
         mesh.rotate_y(90)
         mesh = make_manifold(mesh, hole_repair_threshold)
         mesh = mesh.extract_largest()
-        mesh.clear_arrays()
+        # mesh.clear_arrays()
+        mesh.clear_data()
         mesh = correct_normal_orientation_topcut(mesh, top_cut)
 
     # Remove vertices based on whether they are "inside the contour"
@@ -1695,7 +1696,8 @@ def correct_normal_orientation_topcut(mesh, origin):
     """Correct normal orientation of a mesh by flipping normals if the sum of
     the normals is negative after having cropped off the top of the mesh."""
 
-    mesh.clear_arrays()
+    # mesh.clear_arrays()
+    mesh.clear_data()
     if mesh.clip(normal="-x", origin=origin).point_normals[:, 0].sum() > 0:
         mesh.flip_normals()
     return mesh

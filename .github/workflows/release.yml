@@ -1,0 +1,91 @@
+# Workflow to automate versioning and upload assets whenever PRs with select commit flags are pushed to main.
+name: release
+
+on:
+  push:
+      branches:
+        - main
+  workflow_dispatch:
+
+jobs:
+  build-image-release:
+    uses: instadeepai/mlops-reusable-ci/.github/workflows/docker-build.yaml@main
+    with:
+      job-runner: instadeep-ci
+      image: ghcr.io/instadeepai/seqly/seqly_release
+      cache-image: ghcr.io/instadeepai/seqly/seqly_release/cache
+      main-branch: main
+      build-path: .
+      filename: "Dockerfile"
+      target: "seqly_release"
+      registry-host: ghcr.io
+      registry-username: instadeepai
+      dockerhub-username: ${{ vars.DOCKERHUB_USERNAME }}
+    secrets:
+      registry-password: ${{ secrets.GITHUB_TOKEN }}
+      dockerhub-password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  release:
+    needs: build-image-release
+    runs-on: "instadeep-ci"
+    container:
+      image: ghcr.io/instadeepai/seqly/seqly_release:${{ github.sha }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+    - name: checkout code 📦
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        ref: ${{ github.sha }}
+        token: ${{ secrets.RELEASE_TOKEN }}
+
+    - name: Setup | Configure user
+      run: |
+        git config --global --add safe.directory "*"
+        git config --local user.name "${{ github.actor }}"
+        git config --local user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+        git config --local push.autoSetupRemote true
+
+    - name: Setup | Force correct release branch on workflow sha
+      run: |
+        git checkout -B ${{ github.ref_name }} ${{ github.sha }}
+
+    - name: Action | Semantic Version Release
+      id: release
+      env:
+        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      run: |
+        echo "Starting semantic-release version check..."
+
+        TAG=$(semantic-release --noop version --print-tag)
+        LAST_TAG=$(semantic-release --noop version --print-last-released-tag)
+
+        echo "Current tag (calculated by semantic-release --noop): $TAG"
+        echo "Last released tag (calculated by semantic-release --noop): $LAST_TAG"
+
+        if [ "$TAG" = "$LAST_TAG" ]; then
+            echo "No release required. Latest tag ($TAG) is unchanged."
+            echo "released=false" >> $GITHUB_OUTPUT
+            exit 0
+        fi
+
+        echo "Release required. Updating version and lockfile."
+
+        echo "Push the updated version to git, create tag, create release and push to remote..."
+        uv run semantic-release version
+
+        echo "Release process completed."
+
+        echo "released=true" >> $GITHUB_OUTPUT
+        echo "tag=${TAG}" >> $GITHUB_OUTPUT
+
+    - name: Publish | Upload to GitHub Release Assets
+      if: steps.release.outputs.released == 'true'
+      env:
+        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      run: |
+        git fetch --tags
+        uv run semantic-release publish --tag "${{ steps.release.outputs.tag }}"

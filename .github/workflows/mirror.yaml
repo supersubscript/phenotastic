@@ -1,0 +1,17 @@
+name: BioNTech Mirroring
+
+on: [push, delete, workflow_dispatch]
+
+jobs:
+  call-reusable-mirror-workflow:
+    if: github.repository == 'instadeepai/seqly'
+    uses: instadeepai/mlops-reusable-ci/.github/workflows/mirror.yaml@main
+    with:
+      job-runner: instadeep-ci
+      remote-url: git@github.com:biondata/id-bioai-seqly.git
+      source-branch: refs/remotes/origin/*
+      target-branch: refs/heads/*
+      target-default-branch: main-mirror
+
+    secrets:
+      ssh_private_key: ${{ secrets.MIRROR_SSH_PRIVATE_KEY }}

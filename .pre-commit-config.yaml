@@ -1,27 +1,80 @@
+default_language_version:
+  python: python3.13
+
+default_stages: [commit]
+
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+  # Ruff - Python linting and formatting (replaces flake8, black, isort, etc.)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.4
     hooks:
-    -   id: trailing-whitespace
-    -   id: end-of-file-fixer
-    -   id: check-yaml
-      #    -   id: double-quote-string-fixer
-      #    -   id: name-tests-test
-    -   id: requirements-txt-fixer
+      - id: ruff
+        name: ruff-check
+        language_version: python3.13
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff
+        name: ruff-check-unsafe
+        args: [--fix, --unsafe-fixes]
+        stages: [manual]
+      - id: ruff-format
 
--   repo: https://github.com/psf/black
-    rev: 23.1.0
+  # UV - Fast Python package manager
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.9.9
     hooks:
-    - id: black
-      language_version: python3
+      - id: uv-lock
 
-      #- repo: https://github.com/myint/docformatter
-      #  rev: v1.6.0.rc1
-      #  hooks:
-      #  - id: docformatter
+  # Standard pre-commit hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-ast
+      - id: check-builtin-literals
+      - id: check-case-conflict
+      - id: check-docstring-first
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-yaml
+        args: [--unsafe]
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: requirements-txt-fixer
+      - id: trailing-whitespace
 
-- repo: https://github.com/pycqa/isort
-  rev: 5.12.0
-  hooks:
-    - id: isort
-      name: isort (python)
+  # Type checking with mypy
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.18.2
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-requests]
+        pass_filenames: false
+        args: [src/, tests/, --config-file, pyproject.toml]
+
+  # Jupyter notebook linting and formatting
+  - repo: https://github.com/nbQA-dev/nbQA
+    rev: 1.9.1
+    hooks:
+      - id: nbqa-ruff
+        args: [--fix, --exit-non-zero-on-fix, --config=pyproject.toml]
+      - id: nbqa-ruff-format
+        args: [--config=pyproject.toml]
+
+  # Conventional commit message enforcement
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v4.3.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: [build, chore, ci, docs, feat, fix, perf, refactor, style, test]
+
+  - repo: local
+    hooks:
+      - id: check_missing_init
+        name: check_missing_init
+        entry: "uv run --no-sync scripts/check_missing_init.py"
+        language: system
+        types_or: [python, jupyter]
+        files: "^packages/"
+        require_serial: true
+        pass_filenames: true

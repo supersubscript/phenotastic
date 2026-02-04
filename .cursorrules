@@ -1,0 +1,177 @@
+# Phenotastic Project Rules for Cursor IDE
+
+## Project Overview
+
+This is Phenotastic - a Python package for 3D plant phenotyping. It focuses on segmentation of early flower organs (primordia) from shoot apical meristems in 3D images, with emphasis on contouring 3D data, generating 2.5D meshes, and segmenting features based on mesh curvature. It is designed to work with a range of 3D imaging modalities, including confocal microscopy.
+
+## Python Code Standards
+
+### Code Style & Formatting
+
+- Follow PEP 8 conventions with 120 character line limit (as configured in ruff)
+- Use ruff for linting and auto-fixing (already configured in pyproject.toml)
+- Use mypy for type checking with strict settings
+- Prefer double quotes for strings
+- Use trailing commas in multi-line collections
+- Format imports using isort (integrated in ruff)
+- Prefer expressive variable names, e.g. `mesh_vertices` over `verts`.
+
+### Type Annotations
+
+- Always include type annotations for function parameters and return types
+- Use modern Python typing (Python 3.10+ features like `list[str]` instead of `List[str]`)
+- Import types from `typing` or collections.abc when needed, prefer built-in types when available
+
+### Scientific Computing Conventions
+
+- Use NumPy arrays with appropriate dtypes (`np.ndarray[np.float64]`, etc.)
+- Follow pandas conventions for DataFrame operations
+- Use meaningful variable names for 3D data and meshes (e.g., `mesh_vertices`, `image_stack`, `curvature_data`)
+- Document units and imaging context in docstrings
+- Handle missing/invalid image data gracefully
+
+### Package Structure
+
+- Keep the existing `phenotastic/` structure
+- New modules should go in appropriate subdirectories (`analysis/`, `domains/`, `mesh/`, `misc/`, etc.)
+- Use `__init__.py` files to control public API exposure
+- Follow the existing naming conventions for modules (`domains`, `mesh`, `misc`, `analysis`)
+
+## Code Quality
+
+### Error Handling
+
+- Use specific exception types (ValueError, TypeError, etc.)
+- Provide clear error messages with imaging/mesh context
+- Handle edge cases for empty images, invalid mesh data, missing files
+- Use logging instead of print statements for debugging
+
+### Testing
+
+- Write pytest tests for all new functionality
+- Follow the existing test structure in `tests/`
+- Use descriptive test names that explain the imaging/mesh scenario
+- Include edge cases (empty images, invalid mesh data, missing files, etc.)
+- Mark tests requiring optional dependencies appropriately
+- Aim for high test coverage (project uses pytest-cov)
+
+### Documentation
+
+- Use clear, concise, terse docstrings following Google style
+- Don't specify types in docstrings, due to using static typing
+- Include imaging/mesh context and parameter units in docstrings
+- Provide usage examples in docstrings for complex functions
+- Document expected input formats (e.g., "3D image stack as numpy array", "mesh vertices as Nx3 array")
+
+## Development Workflow
+
+### Commits & Versioning
+
+- Follow conventional commit format: `type(scope): description`
+- Use types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`
+- Breaking changes must include `BREAKING CHANGE:` in commit body
+- Semantic versioning is automated based on commit types
+
+### Dependencies
+
+- Use `uv` for package management (not pip)
+- Add new dependencies to `pyproject.toml` under appropriate sections
+- Use version constraints (`>=x.y.z,<x+1.0.0`)
+- Consider whether dependencies should be optional
+
+### Code Review
+
+- Run pre-commit hooks before committing (`uv run pre-commit run --all-files`)
+- Ensure all tests pass (`uv run pytest`)
+- Check type annotations (`uv run mypy phenotastic/`)
+- Verify code coverage meets standards
+
+## 3D Imaging and Mesh Conventions
+
+### Image Handling
+
+- Use NumPy arrays for 3D image stacks with appropriate shape conventions (z, y, x) or (depth, height, width)
+- Validate image dimensions and data types before processing
+- Handle different image formats (TIFF, CZI, etc.) consistently
+- Use appropriate data types (uint8, uint16, float32) for different image modalities
+
+### Mesh and Geometry Naming
+
+- Use descriptive names for mesh operations (e.g., `mesh_curvature`, `vertex_normals`, `surface_area`)
+- Group related mesh/geometry operations in appropriate modules
+- Follow the existing pattern for mesh computation methods
+- Return appropriate data structures (numpy arrays, PyVista objects) for mesh data
+
+### Performance
+
+- Use vectorized operations (NumPy) for image and mesh processing
+- Consider memory usage for large 3D image stacks and meshes
+- Use tqdm for progress bars in long-running computations
+- Implement parallel processing where appropriate (`n_workers` parameter)
+
+## File Organization
+
+### New Features
+
+- Add computation methods to appropriate modules (`domains/`, `mesh/`, `analysis/`, etc.)
+- Update module interfaces to expose new functionality
+- Add corresponding tests in `tests/`
+- Follow existing patterns for method organization
+
+### External Tools
+
+- Place external scripts/tools in `scripts/` directory
+- Document dependencies on external tools
+- Handle external tool failures gracefully with informative error messages
+
+## Common Patterns
+
+### Mesh/Image Computation
+
+```python
+def compute_feature(image_stack: np.ndarray, **kwargs: Any) -> np.ndarray:
+    """Compute feature from 3D image stack.
+
+    Args:
+        image_stack: 3D image array with shape (z, y, x)
+        **kwargs: Additional parameters
+
+    Returns:
+        Computed feature array
+
+    Raises:
+        ValueError: If image stack has invalid dimensions or data type
+    """
+    # Validate input
+    # Compute feature
+    # Return result
+```
+
+### Module Methods
+
+```python
+def get_available_methods(cls) -> list[str]:
+    """Get list of available method names."""
+    return ["method1", "method2", ...]
+
+def process_data(self, method_names: list[str]) -> dict[str, Any]:
+    """Process data using specified methods."""
+    # Implementation
+```
+
+## Performance Guidelines
+
+- Profile code for performance bottlenecks in image/mesh processing
+- Use appropriate data structures (sets for lookups, arrays for numerical data)
+- Cache expensive computations when possible
+- Consider memory-efficient alternatives for large 3D datasets
+
+## Security & Best Practices
+
+- Validate all image and mesh data inputs
+- Use pathlib or cloudpathlib for file operations
+- Handle file I/O errors gracefully
+- Don't commit sensitive data or large image files to git
+- Use environment variables for configuration
+
+This project emphasizes scientific rigor, performance, and maintainability in 3D imaging and computational biology software development.

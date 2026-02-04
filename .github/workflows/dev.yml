@@ -1,0 +1,96 @@
+name: stage & preview workflow
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+
+
+jobs:
+  build-image:
+    uses: instadeepai/mlops-reusable-ci/.github/workflows/docker-build.yaml@main
+    with:
+      job-runner: instadeep-ci
+      image: ghcr.io/instadeepai/seqly/seqly_base
+      cache-image: ghcr.io/instadeepai/seqly/seqly_base/cache
+      main-branch: main
+      build-path: .
+      filename: "Dockerfile"
+      target: "seqly_base"
+      registry-host: ghcr.io
+      registry-username: instadeepai
+      dockerhub-username: ${{ vars.DOCKERHUB_USERNAME }}
+      build-args: |
+        GOOGLE_APPLICATION_CREDENTIALS=empty-gcp-creds.json
+    secrets:
+      registry-password: ${{ secrets.GITHUB_TOKEN }}
+      dockerhub-password: ${{ secrets.DOCKERHUB_TOKEN }}
+      pre-script: |
+        touch empty-gcp-creds.json
+
+  linters:
+    needs: build-image
+    runs-on: "instadeep-ci"
+    container:
+      image: ghcr.io/instadeepai/seqly/seqly_base:${{ github.sha }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: checkout code 📦
+        uses: actions/checkout@v4
+
+      # Workaround for https://github.com/actions/checkout/issues/1169
+      - run: git config --system --add safe.directory $GITHUB_WORKSPACE
+
+      - name: Run linters 🖌️
+        shell: bash -leo pipefail {0}
+        run: |
+          uv run pre-commit run --all-files --verbose
+
+  tests:
+    needs: build-image
+    runs-on: "instadeep-ci"
+    container:
+      image: ghcr.io/instadeepai/seqly/seqly_base:${{ github.sha }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: checkout code 📦
+        uses: actions/checkout@v5
+
+      # Workaround for https://github.com/actions/checkout/issues/1169
+      - run: git config --system --add safe.directory $GITHUB_WORKSPACE
+
+      - name: Run tests
+        run: |
+          uv run pytest -m "not requires_metapredict" --cov=src/seqly --cov-branch --cov-report=term-missing tests/
+
+      - name: Verify missing init files
+        run: |
+          uv run scripts/check_missing_init.py
+
+      - name: Build Documentation
+        run: |
+          uv run mkdocs build --config-file mkdocs.yml
+
+
+  validate-pr-title:
+    needs: build-image
+    runs-on: "instadeep-ci"
+    container:
+      image: ghcr.io/instadeepai/seqly/seqly_base:${{ github.sha }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: PR Title | Conventional Commit Validation
+        uses: ytanikin/pr-conventional-commits@1.4.0
+        with:
+          task_types: '["build","style","feat","fix","docs","test","ci","refactor","perf","chore","revert"]'
+          custom_labels: '{"build": "infrastructure", "style": "chore", "feat": "feature", "fix": "bug", "docs": "documentation", "test": "test", "ci": "CI/CD", "refactor": "refactor", "perf": "refactor", "chore": "chore", "revert": "chore"}'
+        if: github.ref != 'refs/heads/main' && github.event_name == 'pull_request'

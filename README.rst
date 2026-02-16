@@ -1,6 +1,6 @@
-==========
+===========
 Phenotastic
-==========
+===========
 
 3D plant phenotyping package for segmentation of early flower organs (primordia)
 from shoot apical meristems in 3D images.
@@ -46,7 +46,7 @@ Using the Python API
     # Process with a preset pipeline
     pipeline = load_preset("standard")
     result = pipeline.run(mesh)
-u
+
     # Access results
     print(f"Mesh has {result.mesh.n_points} points")
     print(f"Found {len(result.domains.unique())} domains")

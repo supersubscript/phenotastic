@@ -33,7 +33,7 @@ DOCS_DIR      ?= docs
 
 .PHONY: help install test format lint type-check \
         docker_build docker_dev docker_release \
-        pre-commit clean docs
+        pre-commit clean docs build publish-testpypi publish-pypi
 
 # ------------------------------------------------------------------------------
 # Help
@@ -44,25 +44,30 @@ help:
 	@echo "================================="
 	@echo ""
 	@echo "Setup:"
-	@echo "  install       Install dependencies with uv"
+	@echo "  install            Install dependencies with uv"
 	@echo ""
 	@echo "Code Quality:"
-	@echo "  test          Run tests with coverage"
-	@echo "  format        Format code with ruff"
-	@echo "  lint          Run linter checks"
-	@echo "  type-check    Run mypy type checker"
-	@echo "  pre-commit    Run all pre-commit hooks"
+	@echo "  test               Run tests with coverage"
+	@echo "  format             Format code with ruff"
+	@echo "  lint               Run linter checks"
+	@echo "  type-check         Run mypy type checker"
+	@echo "  pre-commit         Run all pre-commit hooks"
+	@echo ""
+	@echo "Build & Publish:"
+	@echo "  build              Build sdist and wheel packages"
+	@echo "  publish-testpypi   Publish to Test PyPI (for testing)"
+	@echo "  publish-pypi       Publish to PyPI (production)"
 	@echo ""
 	@echo "Docker:"
-	@echo "  docker_build  Build the base Docker image"
-	@echo "  docker_dev    Build and run interactive dev container"
-	@echo "  docker_release Build the release Docker image"
+	@echo "  docker_build       Build the base Docker image"
+	@echo "  docker_dev         Build and run interactive dev container"
+	@echo "  docker_release     Build the release Docker image"
 	@echo ""
 	@echo "Documentation:"
-	@echo "  docs          Build Sphinx documentation"
+	@echo "  docs               Build Sphinx documentation"
 	@echo ""
 	@echo "Cleanup:"
-	@echo "  clean         Remove build and cache artefacts"
+	@echo "  clean              Remove build and cache artefacts"
 
 # ------------------------------------------------------------------------------
 # Setup
@@ -116,6 +121,30 @@ type-check:
 
 pre-commit:
 	$(PRECOMMIT) run --all-files
+
+# ------------------------------------------------------------------------------
+# Build & Publish
+# ------------------------------------------------------------------------------
+
+build:
+	@echo "Building sdist and wheel..."
+	rm -rf dist/
+	uv build
+	@echo "Build complete. Packages in dist/"
+	@ls -la dist/
+
+publish-testpypi: build
+	@echo "Publishing to Test PyPI..."
+	@echo "Make sure you have configured ~/.pypirc or use TWINE_* env vars"
+	uv run twine upload --repository testpypi dist/*
+	@echo "Published to https://test.pypi.org/project/phenotastic/"
+
+publish-pypi: build
+	@echo "Publishing to PyPI..."
+	@echo "WARNING: This will publish to production PyPI!"
+	@read -p "Are you sure? [y/N] " confirm && [ "$$confirm" = "y" ]
+	uv run twine upload dist/*
+	@echo "Published to https://pypi.org/project/phenotastic/"
 
 # ------------------------------------------------------------------------------
 # Documentation

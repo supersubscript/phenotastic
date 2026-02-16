@@ -1,5 +1,5 @@
 default_language_version:
-  python: python3.13
+  python: python3.12
 
 default_stages: [commit]
 
@@ -10,7 +10,7 @@ repos:
     hooks:
       - id: ruff
         name: ruff-check
-        language_version: python3.13
+        language_version: python3.12
         args: [--fix, --exit-non-zero-on-fix]
       - id: ruff
         name: ruff-check-unsafe
@@ -47,9 +47,9 @@ repos:
     rev: v1.18.2
     hooks:
       - id: mypy
-        additional_dependencies: [types-requests]
+        additional_dependencies: [types-PyYAML]
         pass_filenames: false
-        args: [src/, tests/, --config-file, pyproject.toml]
+        args: [src/, --config-file, pyproject.toml]
 
   # Jupyter notebook linting and formatting
   - repo: https://github.com/nbQA-dev/nbQA
@@ -66,15 +66,4 @@ repos:
     hooks:
       - id: conventional-pre-commit
         stages: [commit-msg]
-        args: [build, chore, ci, docs, feat, fix, perf, refactor, style, test]
-
-  - repo: local
-    hooks:
-      - id: check_missing_init
-        name: check_missing_init
-        entry: "uv run --no-sync scripts/check_missing_init.py"
-        language: system
-        types_or: [python, jupyter]
-        files: "^packages/"
-        require_serial: true
-        pass_filenames: true
+        args: [build, chore, ci, docs, feat, fix, perf, refactor, style, test, wip]

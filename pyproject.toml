@@ -161,7 +161,7 @@ exclude_lines = [
 show_missing = true
 
 [tool.semantic_release]
-version_variables = ["phenotastic/__init__.py:__version__"]
+version_variables = ["src/phenotastic/__init__.py:__version__"]
 version_toml = ["pyproject.toml:project.version"]
 upload_to_PyPI = false
 upload_to_release = true

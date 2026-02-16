@@ -218,7 +218,7 @@ allowed_tags = [
     "wip",
 ]
 minor_tags = ["feat"]
-patch_tags = ["fix", "perf"]
+patch_tags = ["fix", "perf", "build", "chore", "refactor"]
 default_bump_level = 0
 
 [tool.semantic_release.remote]

@@ -24,7 +24,7 @@ Or install from source:
 
 .. code-block:: bash
 
-    git clone https://github.com/supersubscript/phenotastic.git
+    git clone https://github.com/superWhsubscript/phenotastic.git
     cd phenotastic
     uv pip install -e ".[dev]"
 
@@ -46,7 +46,7 @@ Using the Python API
     # Process with a preset pipeline
     pipeline = load_preset("standard")
     result = pipeline.run(mesh)
-
+u
     # Access results
     print(f"Mesh has {result.mesh.n_points} points")
     print(f"Found {len(result.domains.unique())} domains")

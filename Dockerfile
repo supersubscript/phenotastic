@@ -22,12 +22,7 @@ ENV LANG=C.UTF-8 \
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         build-essential \
-        git \
-        libgl1-mesa-glx \
-        libglib2.0-0 \
-        libxrender1 \
-        libsm6 \
-        libxext6 && \
+        git && \
     rm -rf /var/lib/{apt,dpkg,cache,log}
 
 WORKDIR /app

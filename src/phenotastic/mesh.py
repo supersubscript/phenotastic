@@ -16,9 +16,7 @@ from numpy.typing import NDArray
 from pyacvd import clustering
 from pymeshfix._meshfix import PyTMesh
 from pystackreg import StackReg
-from scipy.ndimage import zoom
-from scipy.ndimage.filters import gaussian_filter
-from scipy.ndimage.morphology import binary_fill_holes, distance_transform_edt
+from scipy.ndimage import binary_fill_holes, distance_transform_edt, gaussian_filter, zoom
 from scipy.signal import wiener
 from scipy.spatial import cKDTree
 from skimage.measure import marching_cubes

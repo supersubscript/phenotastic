@@ -21,42 +21,45 @@ classifiers = [
     "Programming Language :: Python :: 3.15",
 ]
 dependencies = [
-    "imgmisc>=0.1.17",
-    "mahotas>=1.4.13",
-    "numpy>=2.4.2",
-    "pyvista>=0.46.5",
-    "vtk>=9.5.2",
-    "pystackreg>=0.2.8",
-    "pandas>=3.0.0",
-    "scikit-image>=0.26.0",
-    "psf>=2026.1.18",
-    "scipy>=1.17.0",
-    "loguru>=0.7.3",
-    "click>=8.0",
-    "pyyaml>=6.0",
-    "pymeshfix>=0.17",
-    "pyacvd>=0.3",
-    "tifffile>=2024.12",
-    "networkx>=3.0",
+    "click>=8.1",
     "clahe>=0.1",
     "czifile>=2019.7",
+    "imgmisc>=0.2",
+    "loguru>=0.7",
+    "mahotas>=1.4",
+    "networkx>=3.0",
+    "numpy>=2.0",
+    "pandas>=2.2",
+    "psf>=2024.1",
+    "pyacvd>=0.3",
+    "pymeshfix>=0.17",
+    "pystackreg>=0.2",
+    "pyvista>=0.47",
+    "pyyaml>=6.0",
+    "scikit-image>=0.24",
     "scikit-learn>=1.6",
+    "scipy>=1.14",
+    "tifffile>=2024.12",
+    "vtk>=9.6",
 ]
+
+[project.optional-dependencies]
+docs = ["sphinx>=9.0"]
 
 [dependency-groups]
 dev = [
-  "ipython>=8.26.0,<9.0.0",
-  "mypy>=1.10.1,<2.0.0",
-  "pre-commit>=3.7.1,<4.0.0",
-  "pytest>=8.2.2,<9.0.0",
-  "pytest-cov>=5.0.0,<6.0.0",
-  "ruff>=0.7.2,<1.0.0",
-  "seaborn>=0.13.2",
-  "pyqt5>=5.15.11",
-  "ipykernel>=6.29.5",
-  "types-PyYAML>=6.0",
+    "ipython>=8.26,<9.0",
+    "ipykernel>=7.0",
+    "mypy>=1.10,<2.0",
+    "pre-commit>=3.7,<4.0",
+    "pytest>=8.2,<9.0",
+    "pytest-cov>=5.0,<6.0",
+    "pyqt5>=5.15",
+    "ruff>=0.15,<1.0",
+    "seaborn>=0.13",
+    "types-PyYAML>=6.0",
 ]
-release = ["python-semantic-release>=9.19.1,<10.0.0"]
+release = ["python-semantic-release>=9.19,<10.0"]
 
 [project.scripts]
 phenotastic = "phenotastic.cli:main"

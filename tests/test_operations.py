@@ -6,18 +6,18 @@ import pytest
 from phenotastic import PhenoMesh, PipelineContext
 from phenotastic.exceptions import ConfigurationError
 from phenotastic.operations import (
-    clean_op,
-    compute_curvature_op,
-    decimate_op,
-    extract_largest_op,
-    filter_curvature_op,
-    remesh_op,
-    rotate_op,
-    smooth_boundary_op,
-    smooth_op,
-    smooth_taubin_op,
-    subdivide_op,
-    triangulate_op,
+    clean_mesh,
+    compute_curvature,
+    decimate_mesh,
+    extract_largest,
+    filter_by_curvature,
+    remesh,
+    rotate_mesh,
+    smooth_boundary,
+    smooth_mesh,
+    smooth_mesh_taubin,
+    subdivide_mesh,
+    triangulate_mesh,
 )
 
 
@@ -29,7 +29,7 @@ class TestSmoothOperation:
         ctx = PipelineContext(mesh=sphere_mesh)
         original_points = sphere_mesh.n_points
 
-        result = smooth_op(ctx, iterations=10)
+        result = smooth_mesh(ctx, iterations=10)
 
         assert result.mesh is not None
         assert result.mesh.n_points == original_points
@@ -39,7 +39,7 @@ class TestSmoothOperation:
         ctx = PipelineContext(mesh=sphere_mesh)
         original_points = sphere_mesh.points.copy()
 
-        result = smooth_op(ctx, iterations=0)
+        result = smooth_mesh(ctx, iterations=0)
 
         assert result.mesh is not None
         np.testing.assert_array_equal(result.mesh.points, original_points)
@@ -49,7 +49,7 @@ class TestSmoothOperation:
         ctx = PipelineContext(mesh=sphere_mesh)
         original_points = sphere_mesh.points.copy()
 
-        result = smooth_op(ctx, iterations=10, relaxation_factor=0.1)
+        result = smooth_mesh(ctx, iterations=10, relaxation_factor=0.1)
 
         assert result.mesh is not None
         # Points should be different after smoothing
@@ -60,21 +60,21 @@ class TestSmoothOperation:
         ctx = PipelineContext(mesh=sphere_mesh)
 
         with pytest.raises(ConfigurationError, match="iterations must be non-negative"):
-            smooth_op(ctx, iterations=-5)
+            smooth_mesh(ctx, iterations=-5)
 
     def test_smooth_invalid_relaxation_raises(self, sphere_mesh: PhenoMesh) -> None:
         """Invalid relaxation factor should raise ConfigurationError."""
         ctx = PipelineContext(mesh=sphere_mesh)
 
         with pytest.raises(ConfigurationError, match="relaxation_factor"):
-            smooth_op(ctx, iterations=10, relaxation_factor=1.5)
+            smooth_mesh(ctx, iterations=10, relaxation_factor=1.5)
 
     def test_smooth_requires_mesh(self) -> None:
         """Smooth operation should require mesh in context."""
         ctx = PipelineContext()
 
         with pytest.raises(ConfigurationError, match="requires a mesh"):
-            smooth_op(ctx, iterations=10)
+            smooth_mesh(ctx, iterations=10)
 
 
 class TestSmoothTaubinOperation:
@@ -85,7 +85,7 @@ class TestSmoothTaubinOperation:
         ctx = PipelineContext(mesh=sphere_mesh)
         original_points = sphere_mesh.n_points
 
-        result = smooth_taubin_op(ctx, iterations=10)
+        result = smooth_mesh_taubin(ctx, iterations=10)
 
         assert result.mesh is not None
         assert result.mesh.n_points == original_points
@@ -94,7 +94,7 @@ class TestSmoothTaubinOperation:
         """Zero iterations should return unchanged mesh."""
         ctx = PipelineContext(mesh=sphere_mesh)
 
-        result = smooth_taubin_op(ctx, iterations=0)
+        result = smooth_mesh_taubin(ctx, iterations=0)
 
         assert result.mesh is not None
 
@@ -106,7 +106,7 @@ class TestRemeshOperation:
         """Remeshing should change vertex count to approximately target."""
         ctx = PipelineContext(mesh=sphere_mesh)
 
-        result = remesh_op(ctx, n_clusters=500, subdivisions=2)
+        result = remesh(ctx, n_clusters=500, subdivisions=2)
 
         assert result.mesh is not None
         # Point count should be different
@@ -117,7 +117,7 @@ class TestRemeshOperation:
         ctx = PipelineContext(mesh=sphere_mesh)
 
         with pytest.raises(ConfigurationError, match="n_clusters must be positive"):
-            remesh_op(ctx, n_clusters=0)
+            remesh(ctx, n_clusters=0)
 
 
 class TestDecimateOperation:
@@ -128,7 +128,7 @@ class TestDecimateOperation:
         ctx = PipelineContext(mesh=sphere_mesh)
         original_faces = sphere_mesh.n_faces
 
-        result = decimate_op(ctx, target_reduction=0.5)
+        result = decimate_mesh(ctx, target_reduction=0.5)
 
         assert result.mesh is not None
         assert result.mesh.n_faces < original_faces
@@ -138,7 +138,7 @@ class TestDecimateOperation:
         ctx = PipelineContext(mesh=sphere_mesh)
 
         with pytest.raises(ConfigurationError, match="target_reduction"):
-            decimate_op(ctx, target_reduction=1.5)
+            decimate_mesh(ctx, target_reduction=1.5)
 
 
 class TestSubdivideOperation:
@@ -149,7 +149,7 @@ class TestSubdivideOperation:
         ctx = PipelineContext(mesh=small_sphere_mesh)
         original_faces = small_sphere_mesh.n_faces
 
-        result = subdivide_op(ctx, n_subdivisions=1)
+        result = subdivide_mesh(ctx, n_subdivisions=1)
 
         assert result.mesh is not None
         assert result.mesh.n_faces > original_faces
@@ -159,7 +159,7 @@ class TestSubdivideOperation:
         ctx = PipelineContext(mesh=sphere_mesh)
         original_faces = sphere_mesh.n_faces
 
-        result = subdivide_op(ctx, n_subdivisions=0)
+        result = subdivide_mesh(ctx, n_subdivisions=0)
 
         assert result.mesh is not None
         assert result.mesh.n_faces == original_faces
@@ -172,7 +172,7 @@ class TestCleanOperation:
         """Clean operation should complete without errors."""
         ctx = PipelineContext(mesh=sphere_mesh)
 
-        result = clean_op(ctx)
+        result = clean_mesh(ctx)
 
         assert result.mesh is not None
 
@@ -184,7 +184,7 @@ class TestTriangulateOperation:
         """Triangulate operation should complete without errors."""
         ctx = PipelineContext(mesh=cube_mesh)
 
-        result = triangulate_op(ctx)
+        result = triangulate_mesh(ctx)
 
         assert result.mesh is not None
 
@@ -196,7 +196,7 @@ class TestExtractLargestOperation:
         """Extract largest should complete without errors."""
         ctx = PipelineContext(mesh=sphere_mesh)
 
-        result = extract_largest_op(ctx)
+        result = extract_largest(ctx)
 
         assert result.mesh is not None
 
@@ -210,7 +210,7 @@ class TestFilterCurvatureOperation:
         original_points = sphere_mesh.n_points
 
         # Use a wide threshold to avoid removing all vertices
-        result = filter_curvature_op(ctx, threshold=5.0)
+        result = filter_by_curvature(ctx, threshold=5.0)
 
         assert result.mesh is not None
         # With a wide threshold, should keep most/all points
@@ -222,7 +222,7 @@ class TestFilterCurvatureOperation:
         ctx = PipelineContext(mesh=sphere_mesh)
 
         # Use a wide range to avoid removing all vertices
-        result = filter_curvature_op(ctx, threshold=[-5.0, 5.0])
+        result = filter_by_curvature(ctx, threshold=[-5.0, 5.0])
 
         assert result.mesh is not None
         assert result.mesh.n_points > 0
@@ -236,7 +236,7 @@ class TestRotateOperation:
         ctx = PipelineContext(mesh=sphere_mesh)
         original_points = sphere_mesh.points.copy()
 
-        result = rotate_op(ctx, axis="y", angle=90)
+        result = rotate_mesh(ctx, axis="y", angle=90)
 
         assert result.mesh is not None
         # Points should be different after rotation
@@ -247,7 +247,7 @@ class TestRotateOperation:
         ctx = PipelineContext(mesh=sphere_mesh)
         original_points = sphere_mesh.points.copy()
 
-        result = rotate_op(ctx, axis="x", angle=0)
+        result = rotate_mesh(ctx, axis="x", angle=0)
 
         assert result.mesh is not None
         np.testing.assert_array_almost_equal(result.mesh.points, original_points)
@@ -257,7 +257,7 @@ class TestRotateOperation:
         ctx = PipelineContext(mesh=sphere_mesh)
 
         with pytest.raises(ConfigurationError, match="Invalid axis"):
-            rotate_op(ctx, axis="w", angle=45)
+            rotate_mesh(ctx, axis="w", angle=45)
 
 
 class TestComputeCurvatureOperation:
@@ -267,7 +267,7 @@ class TestComputeCurvatureOperation:
         """Curvature should be added to context."""
         ctx = PipelineContext(mesh=sphere_mesh)
 
-        result = compute_curvature_op(ctx, curvature_type="mean")
+        result = compute_curvature(ctx, curvature_type="mean")
 
         assert result.curvature is not None
         assert len(result.curvature) == sphere_mesh.n_points
@@ -277,7 +277,7 @@ class TestComputeCurvatureOperation:
         ctx = PipelineContext(mesh=sphere_mesh)
 
         with pytest.raises(ConfigurationError, match="curvature_type"):
-            compute_curvature_op(ctx, curvature_type="invalid")
+            compute_curvature(ctx, curvature_type="invalid")
 
 
 class TestSmoothBoundaryOperation:
@@ -287,7 +287,7 @@ class TestSmoothBoundaryOperation:
         """Smooth boundary should complete without errors."""
         ctx = PipelineContext(mesh=sphere_mesh)
 
-        result = smooth_boundary_op(ctx, iterations=5)
+        result = smooth_boundary(ctx, iterations=5)
 
         assert result.mesh is not None
 
@@ -295,6 +295,6 @@ class TestSmoothBoundaryOperation:
         """Zero iterations should return unchanged."""
         ctx = PipelineContext(mesh=sphere_mesh)
 
-        result = smooth_boundary_op(ctx, iterations=0)
+        result = smooth_boundary(ctx, iterations=0)
 
         assert result.mesh is not None

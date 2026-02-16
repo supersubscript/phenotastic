@@ -812,9 +812,9 @@ class PhenoMesh:
         Returns:
             Array of boundary vertex indices
         """
-        from phenotastic.mesh import boundary_points as _boundary_points
+        from phenotastic.mesh import get_boundary_points
 
-        return _boundary_points(self.mesh)
+        return get_boundary_points(self.mesh)
 
     def boundary_edges(self) -> PhenoMesh:
         """Get boundary edges.
@@ -822,9 +822,9 @@ class PhenoMesh:
         Returns:
             PhenoMesh containing boundary edges
         """
-        from phenotastic.mesh import boundary_edges as _boundary_edges
+        from phenotastic.mesh import get_boundary_edges
 
-        return PhenoMesh(_boundary_edges(self.mesh))
+        return PhenoMesh(get_boundary_edges(self.mesh))
 
     def non_manifold_edges(self) -> PhenoMesh:
         """Get non-manifold edges.
@@ -832,9 +832,9 @@ class PhenoMesh:
         Returns:
             PhenoMesh containing non-manifold edges
         """
-        from phenotastic.mesh import non_manifold_edges as _non_manifold_edges
+        from phenotastic.mesh import get_non_manifold_edges
 
-        return PhenoMesh(_non_manifold_edges(self.mesh))
+        return PhenoMesh(get_non_manifold_edges(self.mesh))
 
     def manifold_edges(self) -> PhenoMesh:
         """Get manifold edges.
@@ -842,9 +842,9 @@ class PhenoMesh:
         Returns:
             PhenoMesh containing manifold edges
         """
-        from phenotastic.mesh import manifold_edges as _manifold_edges
+        from phenotastic.mesh import get_manifold_edges
 
-        return PhenoMesh(_manifold_edges(self.mesh))
+        return PhenoMesh(get_manifold_edges(self.mesh))
 
     def feature_edges(self, angle: float = 30) -> PhenoMesh:
         """Get feature edges defined by given angle.
@@ -855,9 +855,9 @@ class PhenoMesh:
         Returns:
             PhenoMesh containing feature edges
         """
-        from phenotastic.mesh import feature_edges as _feature_edges
+        from phenotastic.mesh import get_feature_edges
 
-        return PhenoMesh(_feature_edges(self.mesh, angle))
+        return PhenoMesh(get_feature_edges(self.mesh, angle))
 
     def vertex_neighbors(self, index: int, include_self: bool = True) -> NDArray[np.intp]:
         """Get the indices of the vertices connected to a given vertex.
@@ -869,9 +869,9 @@ class PhenoMesh:
         Returns:
             Array of connected vertex indices
         """
-        from phenotastic.mesh import vertex_neighbors as _vertex_neighbors
+        from phenotastic.mesh import get_vertex_neighbors
 
-        return _vertex_neighbors(self.mesh, index, include_self)
+        return get_vertex_neighbors(self.mesh, index, include_self)
 
     def vertex_neighbors_all(self, include_self: bool = True) -> list[NDArray[np.intp]]:
         """Get all vertex neighbors.
@@ -882,9 +882,9 @@ class PhenoMesh:
         Returns:
             List of arrays of connected vertex indices
         """
-        from phenotastic.mesh import vertex_neighbors_all as _vertex_neighbors_all
+        from phenotastic.mesh import get_vertex_neighbors_all
 
-        result = _vertex_neighbors_all(self.mesh, include_self)
+        result = get_vertex_neighbors_all(self.mesh, include_self)
         return list(result)
 
     def vertex_cycles(self) -> list[list[int]]:
@@ -893,9 +893,9 @@ class PhenoMesh:
         Returns:
             List of cycles, each cycle is a list of vertex indices
         """
-        from phenotastic.mesh import vertex_cycles as _vertex_cycles
+        from phenotastic.mesh import get_vertex_cycles
 
-        result = _vertex_cycles(self.mesh)
+        result = get_vertex_cycles(self.mesh)
         return [list(cycle) for cycle in result]
 
     def erode(self, iterations: int = 1) -> PhenoMesh:

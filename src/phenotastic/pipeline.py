@@ -11,19 +11,19 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
+import tifffile as tiff
 import yaml  # type: ignore[import-untyped]
 from loguru import logger
 
 from phenotastic.exceptions import ConfigurationError, PipelineError
 from phenotastic.operations import OPERATIONS
+from phenotastic.phenomesh import PhenoMesh
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     import pandas as pd
     from numpy.typing import NDArray
-
-    from phenotastic.phenomesh import PhenoMesh
 
 
 @dataclass
@@ -59,11 +59,39 @@ class StepConfig:
 
     Attributes:
         name: Name of the operation to execute
-        params: Parameters to pass to the operation
+        parameters: Parameters to pass to the operation
     """
 
     name: str
-    params: dict[str, Any] = field(default_factory=dict)
+    parameters: dict[str, Any] = field(default_factory=dict)
+
+
+def _parse_step_config(step_dict: Any, step_index: int) -> StepConfig:
+    """Parse a step dictionary into a StepConfig.
+
+    Args:
+        step_dict: Dictionary containing step configuration
+        step_index: Index of the step for error messages
+
+    Returns:
+        Parsed StepConfig
+
+    Raises:
+        ConfigurationError: If step configuration is invalid
+    """
+    if not isinstance(step_dict, dict):
+        raise ConfigurationError(f"Step {step_index} must be a dictionary")
+
+    if "name" not in step_dict:
+        raise ConfigurationError(f"Step {step_index} must have 'name' key")
+
+    name = step_dict["name"]
+    parameters = step_dict.get("params") or {}
+
+    if not isinstance(parameters, dict):
+        raise ConfigurationError(f"Step {step_index} 'params' must be a dictionary")
+
+    return StepConfig(name=name, parameters=parameters)
 
 
 class OperationRegistry:
@@ -75,18 +103,18 @@ class OperationRegistry:
 
     def __init__(self) -> None:
         """Initialize with default operations."""
-        self._operations: dict[str, Callable[..., PipelineContext]] = dict(OPERATIONS)
+        self._operation_registry: dict[str, Callable[..., PipelineContext]] = dict(OPERATIONS)
 
-    def register(self, name: str, func: Callable[..., PipelineContext]) -> None:
+    def register(self, name: str, function: Callable[..., PipelineContext]) -> None:
         """Register a custom operation.
 
         Args:
             name: Operation name for use in pipeline configs
-            func: Callable that takes (PipelineContext, **params) and returns PipelineContext
+            function: Callable that takes (PipelineContext, **params) and returns PipelineContext
         """
-        if not callable(func):
+        if not callable(function):
             raise ConfigurationError(f"Operation {name} must be callable")
-        self._operations[name] = func
+        self._operation_registry[name] = function
 
     def get(self, name: str) -> Callable[..., PipelineContext]:
         """Get an operation by name.
@@ -100,10 +128,10 @@ class OperationRegistry:
         Raises:
             PipelineError: If operation name is not found
         """
-        if name not in self._operations:
-            available = ", ".join(sorted(self._operations.keys()))
+        if name not in self._operation_registry:
+            available = ", ".join(sorted(self._operation_registry.keys()))
             raise PipelineError(f"Unknown operation: {name}. Available operations: {available}")
-        return self._operations[name]
+        return self._operation_registry[name]
 
     def list_operations(self, category: str = "all") -> list[str]:
         """List available operation names.
@@ -114,7 +142,6 @@ class OperationRegistry:
         Returns:
             List of operation names
         """
-        # Define categories
         contour_ops = {"contour", "create_mesh", "create_cellular_mesh"}
         domain_ops = {
             "compute_curvature",
@@ -131,16 +158,18 @@ class OperationRegistry:
         }
 
         if category == "contour":
-            return sorted([op for op in self._operations if op in contour_ops])
+            return sorted(name for name in self._operation_registry if name in contour_ops)
         if category == "domain":
-            return sorted([op for op in self._operations if op in domain_ops])
+            return sorted(name for name in self._operation_registry if name in domain_ops)
         if category == "mesh":
-            return sorted([op for op in self._operations if op not in contour_ops and op not in domain_ops])
-        return sorted(self._operations.keys())
+            return sorted(
+                name for name in self._operation_registry if name not in contour_ops and name not in domain_ops
+            )
+        return sorted(self._operation_registry.keys())
 
     def __contains__(self, name: str) -> bool:
         """Check if operation is registered."""
-        return name in self._operations
+        return name in self._operation_registry
 
 
 class Pipeline:
@@ -171,7 +200,7 @@ class Pipeline:
             registry: Operation registry (uses default if not provided)
         """
         self.steps = steps
-        self._registry = registry if registry is not None else OperationRegistry()
+        self._operation_registry = registry if registry is not None else OperationRegistry()
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> Pipeline:
@@ -206,24 +235,7 @@ class Pipeline:
         if not isinstance(config["steps"], list):
             raise ConfigurationError("'steps' must be a list")
 
-        steps: list[StepConfig] = []
-        for i, step_dict in enumerate(config["steps"]):
-            if not isinstance(step_dict, dict):
-                raise ConfigurationError(f"Step {i} must be a dictionary")
-
-            if "name" not in step_dict:
-                raise ConfigurationError(f"Step {i} must have 'name' key")
-
-            name = step_dict["name"]
-            params = step_dict.get("params", {})
-
-            if params is None:
-                params = {}
-
-            if not isinstance(params, dict):
-                raise ConfigurationError(f"Step {i} 'params' must be a dictionary")
-
-            steps.append(StepConfig(name=name, params=params))
+        steps = [_parse_step_config(step_dict, i) for i, step_dict in enumerate(config["steps"])]
 
         return cls(steps)
 
@@ -245,11 +257,10 @@ class Pipeline:
         if config is None or "steps" not in config:
             raise ConfigurationError("Configuration must have 'steps' key")
 
-        steps: list[StepConfig] = []
-        for step_dict in config["steps"]:
-            name = step_dict["name"]
-            params = step_dict.get("params", {}) or {}
-            steps.append(StepConfig(name=name, params=params))
+        if not isinstance(config["steps"], list):
+            raise ConfigurationError("'steps' must be a list")
+
+        steps = [_parse_step_config(step_dict, i) for i, step_dict in enumerate(config["steps"])]
 
         return cls(steps)
 
@@ -275,40 +286,32 @@ class Pipeline:
         Raises:
             PipelineError: If a step fails or input is invalid
         """
-        import tifffile as tiff
-
-        from phenotastic.phenomesh import PhenoMesh
-
-        # Initialize context based on input type
         context = PipelineContext(resolution=resolution)
 
         if isinstance(input_data, PhenoMesh):
             context.mesh = input_data
         elif isinstance(input_data, np.ndarray):
-            # Determine if it's an image or contour based on dtype
             if input_data.dtype == bool:
                 context.contour = input_data
             else:
                 context.image = input_data
         elif isinstance(input_data, (str, Path)):
-            # Load image from file
             try:
                 context.image = tiff.imread(str(input_data))
                 context.image = np.squeeze(context.image)
-            except Exception as e:
+            except OSError as e:
                 raise PipelineError(f"Failed to load image: {e}") from e
         else:
             raise PipelineError(f"Unsupported input type: {type(input_data)}")
 
-        # Execute steps
         n_steps = len(self.steps)
         for i, step in enumerate(self.steps):
             if verbose:
                 logger.info(f"Step {i + 1}/{n_steps}: {step.name}")
 
             try:
-                operation = self._registry.get(step.name)
-                context = operation(context, **step.params)
+                operation = self._operation_registry.get(step.name)
+                context = operation(context, **step.parameters)
             except (ConfigurationError, PipelineError):
                 raise
             except Exception as e:
@@ -328,16 +331,13 @@ class Pipeline:
         warnings: list[str] = []
 
         for i, step in enumerate(self.steps):
-            # Check operation exists
-            if step.name not in self._registry:
+            if step.name not in self._operation_registry:
                 raise ConfigurationError(f"Step {i}: Unknown operation '{step.name}'")
 
-            # Check for common issues
             if step.name == "create_mesh" and i == 0:
                 warnings.append("create_mesh as first step requires contour input")
 
             if step.name == "segment_domains":
-                # Check if compute_curvature comes before
                 has_curvature = any(s.name == "compute_curvature" for s in self.steps[:i])
                 if not has_curvature:
                     warnings.append(f"Step {i}: segment_domains may need compute_curvature before it")
@@ -361,7 +361,7 @@ def save_pipeline_yaml(pipeline: Pipeline, path: str | Path) -> None:
         pipeline: Pipeline to save
         path: Output file path
     """
-    config = {"steps": [{"name": step.name, "params": step.params} for step in pipeline.steps]}
+    config = {"steps": [{"name": step.name, "params": step.parameters} for step in pipeline.steps]}
 
     with open(path, "w") as f:
         yaml.dump(config, f, default_flow_style=False, sort_keys=False)

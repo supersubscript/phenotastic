@@ -11,8 +11,11 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
+import pandas as pd
 
+from phenotastic import domains
 from phenotastic.exceptions import ConfigurationError
+from phenotastic.mesh import contour, create_cellular_mesh, create_mesh
 
 if TYPE_CHECKING:
     from phenotastic.pipeline import PipelineContext
@@ -39,12 +42,35 @@ class ParameterInfo:
 
 
 # =============================================================================
+# Helper Functions
+# =============================================================================
+
+
+def _validate_mesh_present(context: PipelineContext) -> None:
+    """Validate that context has a mesh."""
+    if context.mesh is None:
+        raise ConfigurationError("This operation requires a mesh in context")
+
+
+def _extract_meristem_index(result: int | tuple[int, Any]) -> int:
+    """Extract meristem index from define_meristem result.
+
+    Args:
+        result: Either an integer index or tuple of (index, coordinates)
+
+    Returns:
+        The meristem domain index
+    """
+    return result[0] if isinstance(result, tuple) else result
+
+
+# =============================================================================
 # Image/Contour Operations
 # =============================================================================
 
 
-def contour_op(
-    ctx: PipelineContext,
+def generate_contour(
+    context: PipelineContext,
     iterations: int = 25,
     smoothing: int = 1,
     masking_factor: float = 0.75,
@@ -60,7 +86,7 @@ def contour_op(
     """Generate binary contour from 3D image using morphological active contours.
 
     Args:
-        ctx: Pipeline context with image data
+        context: Pipeline context with image data
         iterations: Number of morphological Chan-Vese iterations
         smoothing: Smoothing iterations per cycle
         masking_factor: Initial mask threshold factor
@@ -76,9 +102,7 @@ def contour_op(
     Returns:
         Updated context with contour
     """
-    from phenotastic.mesh import contour
-
-    if ctx.image is None:
+    if context.image is None:
         raise ConfigurationError("contour operation requires image in context")
 
     if target_resolution is None:
@@ -87,7 +111,7 @@ def contour_op(
         gaussian_sigma = [1.0, 1.0, 1.0]
 
     result = contour(
-        ctx.image,
+        context.image,
         iterations=iterations,
         smoothing=smoothing,
         masking_factor=masking_factor,
@@ -103,60 +127,56 @@ def contour_op(
     )
 
     if isinstance(result, tuple):
-        ctx.contour = result[0]
-        ctx.resolution = list(result[1])
+        context.contour = result[0]
+        context.resolution = list(result[1])
     else:
-        ctx.contour = result
+        context.contour = result
 
-    return ctx
+    return context
 
 
-def create_mesh_op(
-    ctx: PipelineContext,
+def create_mesh_from_contour(
+    context: PipelineContext,
     step_size: int = 1,
 ) -> PipelineContext:
     """Create mesh from contour using marching cubes.
 
     Args:
-        ctx: Pipeline context with contour data
+        context: Pipeline context with contour data
         step_size: Step size for marching cubes
 
     Returns:
         Updated context with mesh
     """
-    from phenotastic.mesh import create_mesh
-
-    if ctx.contour is None:
+    if context.contour is None:
         raise ConfigurationError("create_mesh operation requires contour in context")
 
-    resolution = ctx.resolution or [1.0, 1.0, 1.0]
-    ctx.mesh = create_mesh(ctx.contour, resolution=resolution, step_size=step_size)
+    resolution = context.resolution or [1.0, 1.0, 1.0]
+    context.mesh = create_mesh(context.contour, resolution=resolution, step_size=step_size)
 
-    return ctx
+    return context
 
 
-def create_cellular_mesh_op(
-    ctx: PipelineContext,
+def create_mesh_from_cells(
+    context: PipelineContext,
     verbose: bool = True,
 ) -> PipelineContext:
     """Create mesh from segmented image with one mesh per cell.
 
     Args:
-        ctx: Pipeline context with segmented image
+        context: Pipeline context with segmented image
         verbose: Print progress information
 
     Returns:
         Updated context with mesh
     """
-    from phenotastic.mesh import create_cellular_mesh
-
-    if ctx.image is None:
+    if context.image is None:
         raise ConfigurationError("create_cellular_mesh requires image in context")
 
-    resolution = ctx.resolution or [1.0, 1.0, 1.0]
-    ctx.mesh = create_cellular_mesh(ctx.image, resolution=resolution, verbose=verbose)
+    resolution = context.resolution or [1.0, 1.0, 1.0]
+    context.mesh = create_cellular_mesh(context.image, resolution=resolution, verbose=verbose)
 
-    return ctx
+    return context
 
 
 # =============================================================================
@@ -164,14 +184,8 @@ def create_cellular_mesh_op(
 # =============================================================================
 
 
-def _require_mesh(ctx: PipelineContext) -> None:
-    """Validate that context has a mesh."""
-    if ctx.mesh is None:
-        raise ConfigurationError("This operation requires a mesh in context")
-
-
-def smooth_op(
-    ctx: PipelineContext,
+def smooth_mesh(
+    context: PipelineContext,
     iterations: int = 100,
     relaxation_factor: float = 0.01,
     feature_smoothing: bool = False,
@@ -180,7 +194,7 @@ def smooth_op(
     """Smooth mesh using Laplacian smoothing.
 
     Args:
-        ctx: Pipeline context with mesh
+        context: Pipeline context with mesh
         iterations: Number of smoothing iterations
         relaxation_factor: Relaxation factor (0-1)
         feature_smoothing: Smooth along features
@@ -189,7 +203,7 @@ def smooth_op(
     Returns:
         Updated context with smoothed mesh
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
     if iterations < 0:
         raise ConfigurationError("iterations must be non-negative")
@@ -197,22 +211,21 @@ def smooth_op(
         raise ConfigurationError("relaxation_factor must be in [0, 1]")
 
     if iterations == 0:
-        return ctx
+        return context
 
-    ctx.mesh = ctx.mesh.smoothen(
+    context.mesh = context.mesh.smoothen(
         iterations=iterations,
         relaxation_factor=relaxation_factor,
         feature_smoothing=feature_smoothing,
         boundary_smoothing=boundary_smoothing,
     )
-    # Clear cached neighbors since mesh changed
-    ctx.neighbors = None
+    context.neighbors = None
 
-    return ctx
+    return context
 
 
-def smooth_taubin_op(
-    ctx: PipelineContext,
+def smooth_mesh_taubin(
+    context: PipelineContext,
     iterations: int = 100,
     pass_band: float = 0.1,
     feature_smoothing: bool = False,
@@ -221,7 +234,7 @@ def smooth_taubin_op(
     """Smooth mesh using Taubin smoothing (less shrinkage than Laplacian).
 
     Args:
-        ctx: Pipeline context with mesh
+        context: Pipeline context with mesh
         iterations: Number of smoothing iterations
         pass_band: Pass band for filter (0-2)
         feature_smoothing: Smooth along features
@@ -230,218 +243,223 @@ def smooth_taubin_op(
     Returns:
         Updated context with smoothed mesh
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
     if iterations < 0:
         raise ConfigurationError("iterations must be non-negative")
 
     if iterations == 0:
-        return ctx
+        return context
 
-    ctx.mesh = ctx.mesh.smooth_taubin(
+    context.mesh = context.mesh.smooth_taubin(
         iterations=iterations,
         pass_band=pass_band,
         feature_smoothing=feature_smoothing,
         boundary_smoothing=boundary_smoothing,
     )
-    ctx.neighbors = None
+    context.neighbors = None
 
-    return ctx
+    return context
 
 
-def smooth_boundary_op(
-    ctx: PipelineContext,
+def smooth_boundary(
+    context: PipelineContext,
     iterations: int = 20,
     sigma: float = 0.1,
 ) -> PipelineContext:
     """Smooth only the boundary edges of the mesh.
 
     Args:
-        ctx: Pipeline context with mesh
+        context: Pipeline context with mesh
         iterations: Number of smoothing iterations
         sigma: Smoothing sigma
 
     Returns:
         Updated context with boundary-smoothed mesh
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
     if iterations <= 0:
-        return ctx
+        return context
 
-    ctx.mesh = ctx.mesh.smooth_boundary(iterations=iterations, sigma=sigma)
-    ctx.neighbors = None
+    context.mesh = context.mesh.smooth_boundary(iterations=iterations, sigma=sigma)
+    context.neighbors = None
 
-    return ctx
+    return context
 
 
-def remesh_op(
-    ctx: PipelineContext,
+def remesh(
+    context: PipelineContext,
     n_clusters: int = 10000,
     subdivisions: int = 3,
 ) -> PipelineContext:
     """Regularize mesh faces using ACVD algorithm.
 
     Args:
-        ctx: Pipeline context with mesh
+        context: Pipeline context with mesh
         n_clusters: Target number of faces
         subdivisions: Number of subdivisions for clustering
 
     Returns:
         Updated context with remeshed mesh
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
     if n_clusters <= 0:
         raise ConfigurationError("n_clusters must be positive")
 
-    ctx.mesh = ctx.mesh.remesh(n=n_clusters, sub=subdivisions)
-    ctx.neighbors = None
+    context.mesh = context.mesh.remesh(n=n_clusters, sub=subdivisions)
+    context.neighbors = None
 
-    return ctx
+    return context
 
 
-def decimate_op(
-    ctx: PipelineContext,
+def decimate_mesh(
+    context: PipelineContext,
     target_reduction: float = 0.5,
     volume_preservation: bool = True,
 ) -> PipelineContext:
     """Reduce mesh complexity by removing faces.
 
     Args:
-        ctx: Pipeline context with mesh
+        context: Pipeline context with mesh
         target_reduction: Fraction of faces to remove (0-1)
         volume_preservation: Preserve mesh volume
 
     Returns:
         Updated context with decimated mesh
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
     if not 0 <= target_reduction < 1:
         raise ConfigurationError("target_reduction must be in [0, 1)")
 
-    ctx.mesh = ctx.mesh.decimate(
+    context.mesh = context.mesh.decimate(
         target_reduction=target_reduction,
         volume_preservation=volume_preservation,
     )
-    ctx.neighbors = None
+    context.neighbors = None
 
-    return ctx
+    return context
 
 
-def subdivide_op(
-    ctx: PipelineContext,
+def subdivide_mesh(
+    context: PipelineContext,
     n_subdivisions: int = 1,
     subfilter: str = "linear",
 ) -> PipelineContext:
     """Increase mesh resolution by subdividing faces.
 
     Args:
-        ctx: Pipeline context with mesh
+        context: Pipeline context with mesh
         n_subdivisions: Number of subdivision iterations
         subfilter: Subdivision filter ('linear', 'butterfly', 'loop')
 
     Returns:
         Updated context with subdivided mesh
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
     if n_subdivisions <= 0:
-        return ctx
+        return context
 
-    ctx.mesh = ctx.mesh.subdivide(n_subdivisions=n_subdivisions, subfilter=subfilter)
-    ctx.neighbors = None
+    context.mesh = context.mesh.subdivide(n_subdivisions=n_subdivisions, subfilter=subfilter)
+    context.neighbors = None
 
-    return ctx
+    return context
 
 
-def repair_holes_op(
-    ctx: PipelineContext,
+def repair_holes(
+    context: PipelineContext,
     max_hole_edges: int = 100,
     refine: bool = True,
 ) -> PipelineContext:
     """Fill small holes in the mesh.
 
     Args:
-        ctx: Pipeline context with mesh
+        context: Pipeline context with mesh
         max_hole_edges: Maximum hole size to fill (in edges)
         refine: Refine the filled region
 
     Returns:
         Updated context with repaired mesh
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
-    ctx.mesh = ctx.mesh.repair_small(nbe=max_hole_edges, refine=refine)
-    ctx.neighbors = None
+    context.mesh = context.mesh.repair_small(nbe=max_hole_edges, refine=refine)
+    context.neighbors = None
 
-    return ctx
+    return context
 
 
-def repair_op(ctx: PipelineContext) -> PipelineContext:
+def repair_mesh(context: PipelineContext) -> PipelineContext:
     """Full mesh repair using MeshFix.
 
     Args:
-        ctx: Pipeline context with mesh
+        context: Pipeline context with mesh
 
     Returns:
         Updated context with repaired mesh
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
-    ctx.mesh = ctx.mesh.repair()
-    ctx.neighbors = None
+    context.mesh = context.mesh.repair()
+    context.neighbors = None
 
-    return ctx
+    return context
 
 
-def make_manifold_op(
-    ctx: PipelineContext,
+def make_manifold(
+    context: PipelineContext,
     hole_edges: int = 300,
 ) -> PipelineContext:
     """Remove non-manifold edges from mesh.
 
     Args:
-        ctx: Pipeline context with mesh
+        context: Pipeline context with mesh
         hole_edges: Size of holes to fill after removal
 
     Returns:
         Updated context with manifold mesh
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
-    ctx.mesh = ctx.mesh.make_manifold(hole_edges=hole_edges)
-    ctx.neighbors = None
+    context.mesh = context.mesh.make_manifold(hole_edges=hole_edges)
+    context.neighbors = None
 
-    return ctx
+    return context
 
 
-def filter_curvature_op(
-    ctx: PipelineContext,
+def filter_by_curvature(
+    context: PipelineContext,
     threshold: float | list[float] = 0.4,
 ) -> PipelineContext:
     """Remove vertices outside curvature threshold range.
 
     Args:
-        ctx: Pipeline context with mesh
-        threshold: Single value for symmetric range or [min, max] tuple
+        context: Pipeline context with mesh
+        threshold: Single value for symmetric range or [min, max] list
 
     Returns:
         Updated context with filtered mesh
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
-    threshold_tuple = (threshold[0], threshold[1]) if isinstance(threshold, list) else (-threshold, threshold)
+    if isinstance(threshold, list):
+        if len(threshold) != 2:
+            raise ConfigurationError("threshold list must have exactly 2 elements [min, max]")
+        threshold_tuple = (threshold[0], threshold[1])
+    else:
+        threshold_tuple = (-threshold, threshold)
 
-    ctx.mesh = ctx.mesh.filter_curvature(curvature_threshold=threshold_tuple)
-    ctx.neighbors = None
+    context.mesh = context.mesh.filter_curvature(curvature_threshold=threshold_tuple)
+    context.neighbors = None
 
-    return ctx
+    return context
 
 
-def remove_normals_op(
-    ctx: PipelineContext,
+def remove_by_normals(
+    context: PipelineContext,
     threshold_angle: float = 60.0,
     flip: bool = False,
     angle_type: str = "polar",
@@ -449,7 +467,7 @@ def remove_normals_op(
     """Remove vertices based on normal angle.
 
     Args:
-        ctx: Pipeline context with mesh
+        context: Pipeline context with mesh
         threshold_angle: Angle threshold in degrees
         flip: Flip normal orientation before filtering
         angle_type: Type of angle ('polar' or 'azimuth')
@@ -457,37 +475,37 @@ def remove_normals_op(
     Returns:
         Updated context with filtered mesh
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
-    ctx.mesh = ctx.mesh.remove_normals(
+    context.mesh = context.mesh.remove_normals(
         threshold_angle=threshold_angle,
         flip=flip,
         angle=angle_type,
     )
-    ctx.neighbors = None
+    context.neighbors = None
 
-    return ctx
+    return context
 
 
-def remove_bridges_op(ctx: PipelineContext) -> PipelineContext:
+def remove_bridges(context: PipelineContext) -> PipelineContext:
     """Remove triangles where all vertices are on the boundary.
 
     Args:
-        ctx: Pipeline context with mesh
+        context: Pipeline context with mesh
 
     Returns:
         Updated context with bridges removed
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
-    ctx.mesh = ctx.mesh.remove_bridges(verbose=False)
-    ctx.neighbors = None
+    context.mesh = context.mesh.remove_bridges(verbose=False)
+    context.neighbors = None
 
-    return ctx
+    return context
 
 
-def remove_tongues_op(
-    ctx: PipelineContext,
+def remove_tongues(
+    context: PipelineContext,
     radius: float = 50.0,
     threshold: float = 6.0,
     hole_edges: int = 100,
@@ -495,7 +513,7 @@ def remove_tongues_op(
     """Remove tongue-like artifacts from mesh.
 
     Args:
-        ctx: Pipeline context with mesh
+        context: Pipeline context with mesh
         radius: Radius for boundary point neighborhood
         threshold: Threshold for boundary/euclidean distance ratio
         hole_edges: Size of holes to fill after removal
@@ -503,76 +521,76 @@ def remove_tongues_op(
     Returns:
         Updated context with tongues removed
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
-    ctx.mesh = ctx.mesh.remove_tongues(
+    context.mesh = context.mesh.remove_tongues(
         radius=radius,
         threshold=threshold,
         hole_edges=hole_edges,
         verbose=False,
     )
-    ctx.neighbors = None
+    context.neighbors = None
 
-    return ctx
+    return context
 
 
-def extract_largest_op(ctx: PipelineContext) -> PipelineContext:
+def extract_largest(context: PipelineContext) -> PipelineContext:
     """Keep only the largest connected component.
 
     Args:
-        ctx: Pipeline context with mesh
+        context: Pipeline context with mesh
 
     Returns:
         Updated context with largest component only
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
-    ctx.mesh = ctx.mesh.extract_largest()
-    ctx.neighbors = None
+    context.mesh = context.mesh.extract_largest()
+    context.neighbors = None
 
-    return ctx
+    return context
 
 
-def clean_op(
-    ctx: PipelineContext,
+def clean_mesh(
+    context: PipelineContext,
     tolerance: float | None = None,
 ) -> PipelineContext:
     """Clean mesh by removing degenerate cells.
 
     Args:
-        ctx: Pipeline context with mesh
+        context: Pipeline context with mesh
         tolerance: Tolerance for point merging
 
     Returns:
         Updated context with cleaned mesh
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
-    ctx.mesh = ctx.mesh.clean(tolerance=tolerance)
-    ctx.neighbors = None
+    context.mesh = context.mesh.clean(tolerance=tolerance)
+    context.neighbors = None
 
-    return ctx
+    return context
 
 
-def triangulate_op(ctx: PipelineContext) -> PipelineContext:
+def triangulate_mesh(context: PipelineContext) -> PipelineContext:
     """Convert all faces to triangles.
 
     Args:
-        ctx: Pipeline context with mesh
+        context: Pipeline context with mesh
 
     Returns:
         Updated context with triangulated mesh
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
-    ctx.mesh = ctx.mesh.triangulate()
-    ctx.neighbors = None
+    context.mesh = context.mesh.triangulate()
+    context.neighbors = None
 
-    return ctx
+    return context
 
 
-def compute_normals_op(
-    ctx: PipelineContext,
+def compute_normals(
+    context: PipelineContext,
     flip: bool = False,
     consistent: bool = True,
     auto_orient: bool = False,
@@ -580,7 +598,7 @@ def compute_normals_op(
     """Compute surface normals.
 
     Args:
-        ctx: Pipeline context with mesh
+        context: Pipeline context with mesh
         flip: Flip all normals
         consistent: Make normals consistent
         auto_orient: Orient normals outward
@@ -588,67 +606,68 @@ def compute_normals_op(
     Returns:
         Updated context with computed normals
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
-    ctx.mesh = ctx.mesh.compute_normals(
+    context.mesh = context.mesh.compute_normals(
         flip_normals=flip,
         consistent_normals=consistent,
         auto_orient_normals=auto_orient,
     )
 
-    return ctx
+    return context
 
 
-def flip_normals_op(ctx: PipelineContext) -> PipelineContext:
+def flip_normals(context: PipelineContext) -> PipelineContext:
     """Flip all surface normals.
 
     Args:
-        ctx: Pipeline context with mesh
+        context: Pipeline context with mesh
 
     Returns:
         Updated context with flipped normals
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
-    ctx.mesh = ctx.mesh.flip_normals()
+    context.mesh = context.mesh.flip_normals()
 
-    return ctx
+    return context
 
 
-def rotate_op(
-    ctx: PipelineContext,
+def rotate_mesh(
+    context: PipelineContext,
     axis: str = "x",
     angle: float = 0.0,
 ) -> PipelineContext:
     """Rotate mesh around an axis.
 
     Args:
-        ctx: Pipeline context with mesh
+        context: Pipeline context with mesh
         axis: Axis to rotate around ('x', 'y', 'z')
         angle: Rotation angle in degrees
 
     Returns:
         Updated context with rotated mesh
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
     if angle == 0:
-        return ctx
+        return context
 
-    if axis.lower() == "x":
-        ctx.mesh = ctx.mesh.rotate_x(angle)
-    elif axis.lower() == "y":
-        ctx.mesh = ctx.mesh.rotate_y(angle)
-    elif axis.lower() == "z":
-        ctx.mesh = ctx.mesh.rotate_z(angle)
+    axis_lower = axis.lower()
+    if axis_lower == "x":
+        context.mesh = context.mesh.rotate_x(angle)
+    elif axis_lower == "y":
+        context.mesh = context.mesh.rotate_y(angle)
+    elif axis_lower == "z":
+        context.mesh = context.mesh.rotate_z(angle)
     else:
         raise ConfigurationError(f"Invalid axis: {axis}. Must be 'x', 'y', or 'z'")
 
-    return ctx
+    return context
 
 
-def clip_op(
-    ctx: PipelineContext,
+def clip_mesh(
+    context: PipelineContext,
     normal: str | list[float] = "x",
     origin: list[float] | None = None,
     invert: bool = True,
@@ -656,7 +675,7 @@ def clip_op(
     """Clip mesh with a plane.
 
     Args:
-        ctx: Pipeline context with mesh
+        context: Pipeline context with mesh
         normal: Plane normal ('x', 'y', 'z', '-x', '-y', '-z') or [nx, ny, nz]
         origin: Point on clipping plane
         invert: Invert clipping direction
@@ -664,79 +683,79 @@ def clip_op(
     Returns:
         Updated context with clipped mesh
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
-    ctx.mesh = ctx.mesh.clip(normal=normal, origin=origin, invert=invert)
-    ctx.neighbors = None
+    context.mesh = context.mesh.clip(normal=normal, origin=origin, invert=invert)
+    context.neighbors = None
 
-    return ctx
+    return context
 
 
-def erode_op(
-    ctx: PipelineContext,
+def erode_mesh(
+    context: PipelineContext,
     iterations: int = 1,
 ) -> PipelineContext:
     """Erode mesh by removing boundary points.
 
     Args:
-        ctx: Pipeline context with mesh
+        context: Pipeline context with mesh
         iterations: Number of erosion iterations
 
     Returns:
         Updated context with eroded mesh
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
     if iterations <= 0:
-        return ctx
+        return context
 
-    ctx.mesh = ctx.mesh.erode(iterations=iterations)
-    ctx.neighbors = None
+    context.mesh = context.mesh.erode(iterations=iterations)
+    context.neighbors = None
 
-    return ctx
+    return context
 
 
-def ecft_op(
-    ctx: PipelineContext,
+def extract_clean_fill_triangulate(
+    context: PipelineContext,
     hole_edges: int = 300,
 ) -> PipelineContext:
     """ExtractLargest, Clean, FillHoles, Triangulate.
 
     Args:
-        ctx: Pipeline context with mesh
+        context: Pipeline context with mesh
         hole_edges: Size of holes to fill
 
     Returns:
         Updated context with processed mesh
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
-    ctx.mesh = ctx.mesh.ecft(hole_edges=hole_edges)
-    ctx.neighbors = None
+    context.mesh = context.mesh.ecft(hole_edges=hole_edges)
+    context.neighbors = None
 
-    return ctx
+    return context
 
 
-def correct_normal_orientation_op(
-    ctx: PipelineContext,
+def correct_normal_orientation(
+    context: PipelineContext,
     relative: str = "x",
 ) -> PipelineContext:
     """Correct normal orientation relative to an axis.
 
     Args:
-        ctx: Pipeline context with mesh
+        context: Pipeline context with mesh
         relative: Axis to use for orientation ('x', 'y', 'z')
 
     Returns:
         Updated context with corrected normals
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
-    result = ctx.mesh.correct_normal_orientation(relative=relative, inplace=False)
+    result = context.mesh.correct_normal_orientation(relative=relative, inplace=False)
     if result is not None:
-        ctx.mesh = result
+        context.mesh = result
 
-    return ctx
+    return context
 
 
 # =============================================================================
@@ -744,56 +763,53 @@ def correct_normal_orientation_op(
 # =============================================================================
 
 
-def compute_curvature_op(
-    ctx: PipelineContext,
+def compute_curvature(
+    context: PipelineContext,
     curvature_type: str = "mean",
 ) -> PipelineContext:
     """Compute mesh curvature.
 
     Args:
-        ctx: Pipeline context with mesh
+        context: Pipeline context with mesh
         curvature_type: Type of curvature ('mean', 'gaussian', 'minimum', 'maximum')
 
     Returns:
         Updated context with curvature array
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
     valid_types = ["mean", "gaussian", "minimum", "maximum"]
     if curvature_type not in valid_types:
         raise ConfigurationError(f"curvature_type must be one of {valid_types}")
 
-    ctx.curvature = ctx.mesh.curvature(curv_type=curvature_type)
-    ctx.mesh["curvature"] = ctx.curvature
+    context.curvature = context.mesh.curvature(curv_type=curvature_type)
+    context.mesh["curvature"] = context.curvature
 
-    return ctx
+    return context
 
 
-def filter_scalars_op(
-    ctx: PipelineContext,
+def filter_scalars(
+    context: PipelineContext,
     function: str = "median",
     iterations: int = 1,
 ) -> PipelineContext:
     """Apply filter to scalar field (curvature).
 
     Args:
-        ctx: Pipeline context with curvature
-        function: Filter function ('median', 'mean', 'min', 'max')
+        context: Pipeline context with curvature
+        function: Filter function ('median', 'mean', 'minmax', 'maxmin')
         iterations: Number of filter iterations
 
     Returns:
         Updated context with filtered curvature
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
-    if ctx.curvature is None:
+    if context.curvature is None:
         raise ConfigurationError("filter_scalars requires curvature in context")
 
-    from phenotastic import domains
-
-    # Ensure neighbors are computed
-    if ctx.neighbors is None:
-        ctx.neighbors = ctx.mesh.vertex_neighbors_all(include_self=True)
+    if context.neighbors is None:
+        context.neighbors = context.mesh.vertex_neighbors_all(include_self=True)
 
     func_map = {
         "median": domains.median,
@@ -805,96 +821,87 @@ def filter_scalars_op(
     if function not in func_map:
         raise ConfigurationError(f"function must be one of {list(func_map.keys())}")
 
-    ctx.curvature = func_map[function](ctx.curvature, ctx.neighbors, iterations)
-    ctx.mesh["curvature"] = ctx.curvature
+    context.curvature = func_map[function](context.curvature, context.neighbors, iterations)
+    context.mesh["curvature"] = context.curvature
 
-    return ctx
+    return context
 
 
-def segment_domains_op(
-    ctx: PipelineContext,
+def segment_domains(
+    context: PipelineContext,
     curvature_type: str | None = None,
 ) -> PipelineContext:
     """Create domains via steepest ascent on curvature field.
 
     Args:
-        ctx: Pipeline context with mesh and curvature
+        context: Pipeline context with mesh and curvature
         curvature_type: Curvature type to compute (if not already in context)
 
     Returns:
         Updated context with domain labels
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
-    from phenotastic import domains
+    if context.curvature is None:
+        curvature_type = curvature_type or "mean"
+        context.curvature = context.mesh.curvature(curv_type=curvature_type)
+        context.mesh["curvature"] = context.curvature
 
-    # Compute curvature if needed
-    if ctx.curvature is None:
-        if curvature_type is None:
-            curvature_type = "mean"
-        ctx.curvature = ctx.mesh.curvature(curv_type=curvature_type)
-        ctx.mesh["curvature"] = ctx.curvature
+    if context.neighbors is None:
+        context.neighbors = context.mesh.vertex_neighbors_all(include_self=True)
 
-    # Ensure neighbors are computed
-    if ctx.neighbors is None:
-        ctx.neighbors = ctx.mesh.vertex_neighbors_all(include_self=True)
-
-    ctx.domains = domains.steepest_ascent(
-        ctx.mesh.to_polydata(),
-        ctx.curvature,
-        neighbours=ctx.neighbors,
+    context.domains = domains.steepest_ascent(
+        context.mesh.to_polydata(),
+        context.curvature,
+        neighbours=context.neighbors,
     )
-    ctx.mesh["domains"] = ctx.domains
+    context.mesh["domains"] = context.domains
 
-    return ctx
+    return context
 
 
-def merge_angles_op(
-    ctx: PipelineContext,
+def merge_by_angles(
+    context: PipelineContext,
     threshold: float = 20.0,
     meristem_method: str = "center_of_mass",
 ) -> PipelineContext:
     """Merge domains within angular threshold from meristem.
 
     Args:
-        ctx: Pipeline context with domains
+        context: Pipeline context with domains
         threshold: Angular threshold in degrees
         meristem_method: Method for calculating meristem center
 
     Returns:
         Updated context with merged domains
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
-    if ctx.domains is None:
+    if context.domains is None:
         raise ConfigurationError("merge_angles requires domains in context")
 
-    from phenotastic import domains
-
-    # Find meristem if not set
-    if ctx.meristem_index is None:
-        ctx.meristem_index = domains.define_meristem(
-            ctx.mesh.to_polydata(),
-            ctx.domains,
+    if context.meristem_index is None:
+        result = domains.define_meristem(
+            context.mesh.to_polydata(),
+            context.domains,
             method=meristem_method,
         )
-        if isinstance(ctx.meristem_index, tuple):
-            ctx.meristem_index = ctx.meristem_index[0]
+        context.meristem_index = _extract_meristem_index(result)
 
-    ctx.domains = domains.merge_angles(
-        ctx.mesh.to_polydata(),
-        ctx.domains,
-        ctx.meristem_index,
+    context.domains = domains.merge_angles(
+        context.mesh.to_polydata(),
+        context.domains,
+        context.meristem_index,
         threshold=threshold,
         method=meristem_method,
     )
-    ctx.mesh["domains"] = ctx.domains
+    context.mesh["domains"] = context.domains
 
-    return ctx
+    return context
 
 
-def merge_distance_op(
-    ctx: PipelineContext,
+def merge_by_distance(
+    context: PipelineContext,
     threshold: float = 50.0,
     metric: str = "euclidean",
     method: str = "center_of_mass",
@@ -902,7 +909,7 @@ def merge_distance_op(
     """Merge domains within spatial distance threshold.
 
     Args:
-        ctx: Pipeline context with domains
+        context: Pipeline context with domains
         threshold: Distance threshold
         metric: Distance metric ('euclidean' or 'geodesic')
         method: Method for calculating domain center
@@ -910,28 +917,26 @@ def merge_distance_op(
     Returns:
         Updated context with merged domains
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
-    if ctx.domains is None:
+    if context.domains is None:
         raise ConfigurationError("merge_distance requires domains in context")
 
-    from phenotastic import domains
-
-    ctx.domains = domains.merge_distance(
-        ctx.mesh.to_polydata(),
-        ctx.domains,
+    context.domains = domains.merge_distance(
+        context.mesh.to_polydata(),
+        context.domains,
         threshold=threshold,
-        scalars=ctx.curvature,
+        scalars=context.curvature,
         method=method,
         metric=metric,
     )
-    ctx.mesh["domains"] = ctx.domains
+    context.mesh["domains"] = context.domains
 
-    return ctx
+    return context
 
 
-def merge_small_op(
-    ctx: PipelineContext,
+def merge_small_domains(
+    context: PipelineContext,
     threshold: int = 100,
     metric: str = "points",
     mode: str = "border",
@@ -939,7 +944,7 @@ def merge_small_op(
     """Merge small domains to their largest neighbor.
 
     Args:
-        ctx: Pipeline context with domains
+        context: Pipeline context with domains
         threshold: Size threshold for merging
         metric: Size metric ('points' or 'area')
         mode: Merge strategy ('border' or 'area')
@@ -947,109 +952,102 @@ def merge_small_op(
     Returns:
         Updated context with merged domains
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
-    if ctx.domains is None:
+    if context.domains is None:
         raise ConfigurationError("merge_small requires domains in context")
 
-    from phenotastic import domains
+    if context.neighbors is None:
+        context.neighbors = context.mesh.vertex_neighbors_all(include_self=True)
 
-    if ctx.neighbors is None:
-        ctx.neighbors = ctx.mesh.vertex_neighbors_all(include_self=True)
-
-    ctx.domains = domains.merge_small(
-        ctx.mesh.to_polydata(),
-        ctx.domains,
+    context.domains = domains.merge_small(
+        context.mesh.to_polydata(),
+        context.domains,
         threshold=threshold,
         metric=metric,
         mode=mode,
-        neighbours=ctx.neighbors,
+        neighbours=context.neighbors,
     )
-    ctx.mesh["domains"] = ctx.domains
+    context.mesh["domains"] = context.domains
 
-    return ctx
+    return context
 
 
-def merge_engulfing_op(
-    ctx: PipelineContext,
+def merge_engulfing_domains(
+    context: PipelineContext,
     threshold: float = 0.9,
 ) -> PipelineContext:
     """Merge domains mostly encircled by a neighbor.
 
     Args:
-        ctx: Pipeline context with domains
+        context: Pipeline context with domains
         threshold: Fraction of boundary that must be shared (0-1)
 
     Returns:
         Updated context with merged domains
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
-    if ctx.domains is None:
+    if context.domains is None:
         raise ConfigurationError("merge_engulfing requires domains in context")
 
-    from phenotastic import domains
+    if context.neighbors is None:
+        context.neighbors = context.mesh.vertex_neighbors_all(include_self=True)
 
-    if ctx.neighbors is None:
-        ctx.neighbors = ctx.mesh.vertex_neighbors_all(include_self=True)
-
-    ctx.domains = domains.merge_engulfing(
-        ctx.mesh.to_polydata(),
-        ctx.domains,
+    context.domains = domains.merge_engulfing(
+        context.mesh.to_polydata(),
+        context.domains,
         threshold=threshold,
-        neighbours=ctx.neighbors,
+        neighbours=context.neighbors,
     )
-    ctx.mesh["domains"] = ctx.domains
+    context.mesh["domains"] = context.domains
 
-    return ctx
+    return context
 
 
-def merge_disconnected_op(
-    ctx: PipelineContext,
+def merge_disconnected_domains(
+    context: PipelineContext,
     meristem_method: str = "center_of_mass",
 ) -> PipelineContext:
     """Connect domains isolated from meristem.
 
     Args:
-        ctx: Pipeline context with domains
+        context: Pipeline context with domains
         meristem_method: Method for identifying meristem
 
     Returns:
         Updated context with connected domains
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
-    if ctx.domains is None:
+    if context.domains is None:
         raise ConfigurationError("merge_disconnected requires domains in context")
 
-    from phenotastic import domains
+    if context.neighbors is None:
+        context.neighbors = context.mesh.vertex_neighbors_all(include_self=True)
 
-    if ctx.neighbors is None:
-        ctx.neighbors = ctx.mesh.vertex_neighbors_all(include_self=True)
-
-    if ctx.meristem_index is None:
-        ctx.meristem_index = domains.define_meristem(
-            ctx.mesh.to_polydata(),
-            ctx.domains,
+    if context.meristem_index is None:
+        result = domains.define_meristem(
+            context.mesh.to_polydata(),
+            context.domains,
             method=meristem_method,
         )
-        if isinstance(ctx.meristem_index, tuple):
-            ctx.meristem_index = ctx.meristem_index[0]
+        context.meristem_index = _extract_meristem_index(result)
 
-    ctx.domains = domains.merge_disconnected(
-        ctx.mesh.to_polydata(),
-        ctx.domains,
-        ctx.meristem_index,
+    context.domains = domains.merge_disconnected(
+        context.mesh.to_polydata(),
+        context.domains,
+        context.meristem_index,
         threshold=None,
-        neighbours=ctx.neighbors,
+        neighbours=context.neighbors,
     )
-    ctx.mesh["domains"] = ctx.domains
+    context.mesh["domains"] = context.domains
 
-    return ctx
+    return context
 
 
-def merge_depth_op(
-    ctx: PipelineContext,
+def merge_by_depth(
+    context: PipelineContext,
     threshold: float = 0.0,
     mode: str = "max",
     exclude_boundary: bool = False,
@@ -1058,7 +1056,7 @@ def merge_depth_op(
     """Merge domains with similar depth values.
 
     Args:
-        ctx: Pipeline context with domains and curvature
+        context: Pipeline context with domains and curvature
         threshold: Maximum depth difference for merging
         mode: Aggregation mode ('min', 'max', 'median', 'mean')
         exclude_boundary: Exclude boundary vertices from calculation
@@ -1067,163 +1065,151 @@ def merge_depth_op(
     Returns:
         Updated context with merged domains
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
-    if ctx.domains is None:
+    if context.domains is None:
         raise ConfigurationError("merge_depth requires domains in context")
-    if ctx.curvature is None:
+    if context.curvature is None:
         raise ConfigurationError("merge_depth requires curvature in context")
 
-    from phenotastic import domains
+    if context.neighbors is None:
+        context.neighbors = context.mesh.vertex_neighbors_all(include_self=True)
 
-    if ctx.neighbors is None:
-        ctx.neighbors = ctx.mesh.vertex_neighbors_all(include_self=True)
-
-    ctx.domains = domains.merge_depth(
-        ctx.mesh.to_polydata(),
-        ctx.domains,
-        ctx.curvature,
+    context.domains = domains.merge_depth(
+        context.mesh.to_polydata(),
+        context.domains,
+        context.curvature,
         threshold=threshold,
-        neighbours=ctx.neighbors,
+        neighbours=context.neighbors,
         exclude_boundary=exclude_boundary,
         min_points=min_points,
         mode=mode,
     )
-    ctx.mesh["domains"] = ctx.domains
+    context.mesh["domains"] = context.domains
 
-    return ctx
+    return context
 
 
-def define_meristem_op(
-    ctx: PipelineContext,
+def define_meristem(
+    context: PipelineContext,
     method: str = "center_of_mass",
 ) -> PipelineContext:
     """Identify the meristem domain.
 
     Args:
-        ctx: Pipeline context with domains
+        context: Pipeline context with domains
         method: Method for meristem identification
 
     Returns:
         Updated context with meristem index
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
-    if ctx.domains is None:
+    if context.domains is None:
         raise ConfigurationError("define_meristem requires domains in context")
 
-    from phenotastic import domains
-
-    if ctx.neighbors is None:
-        ctx.neighbors = ctx.mesh.vertex_neighbors_all(include_self=True)
+    if context.neighbors is None:
+        context.neighbors = context.mesh.vertex_neighbors_all(include_self=True)
 
     result = domains.define_meristem(
-        ctx.mesh.to_polydata(),
-        ctx.domains,
+        context.mesh.to_polydata(),
+        context.domains,
         method=method,
-        neighs=ctx.neighbors,
+        neighs=context.neighbors,
     )
-    if isinstance(result, tuple):
-        ctx.meristem_index = result[0]
-    else:
-        ctx.meristem_index = result
+    context.meristem_index = _extract_meristem_index(result)
 
-    return ctx
+    return context
 
 
-def extract_domaindata_op(ctx: PipelineContext) -> PipelineContext:
+def extract_domain_data(context: PipelineContext) -> PipelineContext:
     """Extract geometric measurements for each domain.
 
     Args:
-        ctx: Pipeline context with mesh and domains
+        context: Pipeline context with mesh and domains
 
     Returns:
         Updated context with domain_data DataFrame
     """
-    _require_mesh(ctx)
+    _validate_mesh_present(context)
 
-    if ctx.domains is None:
+    if context.domains is None:
         raise ConfigurationError("extract_domaindata requires domains in context")
 
-    import pandas as pd
-
-    from phenotastic import domains
-
-    # Create point data frame
-    pdata = pd.DataFrame({"domain": ctx.domains})
+    pdata = pd.DataFrame({"domain": context.domains})
 
     # Get apex/meristem coordinates
-    if ctx.meristem_index is None:
+    if context.meristem_index is None:
         result = domains.define_meristem(
-            ctx.mesh.to_polydata(),
-            ctx.domains,
+            context.mesh.to_polydata(),
+            context.domains,
             return_coordinates=True,
         )
         if isinstance(result, tuple):
-            ctx.meristem_index = result[0]
+            context.meristem_index = result[0]
             apex = result[1]
         else:
-            ctx.meristem_index = result
-            apex = np.array(ctx.mesh.center_of_mass())
+            context.meristem_index = result
+            apex = np.array(context.mesh.center_of_mass())
     else:
-        apex = np.array(ctx.mesh.center_of_mass())
+        apex = np.array(context.mesh.center_of_mass())
 
-    ctx.domain_data = domains.extract_domaindata(
+    context.domain_data = domains.extract_domaindata(
         pdata,
-        ctx.mesh.to_polydata(),
+        context.mesh.to_polydata(),
         apex,
-        ctx.meristem_index,
+        context.meristem_index,
     )
 
-    return ctx
+    return context
 
 
 # =============================================================================
 # Operation Registry
 # =============================================================================
 
-# Map of operation names to functions
+# Map of YAML operation names to functions
 OPERATIONS: dict[str, Any] = {
     # Image/Contour
-    "contour": contour_op,
-    "create_mesh": create_mesh_op,
-    "create_cellular_mesh": create_cellular_mesh_op,
+    "contour": generate_contour,
+    "create_mesh": create_mesh_from_contour,
+    "create_cellular_mesh": create_mesh_from_cells,
     # Mesh Processing
-    "smooth": smooth_op,
-    "smooth_taubin": smooth_taubin_op,
-    "smooth_boundary": smooth_boundary_op,
-    "remesh": remesh_op,
-    "decimate": decimate_op,
-    "subdivide": subdivide_op,
-    "repair_holes": repair_holes_op,
-    "repair": repair_op,
-    "make_manifold": make_manifold_op,
-    "filter_curvature": filter_curvature_op,
-    "remove_normals": remove_normals_op,
-    "remove_bridges": remove_bridges_op,
-    "remove_tongues": remove_tongues_op,
-    "extract_largest": extract_largest_op,
-    "clean": clean_op,
-    "triangulate": triangulate_op,
-    "compute_normals": compute_normals_op,
-    "flip_normals": flip_normals_op,
-    "rotate": rotate_op,
-    "clip": clip_op,
-    "erode": erode_op,
-    "ecft": ecft_op,
-    "correct_normal_orientation": correct_normal_orientation_op,
+    "smooth": smooth_mesh,
+    "smooth_taubin": smooth_mesh_taubin,
+    "smooth_boundary": smooth_boundary,
+    "remesh": remesh,
+    "decimate": decimate_mesh,
+    "subdivide": subdivide_mesh,
+    "repair_holes": repair_holes,
+    "repair": repair_mesh,
+    "make_manifold": make_manifold,
+    "filter_curvature": filter_by_curvature,
+    "remove_normals": remove_by_normals,
+    "remove_bridges": remove_bridges,
+    "remove_tongues": remove_tongues,
+    "extract_largest": extract_largest,
+    "clean": clean_mesh,
+    "triangulate": triangulate_mesh,
+    "compute_normals": compute_normals,
+    "flip_normals": flip_normals,
+    "rotate": rotate_mesh,
+    "clip": clip_mesh,
+    "erode": erode_mesh,
+    "ecft": extract_clean_fill_triangulate,
+    "correct_normal_orientation": correct_normal_orientation,
     # Domain Operations
-    "compute_curvature": compute_curvature_op,
-    "filter_scalars": filter_scalars_op,
-    "segment_domains": segment_domains_op,
-    "merge_angles": merge_angles_op,
-    "merge_distance": merge_distance_op,
-    "merge_small": merge_small_op,
-    "merge_engulfing": merge_engulfing_op,
-    "merge_disconnected": merge_disconnected_op,
-    "merge_depth": merge_depth_op,
-    "define_meristem": define_meristem_op,
-    "extract_domaindata": extract_domaindata_op,
+    "compute_curvature": compute_curvature,
+    "filter_scalars": filter_scalars,
+    "segment_domains": segment_domains,
+    "merge_angles": merge_by_angles,
+    "merge_distance": merge_by_distance,
+    "merge_small": merge_small_domains,
+    "merge_engulfing": merge_engulfing_domains,
+    "merge_disconnected": merge_disconnected_domains,
+    "merge_depth": merge_by_depth,
+    "define_meristem": define_meristem,
+    "extract_domaindata": extract_domain_data,
 }
 
 # Operation metadata for documentation
@@ -1246,5 +1232,4 @@ OPERATION_INFO: dict[str, OperationInfo] = {
             "subdivisions": ParameterInfo("subdivisions", "int", 3, "Subdivisions for clustering"),
         },
     ),
-    # Add more as needed...
 }

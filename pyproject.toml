@@ -34,6 +34,13 @@ dependencies = [
     "loguru>=0.7.3",
     "click>=8.0",
     "pyyaml>=6.0",
+    "pymeshfix>=0.17",
+    "pyacvd>=0.3",
+    "tifffile>=2024.12",
+    "networkx>=3.0",
+    "clahe>=0.1",
+    "czifile>=2019.7",
+    "scikit-learn>=1.6",
 ]
 
 [project.scripts]

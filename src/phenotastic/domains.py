@@ -109,7 +109,7 @@ def steepest_ascent(
     if (len(scalars) != mesh.n_points) or scalars.ndim > 1:
         raise RuntimeError("Invalid scalar array.")
     if neighbours is None:
-        neighbours = mp.vertex_neighbors_all(mesh)
+        neighbours = mp.get_vertex_neighbors_all(mesh)
 
     # Get the individual connections by computing the neighbourhood gradients
     connections: list[list[Any]] = [[]] * mesh.n_points
@@ -348,7 +348,7 @@ def extract_domain(mesh: pv.PolyData, domains: NDArray[np.integer[Any]], index: 
     return extracted
 
 
-def neighbouring_domains(
+def get_neighbouring_domains(
     mesh: pv.PolyData,
     domains: NDArray[np.integer[Any]],
     seed: int,
@@ -372,7 +372,7 @@ def neighbouring_domains(
     if len(domains) != mesh.n_points or domains.ndim > 1:
         raise RuntimeError("Invalid domains array.")
     if neighbours is None:
-        neighbours = mp.vertex_neighbors_all(mesh)
+        neighbours = mp.get_vertex_neighbors_all(mesh)
 
     in_domain = np.where(domains == seed)[0]
 
@@ -383,7 +383,7 @@ def neighbouring_domains(
     return neigh_domains
 
 
-def border(
+def compute_border(
     mesh: pv.PolyData,
     domains: NDArray[np.integer[Any]],
     index1: int,
@@ -414,7 +414,7 @@ def border(
     if len(domains) != mesh.n_points or domains.ndim > 1:
         raise RuntimeError("Invalid domains array.")
     if neighbours is None:
-        neighbours = mp.vertex_neighbors_all(mesh)
+        neighbours = mp.get_vertex_neighbors_all(mesh)
 
     _, in_1 = get_domain_boundary(mesh, domains, index1, return_indices=True)
     _, in_2 = get_domain_boundary(mesh, domains, index2, return_indices=True)
@@ -458,7 +458,7 @@ def merge_engulfing(
     if len(domains) != mesh.n_points or domains.ndim > 1:
         raise RuntimeError("Invalid domains array.")
     if neighbours is None:
-        neighbours = mp.vertex_neighbors_all(mesh)
+        neighbours = mp.get_vertex_neighbors_all(mesh)
 
     domains = domains.copy()
     n_domains_initial = len(np.unique(domains))
@@ -528,7 +528,7 @@ def merge_small(
     if len(domains) != mesh.n_points or domains.ndim > 1:
         raise RuntimeError("Invalid domains array.")
     if neighbours is None:
-        neighbours = mp.vertex_neighbors_all(mesh)
+        neighbours = mp.get_vertex_neighbors_all(mesh)
 
     domains = domains.copy()
     n_domains_initial = len(np.unique(domains))
@@ -549,9 +549,11 @@ def merge_small(
             probes = d_labels[d_sizes < threshold]
 
         for probe in probes:
-            probe_d_neighbours = neighbouring_domains(mesh, domains, probe, neighbours=neighbours)
+            probe_d_neighbours = get_neighbouring_domains(mesh, domains, probe, neighbours=neighbours)
             if mode == "border":
-                d_borders = [border(mesh, domains, probe, ii, neighbours=neighbours) for ii in probe_d_neighbours]
+                d_borders = [
+                    compute_border(mesh, domains, probe, ii, neighbours=neighbours) for ii in probe_d_neighbours
+                ]
                 d_border_sizes = [len(bb) for bb in d_borders]
                 to_merge.append([probe, probe_d_neighbours[np.argmax(d_border_sizes)]])
             elif mode == "area":
@@ -602,7 +604,7 @@ def merge_disconnected(
     if len(domains) != mesh.n_points or domains.ndim > 1:
         raise RuntimeError("Invalid domains array.")
     if neighbours is None:
-        neighbours = mp.vertex_neighbors_all(mesh)
+        neighbours = mp.get_vertex_neighbors_all(mesh)
     if threshold is None:
         return domains.astype(np.int64)
 
@@ -619,7 +621,8 @@ def merge_disconnected(
 
         # Get all borders to meristem. Figure out which are disconnected
         borders = [
-            border(mesh, domains, meristem_idx, ii, neighbours=neighbours) for ii in d_labels[d_labels != meristem_idx]
+            compute_border(mesh, domains, meristem_idx, ii, neighbours=neighbours)
+            for ii in d_labels[d_labels != meristem_idx]
         ]
         mask = np.array([len(borders[ii]) for ii in range(len(borders))]) == 0
         to_merge: list[list[int]] = [[meristem_idx]] + [
@@ -631,7 +634,7 @@ def merge_disconnected(
         # Merge with neighbours with most vertices in the corresponding border
         for probe in np.sort(probes):
             probe_borders = [
-                border(mesh, domains, probe, jj, neighbours=neighbours) for jj in d_labels[d_labels != probe]
+                compute_border(mesh, domains, probe, jj, neighbours=neighbours) for jj in d_labels[d_labels != probe]
             ]
             border_sizes = [len(jj) for jj in probe_borders]
             connected_neighbour = d_labels[d_labels != probe][np.argmax(border_sizes)]
@@ -693,7 +696,7 @@ def merge_depth(
     if len(scalars) != mesh.n_points or scalars.ndim > 1:
         raise RuntimeError("Invalid scalar array.")
     if neighbours is None:
-        neighbours = mp.vertex_neighbors_all(mesh)
+        neighbours = mp.get_vertex_neighbors_all(mesh)
 
     domains = domains.copy()
     boundary = get_boundary_indices(mesh)
@@ -800,7 +803,7 @@ def merge_borders_by_length(
     if len(domains) != mesh.n_points or domains.ndim > 1:
         raise RuntimeError("Invalid domain array.")
     if neighbours is None:
-        neighbours = mp.vertex_neighbors_all(mesh)
+        neighbours = mp.get_vertex_neighbors_all(mesh)
 
     domains = domains.copy()
     n_domains_initial = np.unique(domains).shape[0]
@@ -1118,7 +1121,7 @@ def get_domain_boundary(
     return edges
 
 
-def domain_neighbors(
+def count_domain_neighbors(
     mesh: pv.PolyData,
     domains: NDArray[np.integer[Any]],
     neighs: list[NDArray[np.intp]],
@@ -1181,7 +1184,7 @@ def define_meristem(
         if neighs is None:
             neighs = mp.vertex_neighbors_all(mesh)
         doms = np.unique(domains)
-        n_neighs = domain_neighbors(mesh, domains, neighs)
+        n_neighs = count_domain_neighbors(mesh, domains, neighs)
         meristem_dom = doms[np.argmax(n_neighs)]
         coord = np.array(extract_domain(mesh, domains, meristem_dom).center_of_mass())
     else:

@@ -281,7 +281,7 @@ def validate(config_file: str) -> None:
         click.echo(f"Valid configuration with {len(pipeline)} steps:\n")
 
         for i, step in enumerate(pipeline.steps, 1):
-            params_str = ", ".join(f"{k}={v}" for k, v in step.params.items())
+            params_str = ", ".join(f"{k}={v}" for k, v in step.parameters.items())
             if params_str:
                 click.echo(f"  {i:2}. {step.name}({params_str})")
             else:

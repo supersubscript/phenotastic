@@ -42,18 +42,18 @@ class TestStepConfig:
     """Tests for StepConfig dataclass."""
 
     def test_step_config_default_params(self) -> None:
-        """StepConfig should default to empty params."""
+        """StepConfig should default to empty parameters."""
         step = StepConfig(name="smooth")
 
         assert step.name == "smooth"
-        assert step.params == {}
+        assert step.parameters == {}
 
     def test_step_config_with_params(self) -> None:
-        """StepConfig should accept params."""
-        step = StepConfig(name="smooth", params={"iterations": 50})
+        """StepConfig should accept parameters."""
+        step = StepConfig(name="smooth", parameters={"iterations": 50})
 
         assert step.name == "smooth"
-        assert step.params == {"iterations": 50}
+        assert step.parameters == {"iterations": 50}
 
 
 class TestOperationRegistry:
@@ -267,10 +267,10 @@ class TestPipelineRunWithDifferentInputs:
         )
 
         ctx = PipelineContext(contour=synthetic_contour, resolution=[1.0, 1.0, 1.0])
-        from phenotastic.operations import create_mesh_op, smooth_op
+        from phenotastic.operations import create_mesh_from_contour, smooth_mesh
 
-        ctx = create_mesh_op(ctx)
-        ctx = smooth_op(ctx, iterations=5)
+        ctx = create_mesh_from_contour(ctx)
+        ctx = smooth_mesh(ctx, iterations=5)
 
         assert ctx.mesh is not None
         assert ctx.mesh.n_points > 0

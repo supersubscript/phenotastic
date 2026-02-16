@@ -9,7 +9,7 @@ import numpy as np
 import pytest
 
 from phenotastic import PhenoMesh, Pipeline, PipelineContext, StepConfig
-from phenotastic.operations import smooth_op
+from phenotastic.operations import smooth_mesh
 
 
 class TestMeshProcessingWorkflow:
@@ -115,37 +115,37 @@ class TestContourToMeshWorkflow:
 
     def test_contour_to_mesh(self, tiny_contour: np.ndarray) -> None:
         """Basic contour to mesh workflow."""
-        from phenotastic.operations import create_mesh_op, smooth_op
+        from phenotastic.operations import create_mesh_from_contour, smooth_mesh
 
         # Start with contour
         ctx = PipelineContext(contour=tiny_contour, resolution=[1.0, 1.0, 1.0])
 
         # Create mesh
-        ctx = create_mesh_op(ctx)
+        ctx = create_mesh_from_contour(ctx)
         assert ctx.mesh is not None
 
         # Smooth
-        ctx = smooth_op(ctx, iterations=5)
+        ctx = smooth_mesh(ctx, iterations=5)
         assert ctx.mesh is not None
 
     def test_full_pipeline_from_contour(self, tiny_contour: np.ndarray) -> None:
         """Full pipeline starting from contour."""
         from phenotastic.operations import (
-            clean_op,
-            compute_curvature_op,
-            create_mesh_op,
-            remesh_op,
-            smooth_op,
+            clean_mesh,
+            compute_curvature,
+            create_mesh_from_contour,
+            remesh,
+            smooth_mesh,
         )
 
         ctx = PipelineContext(contour=tiny_contour, resolution=[1.0, 1.0, 1.0])
 
         # Create mesh
-        ctx = create_mesh_op(ctx)
-        ctx = clean_op(ctx)
-        ctx = smooth_op(ctx, iterations=5)
-        ctx = remesh_op(ctx, n_clusters=100)
-        ctx = compute_curvature_op(ctx, curvature_type="mean")
+        ctx = create_mesh_from_contour(ctx)
+        ctx = clean_mesh(ctx)
+        ctx = smooth_mesh(ctx, iterations=5)
+        ctx = remesh(ctx, n_clusters=100)
+        ctx = compute_curvature(ctx, curvature_type="mean")
 
         assert ctx.mesh is not None
         assert ctx.curvature is not None
@@ -246,15 +246,15 @@ class TestContextPersistence:
 
     def test_neighbors_cleared_after_remesh(self, sphere_mesh: PhenoMesh) -> None:
         """Neighbors should be cleared after operations that change topology."""
-        from phenotastic.operations import remesh_op, smooth_op
+        from phenotastic.operations import remesh, smooth_mesh
 
         ctx = PipelineContext(mesh=sphere_mesh)
 
-        ctx = smooth_op(ctx, iterations=5)
+        ctx = smooth_mesh(ctx, iterations=5)
         assert ctx.neighbors is None
 
         ctx.neighbors = ctx.mesh.vertex_neighbors_all(include_self=True)
-        ctx = remesh_op(ctx, n_clusters=300)
+        ctx = remesh(ctx, n_clusters=300)
         assert ctx.neighbors is None
 
 
@@ -287,7 +287,7 @@ class TestErrorRecovery:
         ctx = PipelineContext()  # No mesh
 
         with pytest.raises(ConfigurationError, match="requires a mesh"):
-            smooth_op(ctx, iterations=5)
+            smooth_mesh(ctx, iterations=5)
 
 
 class TestRepeatedOperations:

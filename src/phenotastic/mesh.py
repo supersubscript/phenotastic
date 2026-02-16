@@ -929,7 +929,7 @@ def correct_bad_mesh(mesh: pv.PolyData, verbose: bool = True) -> pv.PolyData:
         ) from None
 
     new_poly = ecft(mesh, 0)
-    nm = non_manifold_edges(new_poly)
+    nm = get_non_manifold_edges(new_poly)
 
     while nm.n_points > 0:
         if verbose:
@@ -950,7 +950,7 @@ def correct_bad_mesh(mesh: pv.PolyData, verbose: bool = True) -> pv.PolyData:
         new_poly = ecft(new_poly, 0)
 
         # If we still have non-manifold edges, force remove these points
-        nm = non_manifold_edges(new_poly)
+        nm = get_non_manifold_edges(new_poly)
         nmpts = nm.points
         mpts = new_poly.points
         ptidx = np.array([np.where((mpts == ii).all(axis=1))[0][0] for ii in nmpts])
@@ -961,7 +961,7 @@ def correct_bad_mesh(mesh: pv.PolyData, verbose: bool = True) -> pv.PolyData:
         new_poly = new_poly.remove_points(mask)[0]
 
         new_poly = ecft(new_poly, 0)
-        nm = non_manifold_edges(new_poly)
+        nm = get_non_manifold_edges(new_poly)
 
     new_poly = ecft(new_poly, 0)
 
@@ -984,7 +984,7 @@ def remove_bridges(mesh: pv.PolyData, verbose: bool = True) -> pv.PolyData:
         # Retrieve triangles on the border
         faces = new_mesh.faces.reshape(-1, 4)[:, 1:]
         f_flat = faces.ravel()
-        boundary = boundary_points(new_mesh)
+        boundary = get_boundary_points(new_mesh)
         border_faces = faces[
             np.unique(
                 np.where(np.isin(f_flat, boundary))[0] // 3,
@@ -1067,13 +1067,13 @@ def smooth_boundary(
     mesh = mesh.copy() if not inplace else mesh
 
     # Get boundary information and index correspondences
-    boundary = boundary_edges(mesh)
+    boundary = get_boundary_edges(mesh)
     bdpts = boundary.points
     from_ = np.array([mesh.FindPoint(ii) for ii in bdpts])
 
     neighs: list[tuple[int, int]] = []
     for ii in range(boundary.n_points):
-        pt_neighs = vertex_neighbors(boundary, ii, include_self=False)
+        pt_neighs = get_vertex_neighbors(boundary, ii, include_self=False)
         for jj in range(pt_neighs.shape[0]):
             neighs.append((ii, pt_neighs[jj]))
 
@@ -1221,11 +1221,11 @@ def remove_tongues(
     """
     while True:
         # Get boundary information and index correspondences
-        boundary = boundary_edges(mesh)
+        boundary = get_boundary_edges(mesh)
         bdpts = boundary.points
         from_ = np.array([mesh.FindPoint(ii) for ii in bdpts])
 
-        all_neighs = vertex_neighbors_all(mesh, include_self=False)
+        all_neighs = get_vertex_neighbors_all(mesh, include_self=False)
         all_edges: list[tuple[int, int]] = []
         for ii, pt_neighs in enumerate(all_neighs):
             for _jj, neigh in enumerate(pt_neighs):
@@ -1246,7 +1246,7 @@ def remove_tongues(
         # Find the cycles, i.e. the different boundaries we have
         neighs_list: list[tuple[int, int]] = []
         for ii in range(boundary.n_points):
-            pt_neighs = vertex_neighbors(boundary, ii, include_self=False)
+            pt_neighs = get_vertex_neighbors(boundary, ii, include_self=False)
             for jj in range(pt_neighs.shape[0]):
                 neighs_list.append((ii, pt_neighs[jj]))
         neighs_arr = np.array(neighs_list)
@@ -1406,7 +1406,7 @@ def drop_skirt(mesh: pv.PolyData, maxdist: float, flip: bool = False) -> pv.Poly
         Mesh with boundary downprojected.
     """
     lowest = mesh.bounds[int(flip)]
-    boundary = boundary_edges(mesh)
+    boundary = get_boundary_edges(mesh)
 
     mpts = mesh.points
     bdpts = boundary.points
@@ -1420,9 +1420,9 @@ def drop_skirt(mesh: pv.PolyData, maxdist: float, flip: bool = False) -> pv.Poly
     return new_mesh
 
 
-def boundary_points(mesh: pv.PolyData) -> NDArray[np.intp]:
+def get_boundary_points(mesh: pv.PolyData) -> NDArray[np.intp]:
     """Get vertex indices of points in the boundary."""
-    boundary = boundary_edges(mesh)
+    boundary = get_boundary_edges(mesh)
     bdpts = boundary.points
     indices = np.array([mesh.FindPoint(ii) for ii in bdpts])
 
@@ -1465,7 +1465,7 @@ def remesh_decimate(
     return mesh
 
 
-def non_manifold_edges(mesh: pv.PolyData) -> pv.PolyData:
+def get_non_manifold_edges(mesh: pv.PolyData) -> pv.PolyData:
     """Get non-manifold edges."""
     edges = mesh.extract_feature_edges(
         boundary_edges=False,
@@ -1476,7 +1476,7 @@ def non_manifold_edges(mesh: pv.PolyData) -> pv.PolyData:
     return edges
 
 
-def boundary_edges(mesh: pv.PolyData) -> pv.PolyData:
+def get_boundary_edges(mesh: pv.PolyData) -> pv.PolyData:
     """Get boundary edges."""
     edges = mesh.extract_feature_edges(
         boundary_edges=True,
@@ -1487,7 +1487,7 @@ def boundary_edges(mesh: pv.PolyData) -> pv.PolyData:
     return edges
 
 
-def manifold_edges(mesh: pv.PolyData) -> pv.PolyData:
+def get_manifold_edges(mesh: pv.PolyData) -> pv.PolyData:
     """Get manifold edges."""
     edges = mesh.extract_feature_edges(
         boundary_edges=False,
@@ -1498,7 +1498,7 @@ def manifold_edges(mesh: pv.PolyData) -> pv.PolyData:
     return edges
 
 
-def feature_edges(mesh: pv.PolyData, angle: float = 30) -> pv.PolyData:
+def get_feature_edges(mesh: pv.PolyData, angle: float = 30) -> pv.PolyData:
     """Get feature edges defined by given angle."""
     edges = mesh.extract_feature_edges(
         feature_angle=angle,
@@ -1510,7 +1510,7 @@ def feature_edges(mesh: pv.PolyData, angle: float = 30) -> pv.PolyData:
     return edges
 
 
-def vertex_neighbors(mesh: pv.PolyData, index: int, include_self: bool = True) -> NDArray[np.intp]:
+def get_vertex_neighbors(mesh: pv.PolyData, index: int, include_self: bool = True) -> NDArray[np.intp]:
     """Get the indices of the vertices connected to a given vertex.
 
     Args:
@@ -1550,7 +1550,7 @@ def vertex_neighbors(mesh: pv.PolyData, index: int, include_self: bool = True) -
     return np.unique(connected_vertices)
 
 
-def vertex_neighbors_all(mesh: pv.PolyData, include_self: bool = True) -> list[NDArray[np.intp]]:
+def get_vertex_neighbors_all(mesh: pv.PolyData, include_self: bool = True) -> list[NDArray[np.intp]]:
     """Get all vertex neighbors.
 
     Args:
@@ -1562,7 +1562,7 @@ def vertex_neighbors_all(mesh: pv.PolyData, include_self: bool = True) -> list[N
     """
     connectivities: list[NDArray[np.intp]] = []
     for ii in range(mesh.n_points):
-        connectivities.append(vertex_neighbors(mesh, ii, include_self))
+        connectivities.append(get_vertex_neighbors(mesh, ii, include_self))
 
     return connectivities
 
@@ -1640,7 +1640,7 @@ def erode(mesh: pv.PolyData, iterations: int = 1) -> pv.PolyData:
     for _iter in range(iterations):
         if mesh.n_points == 0:
             break
-        mesh = mesh.remove_points(boundary_points(mesh))[0]
+        mesh = mesh.remove_points(get_boundary_points(mesh))[0]
     return mesh
 
 
@@ -1685,7 +1685,7 @@ def fit_paraboloid(
     return popt
 
 
-def vertex_cycles(mesh: pv.PolyData) -> list[list[int]]:
+def get_vertex_cycles(mesh: pv.PolyData) -> list[list[int]]:
     """Find cycles (holes/boundaries) in a mesh.
 
     Args:
@@ -1694,7 +1694,7 @@ def vertex_cycles(mesh: pv.PolyData) -> list[list[int]]:
     Returns:
         List of cycles, each cycle is a list of vertex indices.
     """
-    all_neighs = vertex_neighbors_all(mesh, include_self=True)
+    all_neighs = get_vertex_neighbors_all(mesh, include_self=True)
     pairs: list[tuple[int, int]] = []
     for ii in range(mesh.n_points):
         for pp in all_neighs[ii]:
@@ -1737,12 +1737,12 @@ def fit_paraboloid_mesh(
     if isinstance(popt, tuple):
         popt = popt[0]
     if return_coord:
-        apex = paraboloid_apex(popt)
+        apex = compute_paraboloid_apex(popt)
         return popt, apex
     return popt
 
 
-def paraboloid_apex(parameters: Sequence[float]) -> NDArray[np.floating[Any]]:
+def compute_paraboloid_apex(parameters: Sequence[float]) -> NDArray[np.floating[Any]]:
     """Return the apex coordinates of a paraboloid.
 
     Args:

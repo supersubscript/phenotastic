@@ -17,7 +17,7 @@ class TestPipelineFromYaml:
 
         assert len(pipeline) == 3
         assert pipeline.steps[0].name == "smooth"
-        assert pipeline.steps[0].params == {"iterations": 10}
+        assert pipeline.steps[0].parameters == {"iterations": 10}
         assert pipeline.steps[1].name == "remesh"
         assert pipeline.steps[2].name == "clean"
 
@@ -26,18 +26,18 @@ class TestPipelineFromYaml:
         pipeline = Pipeline.from_yaml(valid_pipeline_yaml)
 
         smooth_step = pipeline.steps[0]
-        assert smooth_step.params["iterations"] == 10
+        assert smooth_step.parameters["iterations"] == 10
 
         remesh_step = pipeline.steps[1]
-        assert remesh_step.params["n_clusters"] == 500
+        assert remesh_step.parameters["n_clusters"] == 500
 
     def test_load_yaml_without_params(self, pipeline_yaml_no_params: str) -> None:
         """Should handle steps without params."""
         pipeline = Pipeline.from_yaml(pipeline_yaml_no_params)
 
         assert len(pipeline) == 3
-        assert pipeline.steps[0].params == {}
-        assert pipeline.steps[1].params == {}
+        assert pipeline.steps[0].parameters == {}
+        assert pipeline.steps[1].parameters == {}
 
     def test_load_nonexistent_file_raises(self) -> None:
         """Should raise ConfigurationError for missing file."""
@@ -123,7 +123,7 @@ steps:
 
         assert len(pipeline) == 2
         assert pipeline.steps[0].name == "smooth"
-        assert pipeline.steps[0].params["iterations"] == 25
+        assert pipeline.steps[0].parameters["iterations"] == 25
 
     def test_load_empty_string_raises(self) -> None:
         """Should raise ConfigurationError for empty string."""
@@ -160,7 +160,7 @@ class TestSavePipelineYaml:
         loaded = Pipeline.from_yaml(str(output_path))
         assert len(loaded) == 2
         assert loaded.steps[0].name == "smooth"
-        assert loaded.steps[0].params["iterations"] == 100
+        assert loaded.steps[0].parameters["iterations"] == 100
 
     def test_roundtrip_preserves_config(self, tmp_path: Path) -> None:
         """Saving and loading should preserve configuration."""
@@ -181,7 +181,7 @@ class TestSavePipelineYaml:
         assert len(loaded) == len(original)
         for orig_step, load_step in zip(original.steps, loaded.steps, strict=True):
             assert orig_step.name == load_step.name
-            assert orig_step.params == load_step.params
+            assert orig_step.parameters == load_step.parameters
 
 
 class TestYamlEdgeCases:
@@ -201,8 +201,8 @@ steps:
         pipeline = Pipeline.from_yaml(str(yaml_file))
 
         assert len(pipeline) == 2
-        assert pipeline.steps[0].params == {}
-        assert pipeline.steps[1].params == {}
+        assert pipeline.steps[0].parameters == {}
+        assert pipeline.steps[1].parameters == {}
 
     def test_nested_params_preserved(self, tmp_path: Path) -> None:
         """Should preserve nested param structures."""
@@ -217,8 +217,8 @@ steps:
 
         pipeline = Pipeline.from_yaml(str(yaml_file))
 
-        assert pipeline.steps[0].params["target_resolution"] == [0.5, 0.5, 0.5]
-        assert pipeline.steps[0].params["gaussian_sigma"] == [1.0, 1.0, 1.0]
+        assert pipeline.steps[0].parameters["target_resolution"] == [0.5, 0.5, 0.5]
+        assert pipeline.steps[0].parameters["gaussian_sigma"] == [1.0, 1.0, 1.0]
 
     def test_boolean_params_preserved(self, tmp_path: Path) -> None:
         """Should preserve boolean param values."""
@@ -233,5 +233,5 @@ steps:
 
         pipeline = Pipeline.from_yaml(str(yaml_file))
 
-        assert pipeline.steps[0].params["feature_smoothing"] is False
-        assert pipeline.steps[0].params["boundary_smoothing"] is True
+        assert pipeline.steps[0].parameters["feature_smoothing"] is False
+        assert pipeline.steps[0].parameters["boundary_smoothing"] is True

@@ -1,5 +1,5 @@
 from collections.abc import Callable, Sequence
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import mahotas as mh
 import networkx as nx
@@ -11,6 +11,7 @@ import tifffile as tiff
 import vtk
 from clahe import clahe
 from imgmisc import autocrop, cut, get_resolution, to_uint8
+from loguru import logger
 from numpy.typing import NDArray
 from pyacvd import clustering
 from pymeshfix._meshfix import PyTMesh
@@ -25,8 +26,11 @@ from skimage.segmentation import morphological_chan_vese
 
 from phenotastic.misc import car2sph, coord_array, rotate
 
+if TYPE_CHECKING:
+    from phenotastic.phenomesh import PhenoMesh
 
-def rot_matrix_44(angles: Sequence[float], invert: bool = False) -> NDArray[np.floating[Any]]:
+
+def rotation_matrix_4x4(angles: Sequence[float], invert: bool = False) -> NDArray[np.floating[Any]]:
     """Generate 4x4 homogeneous rotation matrix.
 
     Rotations are applied in order beta-gamma-alpha (for historic reasons).
@@ -76,7 +80,7 @@ def paraboloid(
     parameters: tuple[float, float, float, float, float, float, float, float],
     sampling: tuple[int, int, int] | int = (200, 200, 200),
     bounds: tuple[float, float, float, float, float, float] | float | None = None,
-) -> pv.PolyData:
+) -> "PhenoMesh":
     """Generate meshed paraboloid surface.
 
     Creates a paraboloid mesh defined by: z = p0*x² + p1*y² + p2*x + p3*y + p4,
@@ -89,7 +93,7 @@ def paraboloid(
         bounds: Bounding box [X0,X1,Y0,Y1,Z0,Z1] or single float for symmetric bounds
 
     Returns:
-        PyVista PolyData mesh of the paraboloid
+        PhenoMesh of the paraboloid
     """
     p1, p2, p3, p4, p5, alpha, beta, gamma = parameters
     bounds_list: list[float]
@@ -115,7 +119,7 @@ def paraboloid(
             [bounds_arr[1], bounds_arr[2], bounds_arr[5]],
             [bounds_arr[1], bounds_arr[3], bounds_arr[4]],
             [bounds_arr[1], bounds_arr[3], bounds_arr[5]],
-        ]
+        ],
     )
     corners = rotate(corners, [alpha, beta, gamma], invert=False)
 
@@ -140,7 +144,7 @@ def paraboloid(
     sample.Update()
 
     # Rotate the mesh so that it is in the optimised orientation
-    rotmat = rot_matrix_44([alpha, beta, gamma], invert=True)
+    rotmat = rotation_matrix_4x4([alpha, beta, gamma], invert=True)
     trans = vtk.vtkMatrix4x4()
     for ii in range(rotmat.shape[0]):
         for jj in range(rotmat.shape[1]):
@@ -159,10 +163,12 @@ def paraboloid(
 
     output = pv.PolyData(transfilter.GetOutput())
 
-    return output
+    from phenotastic.phenomesh import PhenoMesh
+
+    return PhenoMesh(output)
 
 
-def create_mesh(contour: NDArray[Any], resolution: list[float] | None = None, step_size: int = 1) -> pv.PolyData:
+def create_mesh(contour: NDArray[Any], resolution: list[float] | None = None, step_size: int = 1) -> "PhenoMesh":
     """Generate mesh from binary 3D contour using marching cubes.
 
     Args:
@@ -171,8 +177,10 @@ def create_mesh(contour: NDArray[Any], resolution: list[float] | None = None, st
         step_size: Step size for marching cubes algorithm
 
     Returns:
-        PyVista PolyData mesh
+        PhenoMesh mesh
     """
+    from phenotastic.phenomesh import PhenoMesh
+
     if resolution is None:
         resolution = [1, 1, 1]
     v, f, _, _ = marching_cubes(
@@ -183,7 +191,7 @@ def create_mesh(contour: NDArray[Any], resolution: list[float] | None = None, st
         allow_degenerate=False,
     )
     mesh = pv.PolyData(v, np.c_[[3] * len(f), f].ravel())
-    return mesh
+    return PhenoMesh(mesh)
 
 
 def filter_curvature(
@@ -239,7 +247,7 @@ def create_cellular_mesh(
     seg_img: NDArray[np.integer[Any]],
     resolution: list[float] | None = None,
     verbose: bool = True,
-) -> pv.PolyData:
+) -> "PhenoMesh":
     """Generate mesh from segmented 3D image with one mesh per cell.
 
     Args:
@@ -248,7 +256,7 @@ def create_cellular_mesh(
         verbose: Print progress information
 
     Returns:
-        PyVista PolyData mesh combining all cell meshes
+        PhenoMesh combining all cell meshes
     """
     if resolution is None:
         resolution = [1, 1, 1]
@@ -257,7 +265,7 @@ def create_cellular_mesh(
     n_cells = len(labels)
     for c_idx, cell_id in enumerate(labels):
         if verbose:
-            print(f"Now meshing cell {c_idx} (label: {cell_id}) out of {n_cells}")
+            logger.info(f"Now meshing cell {c_idx} (label: {cell_id}) out of {n_cells}")
         cell_img, cell_cuts = autocrop(
             seg_img == cell_id,
             threshold=0,
@@ -290,12 +298,14 @@ def create_cellular_mesh(
 
         cells.append(cell_mesh)
 
+    from phenotastic.phenomesh import PhenoMesh
+
     multi = pv.MultiBlock(cells)
     poly = pv.PolyData()
     for ii in range(multi.n_blocks):
         poly += multi.get(ii)
 
-    return poly
+    return PhenoMesh(poly)
 
 
 def _validate_data(data: NDArray[Any] | str) -> NDArray[Any]:
@@ -317,7 +327,7 @@ def _apply_stack_registration(data: NDArray[Any], fin: str | NDArray[Any], verbo
         Registered image array
     """
     if verbose:
-        print(f"Running stackreg for {fin}")
+        logger.info(f"Running stackreg for {fin}")
     pretype = data.dtype
     data = data.astype(float)
     sr = StackReg(StackReg.RIGID_BODY)
@@ -353,7 +363,7 @@ def _apply_clahe_enhancement(
         CLAHE-enhanced image data
     """
     if verbose:
-        print(f"Running CLAHE for {fin}")
+        logger.info(f"Running CLAHE for {fin}")
     if clahe_window is None:
         clahe_window = (np.array(data.shape) + 4) // 8
     if clahe_clip_limit is None:
@@ -363,7 +373,7 @@ def _apply_clahe_enhancement(
 
 def _apply_wiener_filtering(data: NDArray[Any], fin: str | NDArray[Any], verbose: bool = True) -> NDArray[Any]:
     if verbose:
-        print(f"Running wiener filtering for {fin}")
+        logger.info(f"Running wiener filtering for {fin}")
     data = data.astype("float")
     if data.ndim > 3:
         for ii in range(data.shape[1]):
@@ -375,21 +385,20 @@ def _apply_wiener_filtering(data: NDArray[Any], fin: str | NDArray[Any], verbose
 
 
 def contour(
-    fin: str | NDArray[Any],
+    image: str | NDArray[Any],
     iterations: int = 25,
     smoothing: int = 1,
-    masking: float | NDArray[np.bool_] = 0.75,
+    masking_factor: float | NDArray[np.bool_] = 0.75,
     crop: bool = True,
     resolution: Sequence[float] | None = None,
     clahe_window: Sequence[int] | None = None,
     clahe_clip_limit: int | None = None,
     gaussian_sigma: list[float] | None = None,
     gaussian_iterations: int = 5,
-    interpolate_slices: bool = True,
     fill_slices: bool = True,
-    lambda1: float = 1,
-    lambda2: float = 1,
-    stackreg: bool = True,
+    chan_vese_lambda1: float = 1,
+    chan_vese_lambda2: float = 1,
+    register_stack: bool = True,
     target_resolution: list[float] | None = None,
     fill_inland_threshold: float | None = None,
     return_resolution: bool = False,
@@ -401,7 +410,7 @@ def contour(
     and morphological Chan-Vese segmentation to extract object contour.
 
     Args:
-        fin: Input 3D image array or file path
+        image: Input 3D image array or file path
         iterations: Number of morphological Chan-Vese iterations
         smoothing: Smoothing iterations per cycle
         masking: Initial mask threshold (fraction of Otsu threshold)
@@ -411,11 +420,10 @@ def contour(
         clahe_clip_limit: CLAHE clip limit. Auto-calculated if None
         gaussian_sigma: Gaussian filter sigma. Auto-calculated if None
         gaussian_iterations: Number of Gaussian smoothing iterations
-        interpolate_slices: Interpolate missing slices (not implemented)
         fill_slices: Fill holes in XY slices
-        lambda1: Morphological Chan-Vese lambda1 parameter
-        lambda2: Morphological Chan-Vese lambda2 parameter
-        stackreg: Apply stack registration for slice alignment
+        chan_vese_lambda1: Morphological Chan-Vese lambda1 parameter
+        chan_vese_lambda2: Morphological Chan-Vese lambda2 parameter
+        register_stack: Apply stack registration for slice alignment
         target_resolution: Target resolution for resampling
         fill_inland_threshold: Distance threshold for filling inland regions
         return_resolution: Return resolution along with contour
@@ -428,28 +436,28 @@ def contour(
     if target_resolution is None:
         target_resolution = [0.5, 0.5, 0.5]
     if verbose:
-        print(f"Reading in data for {fin}")
+        logger.info(f"Reading in data for {image}")
 
-    data = _validate_data(fin)
+    data = _validate_data(image)
 
     if resolution is None:
-        resolution = get_resolution(fin) if isinstance(fin, str) else [1, 1, 1]
+        resolution = get_resolution(image) if isinstance(image, str) else [1, 1, 1]
 
     if any(np.less(resolution, 1e-3)):
         resolution = np.multiply(resolution, 1e6)
     if verbose:
-        print(f"Resolution for {fin} is {resolution}")
+        logger.info(f"Resolution for {image} is {resolution}")
 
     data = zoom(data, resolution / np.asarray(target_resolution), order=3)
 
     # Perform stack regularisation
-    if stackreg:
-        data = _apply_stack_registration(data, fin, verbose)
+    if register_stack:
+        data = _apply_stack_registration(data, image, verbose)
 
     # Autocrop the image
     if crop:
         if verbose:
-            print(f"Running autocrop for {fin}")
+            logger.info(f"Running autocrop for {image}")
         offset = np.full((3, 2), 5)
         offset[0] = (10, 10)
 
@@ -466,35 +474,35 @@ def contour(
             data = autocrop(data, 2 * mh.otsu(data), n=10, offset=offset)
 
     # Perform Wiener filtering
-    data = _apply_wiener_filtering(data, fin, verbose)
+    data = _apply_wiener_filtering(data, image, verbose)
     data = to_uint8(data, False)
 
     # Performing CLAHE
-    data = _apply_clahe_enhancement(data, fin, clahe_window, clahe_clip_limit, verbose)
+    data = _apply_clahe_enhancement(data, image, clahe_window, clahe_clip_limit, verbose)
 
     # Performing Gaussian smoothing
     if gaussian_sigma is None:
         gaussian_sigma = [1, 1, 1]
     for _ii in range(gaussian_iterations):
         if verbose:
-            print(f"Smoothing out {fin} with gaussian smoothing")
+            logger.info(f"Smoothing out {image} with gaussian smoothing")
             data = gaussian_filter(data, sigma=gaussian_sigma)
 
     # Perform morphological chan-vese
     if verbose:
-        print(f"Running morphological chan-vese for {fin}")
+        logger.info(f"Running morphological chan-vese for {image}")
     mask: NDArray[np.bool_]
-    if isinstance(masking, (float, int)):
-        mask = to_uint8(data, False) > masking * mh.otsu(to_uint8(data, False))
+    if isinstance(masking_factor, (float, int)):
+        mask = to_uint8(data, False) > masking_factor * mh.otsu(to_uint8(data, False))
     else:
-        mask = masking
+        mask = masking_factor
     contour_result = morphological_chan_vese(
         data,
         iterations=iterations,
         init_level_set=mask,
         smoothing=smoothing,
-        lambda1=lambda1,
-        lambda2=lambda2,
+        lambda1=chan_vese_lambda1,
+        lambda2=chan_vese_lambda2,
     )
 
     # Postprocess the contour by filling etc.
@@ -502,7 +510,7 @@ def contour(
 
     if fill_inland_threshold is not None:
         if verbose:
-            print(f"Filling inland for {fin}")
+            logger.info(f"Filling inland for {image}")
         contour_result = fill_inland(contour_result, int(fill_inland_threshold))
 
     if return_resolution:
@@ -703,8 +711,7 @@ def label_mesh(
     if inplace:
         mesh["labels"] = values
         return None
-    else:
-        return values
+    return values
 
 
 def project2surface(
@@ -926,7 +933,7 @@ def correct_bad_mesh(mesh: pv.PolyData, verbose: bool = True) -> pv.PolyData:
 
     while nm.n_points > 0:
         if verbose:
-            print(f"Trying to remove {nm.GetNumberOfPoints()} points")
+            logger.info(f"Trying to remove {nm.GetNumberOfPoints()} points")
 
         # Create pymeshfix object from our mesh
         meshfix = _meshfix.PyTMesh()
@@ -989,7 +996,7 @@ def remove_bridges(mesh: pv.PolyData, verbose: bool = True) -> pv.PolyData:
         remove_pts = np.unique(border_faces[all_boundary].flatten())
 
         if verbose:
-            print(f"Removing {len(remove_pts)} points")
+            logger.info(f"Removing {len(remove_pts)} points")
         if len(remove_pts) == 0:
             break
 
@@ -1263,7 +1270,7 @@ def remove_tongues(
         to_remove: list[int] = []
         for ii, cycle in enumerate(cycles_int):
             if verbose:
-                print(f"Running cycle {ii} with {len(cycle)} points")
+                logger.info(f"Running cycle {ii} with {len(cycle)} points")
             cpts = bdpts[cycle]
 
             # Get the boundary points (in same loop) within a certain radius
@@ -1313,8 +1320,8 @@ def remove_tongues(
             for jj in range(len(removal_anchors_arr)):
                 gdpts = nx.shortest_path(
                     all_net,
-                    source=from_[cycles_int[ii][removal_anchors_arr[jj][0]]],
-                    target=from_[cycles_int[ii][removal_anchors_arr[jj][1]]],
+                    source=from_[cycle[removal_anchors_arr[jj][0]]],
+                    target=from_[cycle[removal_anchors_arr[jj][1]]],
                     weight="weight",
                 )
                 gdpts_arr = np.array(gdpts, dtype="int")
@@ -1372,7 +1379,7 @@ def make_manifold(mesh: pv.PolyData, hole_edges: int = 300) -> pv.PolyData:
     )
     while edges.n_points > 0:
         to_remove = [mesh.FindPoint(pt) for pt in edges.points]
-        print(f"Removing {len(to_remove)} points")
+        logger.info(f"Removing {len(to_remove)} points")
         mesh = mesh.remove_points(to_remove)[0]
         mesh = mesh.extract_largest()
         mesh = repair_small(mesh, nbe=hole_edges)
@@ -1624,8 +1631,7 @@ def define_meristem(
     meristem = int(mesh["domains"][m_idx])
     if return_coord:
         return meristem, ccoord
-    else:
-        return meristem
+    return meristem
 
 
 def erode(mesh: pv.PolyData, iterations: int = 1) -> pv.PolyData:
@@ -1715,7 +1721,8 @@ def correct_normal_orientation(mesh: pv.PolyData, relative: str = "x", inplace: 
 
 
 def fit_paraboloid_mesh(
-    mesh: pv.PolyData, return_coord: bool = False
+    mesh: pv.PolyData,
+    return_coord: bool = False,
 ) -> NDArray[np.floating[Any]] | tuple[NDArray[np.floating[Any]], NDArray[np.floating[Any]]]:
     """Fit a paraboloid to a mesh.
 
@@ -1732,20 +1739,19 @@ def fit_paraboloid_mesh(
     if return_coord:
         apex = paraboloid_apex(popt)
         return popt, apex
-    else:
-        return popt
+    return popt
 
 
-def paraboloid_apex(p: Sequence[float]) -> NDArray[np.floating[Any]]:
+def paraboloid_apex(parameters: Sequence[float]) -> NDArray[np.floating[Any]]:
     """Return the apex coordinates of a paraboloid.
 
     Args:
-        p: 8-tuple of parameters defining the paraboloid.
+        parameters: 8-tuple of parameters defining the paraboloid.
 
     Returns:
         Coordinates for the paraboloid apex.
     """
-    p1, p2, p3, p4, p5, alpha, beta, gamma = p
+    p1, p2, p3, p4, p5, alpha, beta, gamma = parameters
     x = -p3 / (2.0 * p1)
     y = -p4 / (2.0 * p2)
     z = p1 * x**2.0 + p2 * y**2.0 + p3 * x + p4 * y + p5

@@ -219,7 +219,7 @@ def merge_angles(
                 / (2 * np.pi)
                 % 360
                 for ii in range(len(centers_arr))
-            ]
+            ],
         )
 
         # reorder domains based on angles
@@ -435,7 +435,7 @@ def merge_engulfing(
     threshold: float = 0.9,
     neighbours: list[NDArray[np.intp]] | None = None,
     verbose: bool = False,
-) -> NDArray[np.floating[Any]]:
+) -> NDArray[np.integer[Any]]:
     """Merge domains that are mostly encircled by a neighboring domain.
 
     Merges domains where a single neighbor borders more than the threshold
@@ -491,7 +491,7 @@ def merge_engulfing(
                 changed = True
 
     logger.info(f"Merging {n_domains_initial} domains to {len(np.unique(domains))}")
-    output = np.zeros(mesh.n_points, "float")
+    output = np.zeros(mesh.n_points, dtype=np.int64)
     for new_domain, old_domain in enumerate(np.unique(domains)):
         output[domains == old_domain] = new_domain
 
@@ -506,7 +506,7 @@ def merge_small(
     mode: str = "border",
     neighbours: list[NDArray[np.intp]] | None = None,
     verbose: bool = False,
-) -> NDArray[np.floating[Any]]:
+) -> NDArray[np.integer[Any]]:
     """Merge domains smaller than threshold to their largest neighbor.
 
     Args:
@@ -567,7 +567,7 @@ def merge_small(
             domains = domains_overwrite
 
     logger.info(f"Merging {n_domains_initial} domains to {len(np.unique(domains))}.")
-    output = np.zeros(mesh.n_points, "float")
+    output = np.zeros(mesh.n_points, dtype=np.int64)
     for new_domain, old_domain in enumerate(np.unique(domains)):
         output[domains == old_domain] = new_domain
 
@@ -581,7 +581,7 @@ def merge_disconnected(
     threshold: float | None,
     neighbours: list[NDArray[np.intp]] | None = None,
     verbose: bool = False,
-) -> NDArray[np.floating[Any]]:
+) -> NDArray[np.integer[Any]]:
     """Merge domains disconnected from meristem to nearest connected domain.
 
     Args:
@@ -604,7 +604,7 @@ def merge_disconnected(
     if neighbours is None:
         neighbours = mp.vertex_neighbors_all(mesh)
     if threshold is None:
-        return domains.astype(float)
+        return domains.astype(np.int64)
 
     meristem_idx = int(meristem_index)
     domains = domains.copy()
@@ -648,7 +648,7 @@ def merge_disconnected(
             domains = domains_overwrite
 
     logger.info(f"Merging {n_domains_initial} domains to {len(np.unique(domains))}.")
-    output = np.zeros(mesh.n_points, "float")
+    output = np.zeros(mesh.n_points, dtype=np.int64)
     for new_domain, old_domain in enumerate(np.unique(domains)):
         output[domains == old_domain] = new_domain
 
@@ -1115,8 +1115,7 @@ def get_domain_boundary(
     if return_indices:
         indices = np.array([mesh.FindPoint(pt) for pt in edges.points])
         return edges, indices
-    else:
-        return edges
+    return edges
 
 
 def domain_neighbors(
@@ -1192,8 +1191,7 @@ def define_meristem(
 
     if return_coordinates:
         return meristem, coord
-    else:
-        return meristem
+    return meristem
 
 
 def extract_domaindata(

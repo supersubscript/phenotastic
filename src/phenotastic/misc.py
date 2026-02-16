@@ -3,6 +3,7 @@ from collections.abc import Sequence
 from typing import Any
 
 import numpy as np
+from loguru import logger
 from numpy.typing import ArrayLike, NDArray
 
 
@@ -91,7 +92,7 @@ def reject_outliers(data: NDArray[np.floating[Any]], n: float = 2.0) -> NDArray[
     """
     d = np.abs(data - np.median(data))
     mdev = np.median(d)
-    s = d / (mdev if mdev else 1.0)
+    s = d / (mdev or 1.0)
     filtered_data = data[s < n]
     return filtered_data
 
@@ -262,10 +263,9 @@ def prime_sieve(n: int, output: dict[int, bool] | list[int] | None = None) -> di
             if x != 0:
                 pmap[x] = True
         return pmap
-    elif isinstance(output, list):
+    if isinstance(output, list):
         return [x for x in sieve if x != 0]
-    else:
-        return None
+    return None
 
 
 def get_factors(n: int, primelist: list[int] | None = None) -> list[int]:
@@ -376,7 +376,7 @@ def rot_matrix_44(angles: Sequence[float], invert: bool = False) -> NDArray[np.f
             [0, np.cos(alpha), -np.sin(alpha), 0],
             [0, np.sin(alpha), np.cos(alpha), 0],
             [0, 0, 0, 1],
-        ]
+        ],
     )
     rot_y = np.array(
         [
@@ -384,7 +384,7 @@ def rot_matrix_44(angles: Sequence[float], invert: bool = False) -> NDArray[np.f
             [0, 1, 0, 0],
             [-np.sin(beta), 0, np.cos(beta), 0],
             [0, 0, 0, 1],
-        ]
+        ],
     )
     rot_z = np.array(
         [
@@ -392,7 +392,7 @@ def rot_matrix_44(angles: Sequence[float], invert: bool = False) -> NDArray[np.f
             [np.sin(gamma), np.cos(gamma), 0, 0],
             [0, 0, 1, 0],
             [0, 0, 0, 1],
-        ]
+        ],
     )
 
     if invert:
@@ -404,7 +404,9 @@ def rot_matrix_44(angles: Sequence[float], invert: bool = False) -> NDArray[np.f
 
 
 def rotate(
-    coord: NDArray[np.floating[Any]], angles: Sequence[float], invert: bool = False
+    coord: NDArray[np.floating[Any]],
+    angles: Sequence[float],
+    invert: bool = False,
 ) -> NDArray[np.floating[Any]]:
     """Rotate coordinates by Euler angles.
 
@@ -425,7 +427,7 @@ def rotate(
             [1, 0, 0],
             [0, np.cos(alpha), -np.sin(alpha)],
             [0, np.sin(alpha), np.cos(alpha)],
-        ]
+        ],
     )
     rot_y = np.array([[np.cos(beta), 0, np.sin(beta)], [0, 1, 0], [-np.sin(beta), 0, np.cos(beta)]])
     rot_z = np.array(
@@ -433,7 +435,7 @@ def rotate(
             [np.cos(gamma), -np.sin(gamma), 0],
             [np.sin(gamma), np.cos(gamma), 0],
             [0, 0, 1],
-        ]
+        ],
     )
 
     rot_matrix = (
@@ -451,7 +453,7 @@ def match_shape(
     a: NDArray[Any],
     t: Sequence[int],
     side: str = "both",
-    val: int | float | complex | str = 0,
+    val: complex | str = 0,
 ) -> NDArray[Any]:
     """Pad or trim array to match target shape.
 
@@ -614,11 +616,11 @@ def rand_cmap(
     from matplotlib.colors import LinearSegmentedColormap
 
     if cmap_type not in ("bright", "soft"):
-        print('Please choose "bright" or "soft" for type')
+        logger.warning('Please choose "bright" or "soft" for type')
         return None
 
     if verbose:
-        print("Number of labels: " + str(nlabels))
+        logger.info(f"Number of labels: {nlabels}")
 
     rand_rgb_colors: list[list[float] | tuple[float, ...]] = []
 

@@ -1,0 +1,57 @@
+# Standard Pipeline Configuration
+# ================================
+# A balanced pipeline for typical plant phenotyping workflows.
+# Start with a binary contour array as input.
+
+steps:
+  # -------------------------
+  # Phase 1: Mesh Creation
+  # -------------------------
+  - name: create_mesh
+    params:
+      step_size: 1
+
+  # -------------------------
+  # Phase 2: Initial Cleanup
+  # -------------------------
+  - name: clean
+
+  - name: extract_largest
+
+  # -------------------------
+  # Phase 3: Smoothing
+  # -------------------------
+  - name: smooth
+    params:
+      iterations: 100
+      relaxation_factor: 0.01
+
+  - name: remesh
+    params:
+      n_clusters: 10000
+      subdivisions: 3
+
+  - name: smooth
+    params:
+      iterations: 50
+      relaxation_factor: 0.01
+
+  # -------------------------
+  # Phase 4: Domain Segmentation
+  # -------------------------
+  - name: compute_curvature
+    params:
+      curvature_type: mean
+
+  - name: segment_domains
+
+  - name: merge_small
+    params:
+      threshold: 50
+      metric: points
+
+  - name: define_meristem
+    params:
+      method: center_of_mass
+
+  - name: extract_domaindata

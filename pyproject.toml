@@ -32,7 +32,12 @@ dependencies = [
     "psf>=2026.1.18",
     "scipy>=1.17.0",
     "loguru>=0.7.3",
+    "click>=8.0",
+    "pyyaml>=6.0",
 ]
+
+[project.scripts]
+phenotastic = "phenotastic.cli:main"
 
 [project.urls]
 homepage = "https://github.com/supersubscript/phenotastic"
@@ -55,6 +60,7 @@ dev = [
   "seaborn>=0.13.2",
   "pyqt5>=5.15.11",
   "ipykernel>=6.29.5",
+  "types-PyYAML>=6.0",
 ]
 release = ["python-semantic-release>=9.19.1,<10.0.0"]
 

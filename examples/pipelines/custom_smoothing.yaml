@@ -1,0 +1,53 @@
+# Custom Smoothing Pipeline
+# =========================
+# Demonstrates how to create a custom sequence of smoothing
+# and remeshing operations. The same operation can appear
+# multiple times with different parameters.
+
+steps:
+  # Start with a mesh (skip create_mesh if you already have one)
+  - name: create_mesh
+
+  - name: clean
+
+  # First smoothing pass - aggressive
+  - name: smooth
+    params:
+      iterations: 150
+      relaxation_factor: 0.02
+      boundary_smoothing: true
+
+  # Remesh to improve face quality
+  - name: remesh
+    params:
+      n_clusters: 8000
+      subdivisions: 3
+
+  # Second smoothing pass - medium
+  - name: smooth
+    params:
+      iterations: 100
+      relaxation_factor: 0.01
+
+  # Increase resolution
+  - name: remesh
+    params:
+      n_clusters: 15000
+      subdivisions: 3
+
+  # Third smoothing pass - gentle
+  - name: smooth_taubin
+    params:
+      iterations: 50
+      pass_band: 0.1
+
+  # Final boundary smoothing
+  - name: smooth_boundary
+    params:
+      iterations: 30
+      sigma: 0.1
+
+  # Compute curvature to visualize result
+  - name: compute_curvature
+    params:
+      curvature_type: mean

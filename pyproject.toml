@@ -6,7 +6,7 @@ readme = "README.rst"
 requires-python = ">=3.12,<4.0.0"
 license = { text = "GNU General Public License v3" }
 authors = [
-    { name = "Henrik Ahl", email = "henrikaahl@gmail.com" }
+    { name = "Henrik Åhl", email = "henrikaahl@gmail.com" }
 ]
 keywords = ["phenotastic", "3D", "phenotyping", "segmentation"]
 classifiers = [
@@ -43,19 +43,6 @@ dependencies = [
     "scikit-learn>=1.6",
 ]
 
-[project.scripts]
-phenotastic = "phenotastic.cli:main"
-
-[project.urls]
-homepage = "https://github.com/supersubscript/phenotastic"
-documentation = "https://phenotastic.readthedocs.io"
-repository = "https://github.com/supersubscript/phenotastic"
-
-[project.optional-dependencies]
-docs = [
-    "Sphinx>=5.1.1",
-]
-
 [dependency-groups]
 dev = [
   "ipython>=8.26.0,<9.0.0",
@@ -70,6 +57,14 @@ dev = [
   "types-PyYAML>=6.0",
 ]
 release = ["python-semantic-release>=9.19.1,<10.0.0"]
+
+[project.scripts]
+phenotastic = "phenotastic.cli:main"
+
+[project.urls]
+homepage = "https://github.com/supersubscript/phenotastic"
+documentation = "https://phenotastic.readthedocs.io"
+repository = "https://github.com/supersubscript/phenotastic"
 
 [tool.uv]
 package = true
@@ -86,6 +81,7 @@ pythonpath = "."
 testpaths = ["tests"]
 
 [tool.mypy]
+python_version = "3.12"
 allow_redefinition = true
 cache_dir = ".mypy_cache"
 check_untyped_defs = true
@@ -98,7 +94,6 @@ follow_imports = "skip"
 ignore_missing_imports = true
 incremental = false
 namespace_packages = true
-python_version = "3.12"
 strict_equality = true
 strict_optional = true
 warn_redundant_casts = true
@@ -107,11 +102,11 @@ warn_unused_configs = true
 warn_unused_ignores = false
 
 [tool.ruff]
+target-version = "py312"
 fix = true
 extend-include = ["*.ipynb"]
 line-length = 120
 show-fixes = true
-target-version = "py312"
 
 [tool.ruff.lint]
 select = [

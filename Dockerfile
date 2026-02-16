@@ -1,9 +1,7 @@
-ARG BASE_IMAGE=python:3.13-slim
+ARG BASE_IMAGE=python:3.12-slim
 ARG UV_VERSION=0.9.8
 
-
 FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv_base
-
 
 # stage: phenotastic_base
 # Build environment with main dependencies and package using uv

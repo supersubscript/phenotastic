@@ -5,7 +5,7 @@ and segmenting features based on mesh curvature for analysis of early flower
 organs (primordia) from shoot apical meristems in 3D images.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 from phenotastic.exceptions import (
     ConfigurationError,

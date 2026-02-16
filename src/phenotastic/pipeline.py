@@ -142,8 +142,8 @@ class OperationRegistry:
         Returns:
             List of operation names
         """
-        contour_ops = {"contour", "create_mesh", "create_cellular_mesh"}
-        domain_ops = {
+        contour_operations = {"contour", "create_mesh", "create_cellular_mesh"}
+        domain_operations = {
             "compute_curvature",
             "filter_scalars",
             "segment_domains",
@@ -158,12 +158,14 @@ class OperationRegistry:
         }
 
         if category == "contour":
-            return sorted(name for name in self._operation_registry if name in contour_ops)
+            return sorted(name for name in self._operation_registry if name in contour_operations)
         if category == "domain":
-            return sorted(name for name in self._operation_registry if name in domain_ops)
+            return sorted(name for name in self._operation_registry if name in domain_operations)
         if category == "mesh":
             return sorted(
-                name for name in self._operation_registry if name not in contour_ops and name not in domain_ops
+                name
+                for name in self._operation_registry
+                if name not in contour_operations and name not in domain_operations
             )
         return sorted(self._operation_registry.keys())
 

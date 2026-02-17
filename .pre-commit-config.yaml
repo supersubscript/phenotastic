@@ -36,14 +36,15 @@ repos:
       - id: requirements-txt-fixer
       - id: trailing-whitespace
 
-  # Type checking with mypy
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.19.1
+  # Type checking with mypy (local hook to use the project environment)
+  - repo: local
     hooks:
       - id: mypy
-        additional_dependencies: [types-PyYAML]
+        name: mypy
+        entry: uv run mypy src/phenotastic/
+        language: system
+        types: [python]
         pass_filenames: false
-        args: [src/, --config-file, pyproject.toml]
 
   # Jupyter notebook linting and formatting
   - repo: https://github.com/nbQA-dev/nbQA

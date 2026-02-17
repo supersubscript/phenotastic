@@ -32,8 +32,9 @@ def cli() -> None:
 @click.option(
     "--preset",
     "-p",
-    type=click.Choice(["standard", "high_quality", "mesh_only", "quick", "full"]),
-    help="Use a preset pipeline instead of config file",
+    type=click.Choice(["default"]),
+    default="default",
+    help="Use a preset pipeline (default: 'default')",
 )
 @click.option(
     "--output",
@@ -71,27 +72,20 @@ def run(  # noqa: C901
 
     Examples:
 
-        # Run with a preset
-        phenotastic run image.tif --preset standard --output results/
+        # Run with default preset
+        phenotastic run image.tif --output results/
 
         # Run with custom config
         phenotastic run image.tif --config my_pipeline.yaml
-
-        # Quick preview without saving
-        phenotastic run image.tif --preset quick --no-save-mesh --no-save-domains
     """
     import numpy as np
 
     from phenotastic import PhenoMesh, Pipeline, load_preset
 
     # Determine which pipeline to use
-    if config and preset:
-        raise click.UsageError("Cannot specify both --config and --preset")
-
-    if not config and not preset:
-        preset = "standard"
-        if verbose:
-            click.echo("No config or preset specified, using 'standard' preset")
+    if config:
+        # Config file takes precedence over preset
+        preset = None
 
     # Load pipeline
     if preset:
@@ -170,35 +164,24 @@ def run(  # noqa: C901
 
 @cli.command("init-config")
 @click.argument("output_file", type=click.Path())
-@click.option(
-    "--preset",
-    "-p",
-    type=click.Choice(["standard", "high_quality", "mesh_only", "quick", "full"]),
-    default="standard",
-    help="Preset to use as template",
-)
-def init_config(output_file: str, preset: str) -> None:
-    """Generate a pipeline configuration file from a preset.
+def init_config(output_file: str) -> None:
+    """Generate a pipeline configuration file from the default preset.
 
     Creates a YAML file that you can customize for your workflow.
 
     Examples:
 
-        # Generate standard config
+        # Generate default config
         phenotastic init-config my_pipeline.yaml
-
-        # Generate high-quality config
-        phenotastic init-config my_pipeline.yaml --preset high_quality
     """
     from phenotastic import get_preset_yaml
 
-    yaml_content = get_preset_yaml(preset)
+    yaml_content = get_preset_yaml()
 
     output_path = Path(output_file)
     output_path.write_text(yaml_content)
 
     click.echo(f"Created configuration file: {output_path}")
-    click.echo(f"Based on preset: {preset}")
     click.echo("\nEdit this file to customize your pipeline.")
 
 
@@ -246,18 +229,14 @@ def list_presets_cmd() -> None:
     click.echo("\nAVAILABLE PRESETS:\n")
 
     descriptions = {
-        "standard": "Balanced pipeline for typical workflows",
-        "high_quality": "Multi-pass smoothing with aggressive filtering",
-        "mesh_only": "For when you already have a mesh (skip contouring)",
-        "quick": "Fast preview with minimal processing",
-        "full": "Complete pipeline from image to domain analysis",
+        "default": "Full pipeline from image to domain analysis",
     }
 
     for preset in presets:
         desc = descriptions.get(preset, "")
         click.echo(f"  {preset:15} - {desc}")
 
-    click.echo("\nUse with: phenotastic run image.tif --preset <name>")
+    click.echo("\nThe default preset is used automatically when running pipelines.")
 
 
 @cli.command()

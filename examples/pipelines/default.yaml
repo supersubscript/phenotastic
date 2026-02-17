@@ -1,0 +1,56 @@
+# Default Pipeline Configuration
+# Full workflow from 3D image to domain analysis
+
+steps:
+  # Image processing
+  - name: contour
+    params:
+      iterations: 25
+      target_resolution: [0.5, 0.5, 0.5]
+      gaussian_iterations: 5
+      register_stack: true
+      masking_factor: 0.75
+
+  # Mesh creation
+  - name: create_mesh
+    params:
+      step_size: 1
+
+  # Cleanup and processing
+  - name: clean
+  - name: extract_largest
+  - name: repair_holes
+    params:
+      max_hole_edges: 100
+
+  # Smoothing
+  - name: smooth
+    params:
+      iterations: 100
+      relaxation_factor: 0.01
+
+  - name: remesh
+    params:
+      n_clusters: 10000
+      subdivisions: 3
+
+  - name: smooth
+    params:
+      iterations: 50
+      relaxation_factor: 0.01
+
+  # Domain segmentation
+  - name: compute_curvature
+    params:
+      curvature_type: mean
+
+  - name: segment_domains
+
+  - name: merge_small
+    params:
+      threshold: 50
+      metric: points
+
+  - name: define_meristem
+
+  - name: extract_domaindata

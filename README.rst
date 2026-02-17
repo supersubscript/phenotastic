@@ -43,8 +43,8 @@ Using the Python API
     polydata = pv.read("my_mesh.vtk")
     mesh = PhenoMesh(polydata)
 
-    # Process with a preset pipeline
-    pipeline = load_preset("standard")
+    # Process with the default pipeline
+    pipeline = load_preset()
     result = pipeline.run(mesh)
 
     # Access results
@@ -56,14 +56,14 @@ Using the CLI
 
 .. code-block:: bash
 
-    # Run with a preset
-    phenotastic run image.tif --preset standard --output results/
+    # Run with default pipeline
+    phenotastic run image.tif --output results/
 
     # Run with custom config
     phenotastic run image.tif --config my_pipeline.yaml
 
     # Generate a config template
-    phenotastic init-config my_pipeline.yaml --preset high_quality
+    phenotastic init-config my_pipeline.yaml
 
     # List available operations
     phenotastic list-operations
@@ -117,14 +117,12 @@ Example Configuration
 
       - name: extract_domaindata
 
-Available Presets
-~~~~~~~~~~~~~~~~~
+Default Pipeline
+~~~~~~~~~~~~~~~~
 
-- ``standard``: Balanced pipeline for typical workflows
-- ``high_quality``: Multi-pass smoothing with aggressive filtering
-- ``mesh_only``: For when you already have a mesh (skip contouring)
-- ``quick``: Fast preview with minimal processing
-- ``full``: Complete pipeline from image to domain analysis
+Phenotastic provides a default pipeline that includes the full workflow from
+3D image to domain analysis. The default pipeline is automatically used when
+calling ``load_preset()`` without arguments or when running the CLI.
 
 Available Operations
 --------------------

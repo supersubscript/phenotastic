@@ -16,51 +16,26 @@ class TestListPresets:
         assert isinstance(presets, list)
         assert len(presets) > 0
 
-    def test_list_presets_contains_expected(self) -> None:
-        """Should contain expected preset names."""
+    def test_list_presets_contains_default(self) -> None:
+        """Should contain default preset."""
         presets = list_presets()
 
-        assert "standard" in presets
-        assert "high_quality" in presets
-        assert "mesh_only" in presets
-        assert "quick" in presets
-        assert "full" in presets
+        assert presets == ["default"]
 
 
 class TestLoadPreset:
     """Tests for load_preset function."""
 
-    def test_load_standard_preset(self) -> None:
-        """Should load standard preset."""
-        pipeline = load_preset("standard")
+    def test_load_default_preset(self) -> None:
+        """Should load default preset."""
+        pipeline = load_preset("default")
 
         assert isinstance(pipeline, Pipeline)
         assert len(pipeline) > 0
 
-    def test_load_high_quality_preset(self) -> None:
-        """Should load high_quality preset."""
-        pipeline = load_preset("high_quality")
-
-        assert isinstance(pipeline, Pipeline)
-        assert len(pipeline) > 0
-
-    def test_load_mesh_only_preset(self) -> None:
-        """Should load mesh_only preset."""
-        pipeline = load_preset("mesh_only")
-
-        assert isinstance(pipeline, Pipeline)
-        assert len(pipeline) > 0
-
-    def test_load_quick_preset(self) -> None:
-        """Should load quick preset."""
-        pipeline = load_preset("quick")
-
-        assert isinstance(pipeline, Pipeline)
-        assert len(pipeline) > 0
-
-    def test_load_full_preset(self) -> None:
-        """Should load full preset."""
-        pipeline = load_preset("full")
+    def test_load_preset_without_argument(self) -> None:
+        """Should load default preset when no argument given."""
+        pipeline = load_preset()
 
         assert isinstance(pipeline, Pipeline)
         assert len(pipeline) > 0
@@ -72,24 +47,25 @@ class TestLoadPreset:
 
     def test_load_unknown_preset_shows_available(self) -> None:
         """Error message should list available presets."""
-        with pytest.raises(ValueError, match="standard"):
+        with pytest.raises(ValueError, match="default"):
             load_preset("nonexistent")
 
 
 class TestGetPresetYaml:
     """Tests for get_preset_yaml function."""
 
-    def test_get_standard_yaml(self) -> None:
-        """Should return YAML string for standard preset."""
-        yaml_str = get_preset_yaml("standard")
+    def test_get_default_yaml(self) -> None:
+        """Should return YAML string for default preset."""
+        yaml_str = get_preset_yaml("default")
 
         assert isinstance(yaml_str, str)
         assert "steps:" in yaml_str
+        assert "contour" in yaml_str
         assert "smooth" in yaml_str
 
-    def test_get_high_quality_yaml(self) -> None:
-        """Should return YAML string for high_quality preset."""
-        yaml_str = get_preset_yaml("high_quality")
+    def test_get_yaml_without_argument(self) -> None:
+        """Should return default preset YAML when no argument given."""
+        yaml_str = get_preset_yaml()
 
         assert isinstance(yaml_str, str)
         assert "steps:" in yaml_str
@@ -103,10 +79,9 @@ class TestGetPresetYaml:
 class TestPresetValidation:
     """Tests that presets are valid and can be executed."""
 
-    @pytest.mark.parametrize("preset_name", ["standard", "high_quality", "mesh_only", "quick", "full"])
-    def test_preset_validates(self, preset_name: str) -> None:
-        """All presets should pass validation."""
-        pipeline = load_preset(preset_name)
+    def test_default_preset_validates(self) -> None:
+        """Default preset should pass validation."""
+        pipeline = load_preset("default")
 
         # Should not raise - all operations should exist
         warnings = pipeline.validate()
@@ -114,12 +89,11 @@ class TestPresetValidation:
         # Warnings are OK, errors are not
         assert isinstance(warnings, list)
 
-    @pytest.mark.parametrize("preset_name", ["standard", "high_quality", "mesh_only", "quick", "full"])
-    def test_preset_has_all_valid_operations(self, preset_name: str) -> None:
-        """All operations in presets should be registered."""
+    def test_default_preset_has_all_valid_operations(self) -> None:
+        """All operations in default preset should be registered."""
         from phenotastic import OperationRegistry
 
-        pipeline = load_preset(preset_name)
+        pipeline = load_preset("default")
         registry = OperationRegistry()
 
         for step in pipeline.steps:
@@ -129,8 +103,8 @@ class TestPresetValidation:
 class TestPresetExecution:
     """Tests for actually running presets."""
 
-    def test_quick_preset_mesh_steps(self, tiny_contour: np.ndarray) -> None:
-        """Quick preset mesh steps should execute successfully."""
+    def test_default_preset_mesh_steps(self, tiny_contour: np.ndarray) -> None:
+        """Default preset mesh steps should execute successfully."""
         # Create mesh from contour first
         from phenotastic import PipelineContext, StepConfig
         from phenotastic.operations import create_mesh_from_contour
@@ -151,11 +125,11 @@ class TestPresetExecution:
         assert result.mesh is not None
         assert result.mesh.n_points > 0
 
-    def test_standard_preset_on_mesh(self, small_sphere_mesh: PhenoMesh) -> None:
-        """Standard preset should work when skipping contour steps."""
+    def test_default_preset_on_mesh(self, small_sphere_mesh: PhenoMesh) -> None:
+        """Default preset processing should work when starting with mesh input."""
         from phenotastic import StepConfig
 
-        # Create a subset of standard that works with mesh input
+        # Create a subset of default that works with mesh input
         pipeline = Pipeline(
             [
                 StepConfig("clean"),
@@ -170,11 +144,11 @@ class TestPresetExecution:
         assert result.mesh is not None
         assert result.curvature is not None
 
-    def test_mesh_processing_preset_steps(self, sphere_mesh: PhenoMesh) -> None:
-        """Mesh processing steps from presets should work on sphere mesh."""
+    def test_mesh_processing_steps(self, sphere_mesh: PhenoMesh) -> None:
+        """Mesh processing steps from default preset should work on sphere mesh."""
         from phenotastic import StepConfig
 
-        # Test core mesh processing from mesh_only preset
+        # Test core mesh processing from default preset
         pipeline = Pipeline(
             [
                 StepConfig("clean"),
@@ -193,37 +167,30 @@ class TestPresetExecution:
 class TestPresetContents:
     """Tests for specific preset contents."""
 
-    def test_standard_has_smoothing(self) -> None:
-        """Standard preset should include smoothing."""
-        pipeline = load_preset("standard")
+    def test_default_has_contour(self) -> None:
+        """Default preset should include contour step."""
+        pipeline = load_preset("default")
+        step_names = [s.name for s in pipeline.steps]
+
+        assert "contour" in step_names
+
+    def test_default_has_smoothing(self) -> None:
+        """Default preset should include smoothing."""
+        pipeline = load_preset("default")
         step_names = [s.name for s in pipeline.steps]
 
         assert "smooth" in step_names
 
-    def test_standard_has_remesh(self) -> None:
-        """Standard preset should include remeshing."""
-        pipeline = load_preset("standard")
+    def test_default_has_remesh(self) -> None:
+        """Default preset should include remeshing."""
+        pipeline = load_preset("default")
         step_names = [s.name for s in pipeline.steps]
 
         assert "remesh" in step_names
 
-    def test_high_quality_has_multiple_smooth(self) -> None:
-        """High-quality preset should have multiple smoothing steps."""
-        pipeline = load_preset("high_quality")
-        smooth_count = sum(1 for s in pipeline.steps if "smooth" in s.name)
-
-        assert smooth_count >= 2
-
-    def test_quick_is_shorter(self) -> None:
-        """Quick preset should have fewer steps than standard."""
-        quick = load_preset("quick")
-        standard = load_preset("standard")
-
-        assert len(quick) < len(standard)
-
-    def test_full_has_contour(self) -> None:
-        """Full preset should include contour step."""
-        pipeline = load_preset("full")
+    def test_default_has_domain_segmentation(self) -> None:
+        """Default preset should include domain segmentation."""
+        pipeline = load_preset("default")
         step_names = [s.name for s in pipeline.steps]
 
-        assert "contour" in step_names
+        assert "segment_domains" in step_names

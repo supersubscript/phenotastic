@@ -136,14 +136,14 @@ build:
 publish-testpypi: build
 	@echo "Publishing to Test PyPI..."
 	@echo "Make sure you have configured ~/.pypirc or use TWINE_* env vars"
-	uv run twine upload --repository testpypi dist/*
+	uv run --group release twine upload --repository testpypi dist/* --verbose
 	@echo "Published to https://test.pypi.org/project/phenotastic/"
 
 publish-pypi: build
 	@echo "Publishing to PyPI..."
 	@echo "WARNING: This will publish to production PyPI!"
 	@read -p "Are you sure? [y/N] " confirm && [ "$$confirm" = "y" ]
-	uv run twine upload dist/*
+	uv run --group release twine upload dist/* --verbose
 	@echo "Published to https://pypi.org/project/phenotastic/"
 
 # ------------------------------------------------------------------------------
@@ -151,7 +151,7 @@ publish-pypi: build
 # ------------------------------------------------------------------------------
 
 docs:
-	$(UV) sphinx-build -b html $(DOCS_DIR) $(DOCS_DIR)/_build/html
+	$(UV) --extra docs sphinx-build -b html $(DOCS_DIR) $(DOCS_DIR)/_build/html
 
 # ------------------------------------------------------------------------------
 # Cleanup

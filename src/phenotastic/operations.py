@@ -8,7 +8,7 @@ manually defined for complex orchestration logic.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 import pandas as pd
 
@@ -176,7 +176,7 @@ def rotate_mesh(
 
 def compute_curvature(
     context: PipelineContext,
-    curvature_type: str = "mean",
+    curvature_type: Literal["mean", "gaussian", "minimum", "maximum"] = "mean",
 ) -> PipelineContext:
     """Compute surface curvature and store in context.
 
@@ -243,7 +243,7 @@ def filter_scalars(
 
 def segment_domains(
     context: PipelineContext,
-    curvature_type: str | None = None,
+    curvature_type: Literal["mean", "gaussian", "minimum", "maximum"] | None = None,
 ) -> PipelineContext:
     """Create domains via steepest ascent on curvature field."""
     mesh = _get_mesh(context)
@@ -353,7 +353,6 @@ def merge_small_domains(
 def merge_engulfing_domains(
     context: PipelineContext,
     threshold: float = 0.5,
-    method: str = "center_of_mass",
 ) -> PipelineContext:
     """Merge domains that engulf others."""
     mesh = _get_mesh(context)
@@ -499,7 +498,7 @@ def extract_domain_data(context: PipelineContext) -> PipelineContext:
 def filter_by_curvature(
     context: PipelineContext,
     threshold: float | list[float] = 1.0,
-    curvature_type: str = "mean",
+    curvature_type: Literal["mean", "gaussian", "minimum", "maximum"] = "mean",
 ) -> PipelineContext:
     """Filter mesh vertices by curvature threshold.
 

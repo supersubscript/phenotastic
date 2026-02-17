@@ -86,7 +86,6 @@ def steepest_ascent(
     mesh: pv.PolyData,
     scalars: NDArray[np.floating[Any]],
     neighbours: list[NDArray[np.intp]] | None = None,
-    verbose: bool = False,
 ) -> NDArray[np.integer[Any]]:
     """Create domains using steepest ascent approach.
 
@@ -96,7 +95,6 @@ def steepest_ascent(
         mesh: PyVista mesh to create domains for
         scalars: 1D scalar array with length matching mesh.n_points
         neighbours: Neighbor connectivity array for each vertex
-        verbose: Print information about domain creation process
 
     Returns:
         Array of domain labels with length mesh.n_points
@@ -177,7 +175,6 @@ def merge_angles(
     meristem_index: int,
     threshold: float = 20,
     method: str = "center_of_mass",
-    verbose: bool = False,
 ) -> NDArray[np.integer[Any]]:
     """Merge domains based on angular separation from meristem.
 
@@ -190,7 +187,6 @@ def merge_angles(
         meristem_index: Index of the meristem domain
         threshold: Angular threshold in degrees for merging domains
         method: Method for calculating domain center coordinates
-        verbose: Print information about merging process
 
     Returns:
         Array of merged domain labels
@@ -261,7 +257,6 @@ def merge_distance(
     scalars: NDArray[np.floating[Any]] | None = None,
     method: str = "center_of_mass",
     metric: str = "euclidean",
-    verbose: bool = False,
 ) -> NDArray[np.integer[Any]]:
     """Merge domains based on spatial distance between domain centers.
 
@@ -274,7 +269,6 @@ def merge_distance(
         scalars: Optional scalar array for distance calculation
         method: Method for calculating domain center
         metric: Distance metric ('euclidean' or 'geodesic')
-        verbose: Print information about merging process
 
     Returns:
         Array of merged domain labels
@@ -434,7 +428,6 @@ def merge_engulfing(
     domains: NDArray[np.integer[Any]],
     threshold: float = 0.9,
     neighbours: list[NDArray[np.intp]] | None = None,
-    verbose: bool = False,
 ) -> NDArray[np.integer[Any]]:
     """Merge domains that are mostly encircled by a neighboring domain.
 
@@ -446,7 +439,6 @@ def merge_engulfing(
         domains: Array of domain labels
         threshold: Fraction of boundary that must be shared for merging
         neighbours: Optional neighbor connectivity array
-        verbose: Print information about merging process
 
     Returns:
         Array of merged domain labels
@@ -505,7 +497,6 @@ def merge_small(
     metric: str = "points",
     mode: str = "border",
     neighbours: list[NDArray[np.intp]] | None = None,
-    verbose: bool = False,
 ) -> NDArray[np.integer[Any]]:
     """Merge domains smaller than threshold to their largest neighbor.
 
@@ -516,7 +507,6 @@ def merge_small(
         metric: Size metric to use for merging ('points' or 'area')
         mode: Merge strategy ('border' or 'area')
         neighbours: Optional neighbor connectivity array
-        verbose: Print information about merging process
 
     Returns:
         Array of merged domain labels
@@ -582,7 +572,6 @@ def merge_disconnected(
     meristem_index: int,
     threshold: float | None,
     neighbours: list[NDArray[np.intp]] | None = None,
-    verbose: bool = False,
 ) -> NDArray[np.integer[Any]]:
     """Merge domains disconnected from meristem to nearest connected domain.
 
@@ -590,9 +579,8 @@ def merge_disconnected(
         mesh: PyVista mesh containing the domains
         domains: Array of domain labels
         meristem_index: Index of the meristem domain
-        threshold: Unused parameter (kept for API compatibility)
+        threshold: Distance threshold; if None, returns domains unchanged
         neighbours: Optional neighbor connectivity array
-        verbose: Print information about merging process
 
     Returns:
         Array of merged domain labels
@@ -611,8 +599,6 @@ def merge_disconnected(
     meristem_idx = int(meristem_index)
     domains = domains.copy()
     n_domains_initial = len(np.unique(domains))
-
-    _, meristem_boundary = get_domain_boundary(mesh, domains, meristem_idx, return_indices=True)
 
     changed = True
     while changed:
@@ -667,8 +653,7 @@ def merge_depth(
     neighbours: list[NDArray[np.intp]] | None = None,
     exclude_boundary: bool = False,
     min_points: int = 0,
-    mode: str = "max",
-    verbose: bool = False,
+    mode: Literal["min", "max", "median", "mean"] = "max",
 ) -> NDArray[np.integer[Any]]:
     """Merge domains based on depth similarity in scalar field.
 
@@ -683,7 +668,6 @@ def merge_depth(
         exclude_boundary: Exclude boundary vertices from depth calculation
         min_points: Minimum number of border points required for merging
         mode: Aggregation mode for domain depth ('min', 'max', 'median', 'mean')
-        verbose: Print information about merging process
 
     Returns:
         Array of merged domain labels
@@ -781,7 +765,6 @@ def merge_borders_by_length(
     domains: NDArray[np.integer[Any]],
     threshold: float = 0.0,
     neighbours: list[NDArray[np.intp]] | None = None,
-    verbose: bool = False,
 ) -> NDArray[np.integer[Any]]:
     """Merge domains based on shared border length.
 
@@ -792,7 +775,6 @@ def merge_borders_by_length(
         domains: Array of domain labels
         threshold: Minimum border length for merging
         neighbours: Optional neighbor connectivity array
-        verbose: Print information about merging process
 
     Returns:
         Array of merged domain labels
@@ -945,12 +927,12 @@ def filter_curvature(
     for _ii in range(iterations):
         new_curvatures = copy.deepcopy(curvatures)
         for jj in range(len(curvatures)):
-            val = np.nan
-            to_proc = curvatures[[kk for kk in neighbors[jj] if kk not in exclude]]
-            if len(to_proc) > 0:
-                val = aggregation_func(to_proc)
-            if not np.isnan(val):
-                new_curvatures[jj] = val
+            value = np.nan
+            to_process = curvatures[[kk for kk in neighbors[jj] if kk not in exclude]]
+            if len(to_process) > 0:
+                value = aggregation_func(to_process)
+            if not np.isnan(value):
+                new_curvatures[jj] = value
         curvatures = new_curvatures
     return curvatures
 
@@ -1195,9 +1177,8 @@ def define_meristem(
     elif method in ["n_neighs", "neighbors", "neighs", "n_neighbors"]:
         if neighbors is None:
             neighbors = mesh_ops.get_vertex_neighbors_all(mesh)
-        unique_domains = np.unique(domains)
         neighbor_counts = count_domain_neighbors(mesh, domains, neighbors)
-        meristem_domain = unique_domains[np.argmax(neighbor_counts)]
+        meristem_domain = np.unique(domains)[np.argmax(neighbor_counts)]
         coord = np.array(extract_domain(mesh, domains, meristem_domain).center_of_mass())
     else:
         coord = np.array(mesh.center_of_mass())
@@ -1230,7 +1211,7 @@ def extract_domain_data(
         DataFrame with domain measurements and properties
     """
     domains_arr = np.unique(point_data.domain)
-    domains_arr = domains_arr[~np.isnan(domains_arr)]
+    domains_arr = domains_arr[~np.isnan(domains_arr)].astype(int)
     domain_data = pd.DataFrame(
         columns=[
             "domain",
@@ -1246,9 +1227,9 @@ def extract_domain_data(
         dtype=object,
     )
 
-    for ii in domains_arr:
+    for domain_id in domains_arr:
         # Get distance for closest boundary point to apex
-        domain_mesh = get_domain(mesh, point_data, int(ii))
+        domain_mesh = get_domain(mesh, point_data, int(domain_id))
         domain_boundary = get_boundary_indices(domain_mesh)
         domain_boundary_coords = domain_mesh.points[domain_boundary]
         domain_boundary_dists = np.sqrt(np.sum((domain_boundary_coords - apex) ** 2, axis=1))
@@ -1273,17 +1254,15 @@ def extract_domain_data(
             angle_val += 2.0 * np.pi
         angle_val *= 360 / (2.0 * np.pi)
 
-        # Get surface area
         area = domain_mesh.area
 
-        # Define type
-        is_meristem = ii == meristem
+        is_meristem = domain_id == meristem
         if is_meristem:
             angle_val = np.nan
 
         # Set data
-        domain_data.loc[int(ii)] = [
-            int(ii),
+        domain_data.loc[domain_id] = [
+            int(domain_id),
             distance_to_boundary,
             distance_to_center_of_mass,
             angle_val,

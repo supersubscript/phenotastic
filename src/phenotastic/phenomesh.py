@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Self, cast
+from typing import TYPE_CHECKING, Any, Literal, Self, cast
 
 import numpy as np
 import pyvista as pv
@@ -329,22 +329,22 @@ class PhenoMesh(pv.PolyData):
     def remesh_decimate(
         self,
         iterations: int,
-        upscale_factor: float = 2,
-        downscale_factor: float = 0.5,
+        upsample_factor: float = 2,
+        downsample_factor: float = 0.5,
         verbose: bool = True,
     ) -> PhenoMesh:
         """Iterative remeshing/decimation.
 
         Args:
             iterations: Number of iterations
-            upscale_factor: Factor with which to upsample
-            downscale_factor: Factor with which to downsample
+            upsample_factor: Factor with which to upsample
+            downsample_factor: Factor with which to downsample
             verbose: Print operation steps
 
         Returns:
             Processed PhenoMesh
         """
-        return self._wrap_result(remesh_decimate(self, iterations, upscale_factor, downscale_factor, verbose))
+        return self._wrap_result(remesh_decimate(self, iterations, upsample_factor, downsample_factor, verbose))
 
     # =========================================================================
     # Mesh cleanup and repair
@@ -548,7 +548,9 @@ class PhenoMesh(pv.PolyData):
     # Curvature and filtering
     # =========================================================================
 
-    def compute_curvature(self, curvature_type: str = "mean") -> NDArray[np.floating[Any]]:
+    def compute_curvature(
+        self, curvature_type: Literal["mean", "gaussian", "minimum", "maximum"] = "mean"
+    ) -> NDArray[np.floating[Any]]:
         """Compute surface curvature.
 
         Args:
@@ -963,39 +965,35 @@ class PhenoMesh(pv.PolyData):
     def define_meristem(
         self,
         method: str = "central_mass",
-        resolution: tuple[float, float, float] = (1, 1, 1),
         return_coordinates: bool = False,
     ) -> int | tuple[int, NDArray[np.floating[Any]]]:
         """Determine which domain corresponds to the meristem.
 
         Args:
             method: Method for defining the meristem
-            resolution: Resolution of the dimensions
             return_coordinates: If True, return coordinates as well
 
         Returns:
             Domain index of the meristem, and optionally the center coordinates
         """
-        result = define_meristem(self, method, resolution, return_coordinates)
+        result = define_meristem(self, method, return_coordinates)
         if return_coordinates:
             return (int(result[0]), np.asarray(result[1]))  # type: ignore[index]
         return int(result)  # type: ignore[arg-type]
 
     def fit_paraboloid(
         self,
-        init: list[float] | None = None,
-        return_success: bool = False,
+        return_coord: bool = False,
     ) -> NDArray[np.floating[Any]] | tuple[NDArray[np.floating[Any]], NDArray[np.floating[Any]]]:
         """Fit a paraboloid to the mesh.
 
         Args:
-            init: Initial parameters for the paraboloid
-            return_success: If True, return apex coordinates as well
+            return_coord: If True, return apex coordinates as well
 
         Returns:
             Parameters for the paraboloid, and optionally the apex coordinates
         """
-        return fit_paraboloid_mesh(self, return_coord=return_success)
+        return fit_paraboloid_mesh(self, return_coord=return_coord)
 
     def process(
         self,

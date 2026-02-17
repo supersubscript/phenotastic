@@ -13,6 +13,7 @@ from clahe import clahe
 from loguru import logger
 from numpy.typing import NDArray
 from pyacvd import clustering
+from pymeshfix import _meshfix
 from pymeshfix._meshfix import PyTMesh
 from pystackreg import StackReg
 from scipy.ndimage import binary_fill_holes, distance_transform_edt, gaussian_filter, zoom
@@ -414,7 +415,7 @@ def contour(
         image: Input 3D image array or file path
         iterations: Number of morphological Chan-Vese iterations
         smoothing: Smoothing iterations per cycle
-        masking: Initial mask threshold (fraction of Otsu threshold)
+        masking_factor: Initial mask threshold (fraction of Otsu threshold)
         crop: Automatically crop image to content
         resolution: Spatial resolution in XYZ (micrometers). Auto-detected if None
         clahe_window: CLAHE window size. Auto-calculated if None
@@ -721,8 +722,7 @@ def label_from_image(
     ]
 
     # Get the coordinates of the points in the image
-    resolved = resolution or [1.0, 1.0, 1.0]
-    coords = coord_array(segm_img, (resolved[0], resolved[1], resolved[2])).T
+    coords = coord_array(segm_img, (resolution[0], resolution[1], resolution[2])).T
     img_raveled = segm_img.ravel()
     coords = coords[img_raveled != background]
     img_raveled = img_raveled[img_raveled != background]
@@ -951,12 +951,6 @@ def correct_bad_mesh(mesh: pv.PolyData, verbose: bool = True) -> pv.PolyData:
     Returns:
         Corrected mesh.
     """
-    try:
-        from pymeshfix import _meshfix
-    except ImportError:
-        raise ImportError(
-            "Package pymeshfix not found. Install to use this function.",
-        ) from None
 
     cleaned_mesh = extract_clean_fill_triangulate(mesh, 0)
     non_manifold = get_non_manifold_edges(cleaned_mesh)
@@ -1151,8 +1145,8 @@ def process(
     top_cut: str | tuple[float, float, float] = "center",
     tongues_radius: float | None = None,
     tongues_ratio: float = 4,
-    smooth_iter: int = 200,
-    smooth_relax: float = 0.01,
+    smooth_iterations: int = 200,
+    smooth_relaxation: float = 0.01,
     curvature_threshold: float = 0.4,
     inland_threshold: float | None = None,
     contour: NDArray[np.bool_] | None = None,
@@ -1168,8 +1162,8 @@ def process(
         top_cut: Top cut location.
         tongues_radius: Radius of the tongues.
         tongues_ratio: Ratio of the tongues.
-        smooth_iter: Number of smoothing iterations.
-        smooth_relax: Smoothing relaxation factor.
+        smooth_iterations: Number of smoothing iterations.
+        smooth_relaxation: Smoothing relaxation factor.
         curvature_threshold: Threshold for the curvature.
         inland_threshold: Threshold for the inland removal.
         contour: Contour to use for the inland removal.
@@ -1219,9 +1213,9 @@ def process(
     # General post-processing. Smooth the mesh, remove small holes, and regularise the faces.
     mesh = mesh.extract_largest()
     mesh = repair_small_holes(mesh, hole_repair_threshold)
-    mesh = mesh.smooth(smooth_iter, smooth_relax)
+    mesh = mesh.smooth(smooth_iterations, smooth_relaxation)
     mesh = remesh(mesh, int(upscaling * mesh.n_points))
-    result = smooth_boundary(mesh, smooth_iter, smooth_relax)
+    result = smooth_boundary(mesh, smooth_iterations, smooth_relaxation)
     if result is not None:
         mesh = result
 
@@ -1245,6 +1239,8 @@ def remove_tongues(
         mesh: Mesh to operate on.
         radius: Radius for boundary point neighbourhood.
         threshold: Threshold for fraction between boundary distance and euclidean distance.
+        hole_edges: Size of holes to fill after tongue removal.
+        verbose: Print processing steps.
 
     Returns:
         Resulting mesh.
@@ -1483,10 +1479,10 @@ def remesh_decimate(
         mesh = correct_bad_mesh(mesh, verbose=verbose)
         mesh = extract_clean_fill_triangulate(mesh, 0)
 
-        mesh = remesh(mesh, mesh.GetNumberOfPoints() * 2)
+        mesh = remesh(mesh, int(mesh.GetNumberOfPoints() * upsample_factor))
         mesh = mesh.compute_normals(inplace=False)
         mesh = mesh.decimate(
-            0.5,
+            downsample_factor,
             volume_preservation=True,
             normals=True,
             inplace=False,
@@ -1621,7 +1617,7 @@ def extract_clean_fill_triangulate(mesh: pv.PolyData, hole_edges: int = 300, inp
 
     new_mesh = new_mesh.extract_largest()
     new_mesh = new_mesh.clean()
-    new_mesh = repair_small_holes(mesh, max_boundary_edges=hole_edges)
+    new_mesh = repair_small_holes(new_mesh, max_boundary_edges=hole_edges)
     new_mesh = new_mesh.triangulate()
     result: pv.PolyData = new_mesh.clean()
 
@@ -1636,7 +1632,6 @@ ECFT = extract_clean_fill_triangulate
 def define_meristem(
     mesh: pv.PolyData,
     method: str = "central_mass",
-    resolution: tuple[float, float, float] = (1, 1, 1),
     return_coord: bool = False,
 ) -> int | tuple[int, NDArray[np.floating[Any]]]:
     """Determine which domain corresponds to the meristem.
@@ -1644,7 +1639,6 @@ def define_meristem(
     Args:
         mesh: Mesh to operate on.
         method: Method for defining the meristem to use.
-        resolution: Resolution of the dimensions.
         return_coord: If True, return coordinates as well.
 
     Returns:
@@ -1707,7 +1701,7 @@ def fit_paraboloid(
         result: NDArray[np.floating[Any]] = np.abs(p1 * x**2.0 + p2 * y**2.0 + p3 * x + p4 * y + p5 - z)
         return result
 
-    optimal_params, _1, _2, _3, _4 = opt.leastsq(
+    optimal_params, _, _, _, info_code = opt.leastsq(
         errfunc,
         init,
         args=(data,),
@@ -1715,7 +1709,7 @@ def fit_paraboloid(
     )
     params: NDArray[np.floating[Any]] = np.asarray(optimal_params)
     if return_success:
-        return params, _4 in [1, 2, 3, 4]
+        return params, info_code in [1, 2, 3, 4]
     return params
 
 

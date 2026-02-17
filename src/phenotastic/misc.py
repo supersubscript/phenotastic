@@ -363,9 +363,6 @@ def coord_array(
     grid_arr: NDArray[np.floating[Any]] = np.array(grid_list)
     grid_arr = grid_arr.transpose(0, 2, 1, 3)
     xx, yy, zz = grid_arr
-    xx = xx.ravel()
-    yy = yy.ravel()
-    zz = zz.ravel()
 
     # Make compatible lists
     coords = np.vstack((xx.ravel(), yy.ravel(), zz.ravel()))

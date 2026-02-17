@@ -1,5 +1,5 @@
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal, overload
 
 import mahotas as mh
 import networkx as nx
@@ -21,7 +21,7 @@ from scipy.spatial import cKDTree
 from skimage.measure import marching_cubes
 from skimage.segmentation import morphological_chan_vese
 
-from phenotastic.misc import autocrop, car2sph, coord_array, cut, get_resolution, rotate, to_uint8
+from phenotastic.misc import autocrop, cartesian_to_spherical, coord_array, cut, get_resolution, rotate, to_uint8
 
 if TYPE_CHECKING:
     from phenotastic.phenomesh import PhenoMesh
@@ -180,14 +180,14 @@ def create_mesh(contour: NDArray[Any], resolution: list[float] | None = None, st
 
     if resolution is None:
         resolution = [1, 1, 1]
-    v, f, _, _ = marching_cubes(
+    vertices, faces_arr, _, _ = marching_cubes(  # type: ignore[no-untyped-call]
         contour,
         0,
         spacing=list(resolution),
         step_size=step_size,
         allow_degenerate=False,
     )
-    mesh = pv.PolyData(v, np.c_[[3] * len(f), f].ravel())
+    mesh = pv.PolyData(vertices, np.c_[[3] * len(faces_arr), faces_arr].ravel())
     return PhenoMesh(mesh)
 
 
@@ -212,9 +212,9 @@ def filter_by_curvature(
     curvature = mesh.curvature() if curvatures is None else curvatures
 
     to_remove = (curvature < curvature_threshold[0]) | (curvature > curvature_threshold[1])
-    mesh = mesh.remove_points(to_remove)[0]
+    result: pv.PolyData = mesh.remove_points(to_remove)[0]
 
-    return mesh
+    return result
 
 
 def label_cellular_mesh(
@@ -264,26 +264,26 @@ def create_cellular_mesh(
         if verbose:
             logger.info(f"Now meshing cell {c_idx} (label: {cell_id}) out of {n_cells}")
         cell_img, cell_cuts = autocrop(
-            seg_img == cell_id,
+            (seg_img == cell_id).astype(np.uint8),
             threshold=0,
-            n=1,
-            return_cuts=True,
-            offset=[[2, 2], [2, 2], [2, 2]],
+            min_pixels_above_threshold=1,
+            return_crop_bounds=True,
+            padding=np.array([[2, 2], [2, 2], [2, 2]], dtype=np.int64),
         )
         cell_volume = np.sum(cell_img > 0) * np.prod(resolution)
 
-        v, f, _, _ = marching_cubes(
+        vertices, faces_arr, _, _ = marching_cubes(  # type: ignore[no-untyped-call]
             cell_img,
             0,
             allow_degenerate=False,
             step_size=1,
             spacing=resolution,
         )
-        v[:, 0] += cell_cuts[0, 0] * resolution[0]
-        v[:, 1] += cell_cuts[1, 0] * resolution[1]
-        v[:, 2] += cell_cuts[2, 0] * resolution[2]
+        vertices[:, 0] += cell_cuts[0, 0] * resolution[0]
+        vertices[:, 1] += cell_cuts[1, 0] * resolution[1]
+        vertices[:, 2] += cell_cuts[2, 0] * resolution[2]
 
-        cell_mesh = pv.PolyData(v, np.ravel(np.c_[[[3]] * len(f), f]))
+        cell_mesh = pv.PolyData(vertices, np.ravel(np.c_[[[3]] * len(faces_arr), faces_arr]))
         cell_mesh["cell_id"] = np.full(
             fill_value=cell_id,
             shape=cell_mesh.n_points,
@@ -312,19 +312,21 @@ def _validate_data(data: NDArray[Any] | str) -> NDArray[Any]:
     return data
 
 
-def _apply_stack_registration(data: NDArray[Any], fin: str | NDArray[Any], verbose: bool = True) -> NDArray[Any]:
+def _apply_stack_registration(
+    data: NDArray[Any], image_source: str | NDArray[Any], verbose: bool = True
+) -> NDArray[Any]:
     """Apply stack registration for slice alignment.
 
     Args:
         data: 3D or 4D image array
-        fin: Input filename for logging
+        image_source: Input filename or array for logging
         verbose: Print processing progress
 
     Returns:
         Registered image array
     """
     if verbose:
-        logger.info(f"Running stackreg for {fin}")
+        logger.info(f"Running stackreg for {image_source}")
     pretype = data.dtype
     data = data.astype(float)
     sr = StackReg(StackReg.RIGID_BODY)
@@ -342,7 +344,7 @@ def _apply_stack_registration(data: NDArray[Any], fin: str | NDArray[Any], verbo
 
 def _apply_clahe_enhancement(
     data: NDArray[np.uint8],
-    fin: str | NDArray[Any],
+    image_source: str | NDArray[Any],
     clahe_window: Sequence[int] | None,
     clahe_clip_limit: float | None,
     verbose: bool,
@@ -351,7 +353,7 @@ def _apply_clahe_enhancement(
 
     Args:
         data: Input image data as uint8 array
-        fin: Input filename or array (for verbose output)
+        image_source: Input filename or array (for verbose output)
         clahe_window: Window shape for CLAHE, if None will be computed
         clahe_clip_limit: Clip limit for CLAHE, if None will use Otsu threshold
         verbose: Flag to print processing steps
@@ -360,17 +362,19 @@ def _apply_clahe_enhancement(
         CLAHE-enhanced image data
     """
     if verbose:
-        logger.info(f"Running CLAHE for {fin}")
-    if clahe_window is None:
-        clahe_window = (np.array(data.shape) + 4) // 8
-    if clahe_clip_limit is None:
-        clahe_clip_limit = mh.otsu(data)
-    return clahe(data, win_shape=clahe_window, clip_limit=clahe_clip_limit)
+        logger.info(f"Running CLAHE for {image_source}")
+    clahe_win: Sequence[int] | NDArray[Any]
+    clahe_win = (np.array(data.shape) + 4) // 8 if clahe_window is None else clahe_window
+
+    clahe_clip_limit = mh.otsu(data) if clahe_clip_limit is None else clahe_clip_limit
+
+    result: NDArray[np.uint8] = clahe(data, win_shape=clahe_win, clip_limit=clahe_clip_limit)
+    return result
 
 
-def _apply_wiener_filtering(data: NDArray[Any], fin: str | NDArray[Any], verbose: bool = True) -> NDArray[Any]:
+def _apply_wiener_filtering(data: NDArray[Any], image_source: str | NDArray[Any], verbose: bool = True) -> NDArray[Any]:
     if verbose:
-        logger.info(f"Running wiener filtering for {fin}")
+        logger.info(f"Running wiener filtering for {image_source}")
     data = data.astype("float")
     if data.ndim > 3:
         for ii in range(data.shape[1]):
@@ -437,15 +441,18 @@ def contour(
 
     data = _validate_data(image)
 
+    resolved: Sequence[float]
     if resolution is None:
-        resolution = get_resolution(image) if isinstance(image, str) else [1, 1, 1]
+        resolved = list(get_resolution(image)) if isinstance(image, str) else [1.0, 1.0, 1.0]
+    else:
+        resolved = resolution
 
-    if any(np.less(resolution, 1e-3)):
-        resolution = np.multiply(resolution, 1e6)
+    if any(np.less(resolved, 1e-3)):
+        resolved = list(np.multiply(resolved, 1e6))
     if verbose:
-        logger.info(f"Resolution for {image} is {resolution}")
+        logger.info(f"Resolution for {image} is {resolved}")
 
-    data = zoom(data, resolution / np.asarray(target_resolution), order=3)
+    data = zoom(data, np.asarray(resolved) / np.asarray(target_resolution), order=3)
 
     # Perform stack regularisation
     if register_stack:
@@ -462,13 +469,15 @@ def contour(
             _, cuts = autocrop(
                 np.max(data, 1),
                 2 * mh.otsu(np.max(data, 1)),
-                n=10,
-                offset=offset,
-                return_cuts=True,
+                min_pixels_above_threshold=10,
+                return_crop_bounds=True,
+                padding=offset,
             )
             data = cut(data, cuts)
         else:
-            data = autocrop(data, 2 * mh.otsu(data), n=10, offset=offset)
+            data = autocrop(
+                data, 2 * mh.otsu(data), min_pixels_above_threshold=10, return_crop_bounds=False, padding=offset
+            )
 
     # Perform Wiener filtering
     data = _apply_wiener_filtering(data, image, verbose)
@@ -493,9 +502,9 @@ def contour(
         mask = to_uint8(data, False) > masking_factor * mh.otsu(to_uint8(data, False))
     else:
         mask = masking_factor
-    contour_result = morphological_chan_vese(
+    contour_result: NDArray[np.bool_] = morphological_chan_vese(  # type: ignore[no-untyped-call]
         data,
-        iterations=iterations,
+        num_iter=iterations,
         init_level_set=mask,
         smoothing=smoothing,
         lambda1=chan_vese_lambda1,
@@ -503,7 +512,9 @@ def contour(
     )
 
     # Postprocess the contour by filling etc.
-    contour_result = fill_contour(contour_result, fill_xy=fill_slices, fill_zx_zy=False)
+    filled = fill_contour(contour_result, fill_xy=fill_slices, fill_zx_zy=False)
+    if filled is not None:
+        contour_result = filled
 
     if fill_inland_threshold is not None:
         if verbose:
@@ -511,7 +522,7 @@ def contour(
         contour_result = fill_inland(contour_result, int(fill_inland_threshold))
 
     if return_resolution:
-        return contour_result, resolution
+        return contour_result, resolved
     return contour_result
 
 
@@ -638,6 +649,28 @@ def fill_contour(
     return None if inplace else new_contour
 
 
+@overload
+def label_from_image(
+    mesh: pv.PolyData,
+    segm_img: NDArray[np.integer[Any]],
+    resolution: list[float] | None = ...,
+    background: int = ...,
+    mode: str = ...,
+    inplace: Literal[False] = ...,
+) -> NDArray[np.integer[Any]]: ...
+
+
+@overload
+def label_from_image(
+    mesh: pv.PolyData,
+    segm_img: NDArray[np.integer[Any]],
+    resolution: list[float] | None = ...,
+    background: int = ...,
+    mode: str = ...,
+    inplace: bool = ...,
+) -> NDArray[np.integer[Any]] | None: ...
+
+
 def label_from_image(
     mesh: pv.PolyData,
     segm_img: NDArray[np.integer[Any]],
@@ -688,7 +721,8 @@ def label_from_image(
     ]
 
     # Get the coordinates of the points in the image
-    coords = coord_array(segm_img, tuple(resolution)).T
+    resolved = resolution or [1.0, 1.0, 1.0]
+    coords = coord_array(segm_img, (resolved[0], resolved[1], resolved[2])).T
     img_raveled = segm_img.ravel()
     coords = coords[img_raveled != background]
     img_raveled = img_raveled[img_raveled != background]
@@ -704,7 +738,7 @@ def label_from_image(
         raise ValueError(f"Invalid mode: {mode}")
 
     # Get the values of the closest points and either assign them to the mesh, or return them
-    values = img_raveled[closest]
+    values: NDArray[np.integer[Any]] = img_raveled[closest]
     if inplace:
         mesh["labels"] = values
         return None
@@ -739,8 +773,8 @@ def project_to_surface(
 
     # Get the coordinates and values of the points in the image
     if resolution is None:
-        resolution = [1, 1, 1]
-    coords = coord_array(int_img, tuple(resolution)).T
+        resolution = [1.0, 1.0, 1.0]
+    coords = coord_array(int_img, (resolution[0], resolution[1], resolution[2])).T
     if mask is not None:
         int_img[~mask] = background
     img_raveled = int_img.ravel()
@@ -768,21 +802,21 @@ def project_to_surface(
 
     # Now filter out the values that are too far away
     if distance_threshold < 0:
-        l1_filter = (dists > distance_threshold) & (dists < 0)
+        label_filter = (dists > distance_threshold) & (dists < 0)
     else:
-        l1_filter = (dists < distance_threshold) & (dists > 0)
-    l1_coords = coords[l1_filter]
-    l1_vals = img_raveled[l1_filter]
+        label_filter = (dists < distance_threshold) & (dists > 0)
+    labeled_coords = coords[label_filter]
+    labeled_values = img_raveled[label_filter]
 
     # Get the closest point to each vertex and sum up the values for the vertex
     if fct is not np.sum:
         raise NotImplementedError("fct : Only np.sum is implemented for now.")
 
     tree = cKDTree(mesh.points)
-    closest = tree.query(l1_coords, k=1)[1]
+    closest: NDArray[np.intp] = np.atleast_1d(tree.query(labeled_coords, k=1)[1])
     values = np.zeros(mesh.n_points)
 
-    for ii, val in enumerate(l1_vals):
+    for ii, val in enumerate(labeled_values):
         values[closest[ii]] += val
 
     return values
@@ -810,20 +844,20 @@ def remove_inland_under(
     # Compute the domain of interest
     if resolution is None:
         resolution = [1, 1, 1]
-    cont2d = np.max(contour, 0)
-    cont2d = np.pad(cont2d, pad_width=1, constant_values=0, mode="constant")
-    distance_map = distance_transform_edt(cont2d)
+    contour_2d = np.max(contour, 0)
+    contour_2d = np.pad(contour_2d, pad_width=1, constant_values=0, mode="constant")
+    distance_map: NDArray[np.floating[Any]] = np.asarray(distance_transform_edt(contour_2d))
     distance_map = distance_map[1:-1, 1:-1]
     larger = np.array(np.where(distance_map > threshold)).T
-    c = cont2d.astype(int)
-    c[larger[:, 0], larger[:, 1]] = 2
+    contour_classified = contour_2d.astype(int)
+    contour_classified[larger[:, 0], larger[:, 1]] = 2
 
     xycoords = np.divide(mesh.points[:, 1:].copy(), resolution[1:])
     xycoords = np.round(xycoords).astype(int)
     xycoords[xycoords < 0] = 0
     xycoords[xycoords[:, 0] > contour.shape[1] - 1, 0] = contour.shape[1] - 1
     xycoords[xycoords[:, 1] > contour.shape[2] - 1, 0] = contour.shape[2] - 1
-    inside = c[xycoords[:, 0], xycoords[:, 1]] == 2
+    inside = contour_classified[xycoords[:, 0], xycoords[:, 1]] == 2
     indices = np.where(inside)[0]
 
     # Use ray-tracing to identify if the point is under the mesh surface or not
@@ -841,7 +875,7 @@ def remove_inland_under(
     if len(under_indices_arr) > 0:
         under[under_indices_arr] = True
 
-    output = mesh.remove_points(under)[0]
+    output: pv.PolyData = mesh.remove_points(under)[0]
     return output
 
 
@@ -855,14 +889,14 @@ def fill_inland(contour: NDArray[np.bool_], threshold_distance: int = 0) -> NDAr
     Returns:
         Filled contour.
     """
-    # Get a maximum projection of the contour and compute the distane map
-    cont2d = np.max(contour, 0)
-    cont2d = np.pad(cont2d, pad_width=1, constant_values=0, mode="constant")
-    distance_map = distance_transform_edt(cont2d)
+    # Get a maximum projection of the contour and compute the distance map
+    contour_2d = np.max(contour, 0)
+    contour_2d = np.pad(contour_2d, pad_width=1, constant_values=0, mode="constant")
+    distance_map: NDArray[np.floating[Any]] = np.asarray(distance_transform_edt(contour_2d))
     distance_map = distance_map[1:-1, 1:-1]
     larger = np.array(np.where(distance_map > threshold_distance)).T
-    c = cont2d.astype(int)
-    c[larger[:, 0], larger[:, 1]] = 2
+    contour_classified = contour_2d.astype(int)
+    contour_classified[larger[:, 0], larger[:, 1]] = 2
 
     # Get the first and last indices in the Z-direction for each XY pixel
     first_occurence = np.argmax(contour, 0)
@@ -874,7 +908,7 @@ def fill_inland(contour: NDArray[np.bool_], threshold_distance: int = 0) -> NDAr
     for ii in range(mask.shape[1]):
         for jj in range(mask.shape[2]):
             mask[first_occurence[ii, jj] : last_occurence[ii, jj], ii, jj] = True
-    mask = mask & (c[1:-1, 1:-1] == 2)
+    mask = mask & (contour_classified[1:-1, 1:-1] == 2)
 
     output = contour.copy()
     output[mask] = True
@@ -884,12 +918,12 @@ def fill_inland(contour: NDArray[np.bool_], threshold_distance: int = 0) -> NDAr
     return filled
 
 
-def repair_small_holes(mesh: pv.PolyData, nbe: int | None = 100, refine: bool = True) -> pv.PolyData:
+def repair_small_holes(mesh: pv.PolyData, max_boundary_edges: int | None = 100, refine: bool = True) -> pv.PolyData:
     """Repair small holes in a mesh based on the number of edges.
 
     Args:
         mesh: Mesh to repair.
-        nbe: Number of edges to use for the repair. Default is 100.
+        max_boundary_edges: Number of edges to use for the repair. Default is 100.
         refine: Refine the mesh. Default is True.
 
     Returns:
@@ -897,15 +931,14 @@ def repair_small_holes(mesh: pv.PolyData, nbe: int | None = 100, refine: bool = 
     """
     mfix = PyTMesh(False)
     mfix.load_array(mesh.points, mesh.faces.reshape(-1, 4)[:, 1:])
-    if nbe is None:
-        nbe = -1
-    mfix.fill_small_boundaries(nbe=nbe, refine=refine)
+    if max_boundary_edges is None:
+        max_boundary_edges = -1
+    mfix.fill_small_boundaries(nbe=max_boundary_edges, refine=refine)
     vert, faces = mfix.return_arrays()
 
     output = pv.PolyData(vert, np.ravel(np.c_[[[3]] * len(faces), faces]))
-    output = output.clean()
-    output = output.triangulate()
-    return output
+    result: pv.PolyData = output.clean().triangulate()
+    return result
 
 
 def correct_bad_mesh(mesh: pv.PolyData, verbose: bool = True) -> pv.PolyData:
@@ -925,44 +958,44 @@ def correct_bad_mesh(mesh: pv.PolyData, verbose: bool = True) -> pv.PolyData:
             "Package pymeshfix not found. Install to use this function.",
         ) from None
 
-    new_poly = ecft(mesh, 0)
-    nm = get_non_manifold_edges(new_poly)
+    cleaned_mesh = extract_clean_fill_triangulate(mesh, 0)
+    non_manifold = get_non_manifold_edges(cleaned_mesh)
 
-    while nm.n_points > 0:
+    while non_manifold.n_points > 0:
         if verbose:
-            logger.info(f"Trying to remove {nm.GetNumberOfPoints()} points")
+            logger.info(f"Trying to remove {non_manifold.GetNumberOfPoints()} points")
 
         # Create pymeshfix object from our mesh
         meshfix = _meshfix.PyTMesh()
-        v, f = mesh.points, mesh.faces.reshape(-1, 4)[:, 1:]
-        meshfix.load_array(v, f)
+        vertices, faces_arr = mesh.points, mesh.faces.reshape(-1, 4)[:, 1:]
+        meshfix.load_array(vertices, faces_arr)
 
         # Remove smaller components
         meshfix.remove_smallest_components()
-        v2, f2 = meshfix.return_arrays()
-        f2 = np.hstack([np.append(len(ii), ii) for ii in f2])
+        vertices_clean, faces_clean = meshfix.return_arrays()
+        faces_clean = np.hstack([np.append(len(ii), ii) for ii in faces_clean])
 
         # Create new polydata from cleaned out mesh
-        new_poly = pv.PolyData(v2, f2)
-        new_poly = ecft(new_poly, 0)
+        cleaned_mesh = pv.PolyData(vertices_clean, faces_clean)
+        cleaned_mesh = extract_clean_fill_triangulate(cleaned_mesh, 0)
 
         # If we still have non-manifold edges, force remove these points
-        nm = get_non_manifold_edges(new_poly)
-        nmpts = nm.points
-        mpts = new_poly.points
-        ptidx = np.array([np.where((mpts == ii).all(axis=1))[0][0] for ii in nmpts])
+        non_manifold = get_non_manifold_edges(cleaned_mesh)
+        non_manifold_points = non_manifold.points
+        mesh_points = cleaned_mesh.points
+        point_indices = np.array([np.where((mesh_points == ii).all(axis=1))[0][0] for ii in non_manifold_points])
 
-        mask = np.zeros((mpts.shape[0],), dtype=bool)
-        if ptidx.shape[0] > 0:
-            mask[ptidx] = True
-        new_poly = new_poly.remove_points(mask)[0]
+        mask = np.zeros((mesh_points.shape[0],), dtype=bool)
+        if point_indices.shape[0] > 0:
+            mask[point_indices] = True
+        cleaned_mesh = cleaned_mesh.remove_points(mask)[0]
 
-        new_poly = ecft(new_poly, 0)
-        nm = get_non_manifold_edges(new_poly)
+        cleaned_mesh = extract_clean_fill_triangulate(cleaned_mesh, 0)
+        non_manifold = get_non_manifold_edges(cleaned_mesh)
 
-    new_poly = ecft(new_poly, 0)
+    cleaned_mesh = extract_clean_fill_triangulate(cleaned_mesh, 0)
 
-    return new_poly
+    return cleaned_mesh
 
 
 def remove_bridges(mesh: pv.PolyData, verbose: bool = True) -> pv.PolyData:
@@ -1002,7 +1035,7 @@ def remove_bridges(mesh: pv.PolyData, verbose: bool = True) -> pv.PolyData:
         mask[remove_pts] = True
 
         new_mesh = new_mesh.remove_points(mask, keep_scalars=False)[0]
-        new_mesh = ecft(new_mesh, 0)
+        new_mesh = extract_clean_fill_triangulate(new_mesh, 0)
 
     return new_mesh
 
@@ -1028,7 +1061,7 @@ def remove_by_normals(
     normals = mesh.point_normals.copy()
     if flip:
         normals *= -1.0
-    normals = car2sph(normals) / (2.0 * np.pi) * 360.0
+    normals = cartesian_to_spherical(normals) / (2.0 * np.pi) * 360.0
 
     if angle == "polar":
         angle_index = 1
@@ -1040,7 +1073,7 @@ def remove_by_normals(
         )
 
     to_remove = normals[:, angle_index] < threshold_angle
-    new_mesh = mesh.remove_points(to_remove, keep_scalars=False)[0]
+    new_mesh: pv.PolyData = mesh.remove_points(to_remove, keep_scalars=False)[0]
     return new_mesh
 
 
@@ -1065,25 +1098,25 @@ def smooth_boundary(
 
     # Get boundary information and index correspondences
     boundary = get_boundary_edges(mesh)
-    bdpts = boundary.points
-    from_ = np.array([mesh.FindPoint(ii) for ii in bdpts])
+    boundary_points = boundary.points
+    parent_indices = np.array([mesh.FindPoint(ii) for ii in boundary_points])
 
-    neighs: list[tuple[int, int]] = []
+    neighbors: list[tuple[int, int]] = []
     for ii in range(boundary.n_points):
         pt_neighs = get_vertex_neighbors(boundary, ii, include_self=False)
         for jj in range(pt_neighs.shape[0]):
-            neighs.append((ii, pt_neighs[jj]))
+            neighbors.append((ii, pt_neighs[jj]))
 
     # Find holes (cycles) in the mesh
-    net = nx.Graph(neighs)
+    net = nx.Graph(neighbors)
     cycles = nx.cycle_basis(net)
     cycles.sort(key=lambda x: len(x), reverse=True)
     cycles_arr = [np.array(ii) for ii in cycles]
 
     # Smooth boundary using Laplacian smoothing:
     # x_new = x_old - sigma * (x_old - mean(x_xneighs))
-    new_pts_prev = bdpts.copy()
-    new_pts_now = bdpts.copy()
+    new_pts_prev = boundary_points.copy()
+    new_pts_now = boundary_points.copy()
     for _iter in range(iterations):
         new_pts_prev = new_pts_now.copy()
         for ii in range(len(cycles_arr)):
@@ -1104,7 +1137,7 @@ def smooth_boundary(
 
     # Update coordinates
     for ii in range(len(cycles_arr)):
-        mesh.points[from_[cycles_arr[ii]]] = new_pts_now[cycles_arr[ii]]
+        mesh.points[parent_indices[cycles_arr[ii]]] = new_pts_now[cycles_arr[ii]]
 
     return None if inplace else mesh
 
@@ -1150,7 +1183,7 @@ def process(
     )
 
     # Scale the mest and repair small holes
-    mesh = remesh(mesh, int(mesh.n_points * downscaling), sub=0)
+    mesh = remesh(mesh, int(mesh.n_points * downscaling), subdivisions=0)
     mesh = repair_small_holes(mesh, hole_repair_threshold)
 
     # Remove vertices based on the vertex normal angle
@@ -1172,7 +1205,7 @@ def process(
         mesh = remove_inland_under(mesh, contour, threshold=int(inland_threshold))
         mesh = mesh.extract_largest()
         mesh = repair_small_holes(mesh, hole_repair_threshold)
-    mesh = ecft(mesh, hole_repair_threshold)
+    mesh = extract_clean_fill_triangulate(mesh, hole_repair_threshold)
 
     # Remove "tongues" from the mesh
     if tongues_radius is not None:
@@ -1219,12 +1252,12 @@ def remove_tongues(
     while True:
         # Get boundary information and index correspondences
         boundary = get_boundary_edges(mesh)
-        bdpts = boundary.points
-        from_ = np.array([mesh.FindPoint(ii) for ii in bdpts])
+        boundary_points = boundary.points
+        parent_indices = np.array([mesh.FindPoint(ii) for ii in boundary_points])
 
-        all_neighs = get_vertex_neighbors_all(mesh, include_self=False)
+        all_vertex_neighbors = get_vertex_neighbors_all(mesh, include_self=False)
         all_edges: list[tuple[int, int]] = []
-        for ii, pt_neighs in enumerate(all_neighs):
+        for ii, pt_neighs in enumerate(all_vertex_neighbors):
             for _jj, neigh in enumerate(pt_neighs):
                 all_edges.append((ii, neigh))
         all_edges_arr = np.array(all_edges)
@@ -1237,29 +1270,29 @@ def remove_tongues(
             )
             ** 0.5,
         ]
-        all_net = nx.Graph()
-        all_net.add_weighted_edges_from(weighted_all_edges)
+        mesh_graph: nx.Graph[int] = nx.Graph()
+        mesh_graph.add_weighted_edges_from(weighted_all_edges)
 
         # Find the cycles, i.e. the different boundaries we have
-        neighs_list: list[tuple[int, int]] = []
+        boundary_edge_list: list[tuple[int, int]] = []
         for ii in range(boundary.n_points):
             pt_neighs = get_vertex_neighbors(boundary, ii, include_self=False)
             for jj in range(pt_neighs.shape[0]):
-                neighs_list.append((ii, pt_neighs[jj]))
-        neighs_arr = np.array(neighs_list)
+                boundary_edge_list.append((ii, pt_neighs[jj]))
+        boundary_edge_arr = np.array(boundary_edge_list)
 
         weighted_edges = np.c_[
-            neighs_arr,
+            boundary_edge_arr,
             np.sum(
-                (bdpts[neighs_arr[:, 0]] - bdpts[neighs_arr[:, 1]]) ** 2,
+                (boundary_points[boundary_edge_arr[:, 0]] - boundary_points[boundary_edge_arr[:, 1]]) ** 2,
                 1,
             )
             ** 0.5,
         ]
-        bdnet = nx.Graph()
-        bdnet.add_weighted_edges_from(weighted_edges)
+        boundary_graph: nx.Graph[int] = nx.Graph()
+        boundary_graph.add_weighted_edges_from(weighted_edges)
 
-        cycles = nx.cycle_basis(bdnet)
+        cycles = nx.cycle_basis(boundary_graph)
         cycles.sort(key=lambda x: len(x), reverse=True)
         cycles_int = [np.array(ii, dtype=int) for ii in cycles]
 
@@ -1268,11 +1301,11 @@ def remove_tongues(
         for ii, cycle in enumerate(cycles_int):
             if verbose:
                 logger.info(f"Running cycle {ii} with {len(cycle)} points")
-            cpts = bdpts[cycle]
+            cycle_points = boundary_points[cycle]
 
             # Get the boundary points (in same loop) within a certain radius
-            tree = cKDTree(cpts)
-            neighs_ball = tree.query_ball_point(cpts, radius)
+            tree = cKDTree(cycle_points)
+            neighs_ball = tree.query_ball_point(cycle_points, radius)
             neighs_filtered = [np.array(neigh) for neigh in neighs_ball]
             neighs_filtered = [neigh[neigh != idx] for idx, neigh in enumerate(neighs_filtered)]
 
@@ -1280,20 +1313,20 @@ def remove_tongues(
             # neighbours within the radius
             bd_dists: list[NDArray[np.floating[Any]]] = []
             int_dists: list[NDArray[np.floating[Any]]] = []
-            for jj in range(len(cpts)):
+            for jj in range(len(cycle_points)):
                 bd_path_lengths: list[float] = []
                 int_path_lengths: list[float] = []
                 for kk in range(len(neighs_filtered[jj])):
                     bd_length = nx.shortest_path_length(
-                        bdnet,
+                        boundary_graph,
                         source=cycle[jj],
                         target=cycle[neighs_filtered[jj][kk]],
                         weight="weight",
                     )
                     int_length = nx.shortest_path_length(
-                        all_net,
-                        source=from_[cycle[jj]],
-                        target=from_[cycle[neighs_filtered[jj][kk]]],
+                        mesh_graph,
+                        source=parent_indices[cycle[jj]],
+                        target=parent_indices[cycle[neighs_filtered[jj][kk]]],
                         weight="weight",
                     )
 
@@ -1316,9 +1349,9 @@ def remove_tongues(
             # Recalculate the geodesic path between two points
             for jj in range(len(removal_anchors_arr)):
                 gdpts = nx.shortest_path(
-                    all_net,
-                    source=from_[cycle[removal_anchors_arr[jj][0]]],
-                    target=from_[cycle[removal_anchors_arr[jj][1]]],
+                    mesh_graph,
+                    source=parent_indices[cycle[removal_anchors_arr[jj][0]]],
+                    target=parent_indices[cycle[removal_anchors_arr[jj][1]]],
                     weight="weight",
                 )
                 gdpts_arr = np.array(gdpts, dtype="int")
@@ -1333,36 +1366,37 @@ def remove_tongues(
         mesh = mesh.remove_points(to_remove_arr, keep_scalars=False)[0]
         mesh = repair_small_holes(mesh, hole_edges)
         mesh = make_manifold(mesh, hole_edges)
-        mesh = ecft(mesh, hole_edges)
+        mesh = extract_clean_fill_triangulate(mesh, hole_edges)
 
-    mesh = mesh.clean()
-    return mesh
+    result: pv.PolyData = mesh.clean()
+    return result
 
 
 def repair(mesh: pv.PolyData) -> pv.PolyData:
     """Repair a mesh using MeshFix."""
     tmp = pmf.MeshFix(mesh)
     tmp.repair(True)
-    return tmp.mesh
+    repaired: pv.PolyData = tmp.mesh
+    return repaired
 
 
-def remesh(mesh: pv.PolyData, n: int, sub: int = 3) -> pv.PolyData:
+def remesh(mesh: pv.PolyData, n_clusters: int, subdivisions: int = 3) -> pv.PolyData:
     """Regularise the mesh faces using the ACVD algorithm.
 
     Args:
         mesh: The mesh to regularise.
-        n: The number of clusters (i.e. output number of faces) to use.
-        sub: The number of subdivisions to use when clustering.
+        n_clusters: The number of clusters (i.e. output number of faces) to use.
+        subdivisions: The number of subdivisions to use when clustering.
 
     Returns:
         The regularised mesh.
     """
     clus = clustering.Clustering(mesh)
-    clus.subdivide(sub)
-    clus.cluster(n)
+    clus.subdivide(subdivisions)
+    clus.cluster(n_clusters)
     output = clus.create_mesh()
-    output = output.clean()
-    return output
+    result: pv.PolyData = output.clean()
+    return result
 
 
 def make_manifold(mesh: pv.PolyData, hole_edges: int = 300) -> pv.PolyData:
@@ -1379,7 +1413,7 @@ def make_manifold(mesh: pv.PolyData, hole_edges: int = 300) -> pv.PolyData:
         logger.info(f"Removing {len(to_remove)} points")
         mesh = mesh.remove_points(to_remove)[0]
         mesh = mesh.extract_largest()
-        mesh = repair_small_holes(mesh, nbe=hole_edges)
+        mesh = repair_small_holes(mesh, max_boundary_edges=hole_edges)
         mesh = mesh.clean()
         edges = mesh.extract_feature_edges(
             boundary_edges=False,
@@ -1391,12 +1425,12 @@ def make_manifold(mesh: pv.PolyData, hole_edges: int = 300) -> pv.PolyData:
     return mesh
 
 
-def drop_skirt(mesh: pv.PolyData, maxdist: float, flip: bool = False) -> pv.PolyData:
+def drop_skirt(mesh: pv.PolyData, max_distance: float, flip: bool = False) -> pv.PolyData:
     """Downprojects the boundary to the lowest point in the z-direction.
 
     Args:
         mesh: Mesh to operate on.
-        maxdist: Distance in z-direction from the lowest point in the mesh to consider.
+        max_distance: Distance in z-direction from the lowest point in the mesh to consider.
         flip: If True, flip the direction.
 
     Returns:
@@ -1405,14 +1439,14 @@ def drop_skirt(mesh: pv.PolyData, maxdist: float, flip: bool = False) -> pv.Poly
     lowest = mesh.bounds[int(flip)]
     boundary = get_boundary_edges(mesh)
 
-    mpts = mesh.points
-    bdpts = boundary.points
-    idx_in_parent = np.array([mesh.FindPoint(ii) for ii in bdpts])
+    mesh_points: NDArray[np.float64] = np.asarray(mesh.points, dtype=np.float64)
+    boundary_points: NDArray[np.float64] = np.asarray(boundary.points, dtype=np.float64)
+    idx_in_parent = np.array([mesh.FindPoint(ii) for ii in boundary_points])
 
-    to_adjust = idx_in_parent[bdpts[:, 0] - lowest < maxdist]
-    mpts[to_adjust, 0] = lowest
+    to_adjust = idx_in_parent[boundary_points[:, 0] - lowest < max_distance]
+    mesh_points[to_adjust, 0] = lowest
 
-    new_mesh = pv.PolyData(mpts, mesh.faces)
+    new_mesh = pv.PolyData(mesh_points, mesh.faces)
 
     return new_mesh
 
@@ -1420,34 +1454,34 @@ def drop_skirt(mesh: pv.PolyData, maxdist: float, flip: bool = False) -> pv.Poly
 def get_boundary_points(mesh: pv.PolyData) -> NDArray[np.intp]:
     """Get vertex indices of points in the boundary."""
     boundary = get_boundary_edges(mesh)
-    bdpts = boundary.points
-    indices = np.array([mesh.FindPoint(ii) for ii in bdpts])
+    boundary_points = boundary.points
+    indices = np.array([mesh.FindPoint(ii) for ii in boundary_points])
 
     return indices
 
 
 def remesh_decimate(
     mesh: pv.PolyData,
-    iters: int,
-    upfactor: float = 2,
-    downfactor: float = 0.5,
+    iterations: int,
+    upsample_factor: float = 2,
+    downsample_factor: float = 0.5,
     verbose: bool = True,
 ) -> pv.PolyData:
     """Iterative remeshing/decimation.
 
     Args:
         mesh: Mesh to operate on.
-        iters: Number of iterations.
-        upfactor: Factor with which to upsample.
-        downfactor: Factor with which to downsample.
+        iterations: Number of iterations.
+        upsample_factor: Factor with which to upsample.
+        downsample_factor: Factor with which to downsample.
         verbose: Flag for whether to print operation steps.
 
     Returns:
         Processed mesh.
     """
-    for _ii in range(iters):
+    for _ii in range(iterations):
         mesh = correct_bad_mesh(mesh, verbose=verbose)
-        mesh = ecft(mesh, 0)
+        mesh = extract_clean_fill_triangulate(mesh, 0)
 
         mesh = remesh(mesh, mesh.GetNumberOfPoints() * 2)
         mesh = mesh.compute_normals(inplace=False)
@@ -1457,7 +1491,7 @@ def remesh_decimate(
             normals=True,
             inplace=False,
         )
-        mesh = ecft(mesh, 0)
+        mesh = extract_clean_fill_triangulate(mesh, 0)
 
     return mesh
 
@@ -1568,11 +1602,11 @@ def correct_normal_orientation_topcut(mesh: pv.PolyData, origin: tuple[float, fl
     """Correct normal orientation of a mesh by flipping normals if needed."""
     mesh.clear_data()
     if mesh.clip(normal="-x", origin=origin).point_normals[:, 0].sum() > 0:
-        mesh.flip_normals()
+        mesh.flip_normals()  # type: ignore[no-untyped-call]
     return mesh
 
 
-def ecft(mesh: pv.PolyData, hole_edges: int = 300, inplace: bool = False) -> pv.PolyData:
+def extract_clean_fill_triangulate(mesh: pv.PolyData, hole_edges: int = 300, inplace: bool = False) -> pv.PolyData:
     """Perform ExtractLargest, Clean, FillHoles, and TriFilter operations.
 
     Args:
@@ -1587,21 +1621,22 @@ def ecft(mesh: pv.PolyData, hole_edges: int = 300, inplace: bool = False) -> pv.
 
     new_mesh = new_mesh.extract_largest()
     new_mesh = new_mesh.clean()
-    new_mesh = repair_small_holes(mesh, nbe=hole_edges)
+    new_mesh = repair_small_holes(mesh, max_boundary_edges=hole_edges)
     new_mesh = new_mesh.triangulate()
-    new_mesh.clean()
+    result: pv.PolyData = new_mesh.clean()
 
-    return new_mesh
+    return result
 
 
-# Alias for backwards compatibility
-ECFT = ecft
+# Backwards compatibility aliases
+ecft = extract_clean_fill_triangulate
+ECFT = extract_clean_fill_triangulate
 
 
 def define_meristem(
     mesh: pv.PolyData,
     method: str = "central_mass",
-    res: tuple[float, float, float] = (1, 1, 1),
+    resolution: tuple[float, float, float] = (1, 1, 1),
     return_coord: bool = False,
 ) -> int | tuple[int, NDArray[np.floating[Any]]]:
     """Determine which domain corresponds to the meristem.
@@ -1609,25 +1644,25 @@ def define_meristem(
     Args:
         mesh: Mesh to operate on.
         method: Method for defining the meristem to use.
-        res: Resolution of the dimensions.
+        resolution: Resolution of the dimensions.
         return_coord: If True, return coordinates as well.
 
     Returns:
         Domain index of the meristem, and optionally the center coordinates.
     """
-    ccoord = np.zeros((3,))
+    center_coord = np.zeros((3,))
     if method == "central_mass":
-        com = vtk.vtkCenterOfMass()
-        com.SetInputData(mesh)
-        com.Update()
-        ccoord = np.array(com.GetCenter())
+        center_of_mass = vtk.vtkCenterOfMass()
+        center_of_mass.SetInputData(mesh)
+        center_of_mass.Update()
+        center_coord = np.array(center_of_mass.GetCenter())
     elif method == "central_bounds":
-        ccoord = np.mean(np.reshape(mesh.GetBounds(), (3, 2)), axis=1)
+        center_coord = np.mean(np.reshape(mesh.GetBounds(), (3, 2)), axis=1)
 
-    m_idx = np.argmin(((mesh.points - ccoord) ** 2).sum(1) ** 0.5)
-    meristem = int(mesh["domains"][m_idx])
+    meristem_index = np.argmin(((mesh.points - center_coord) ** 2).sum(1) ** 0.5)
+    meristem = int(mesh["domains"][meristem_index])
     if return_coord:
-        return meristem, ccoord
+        return meristem, center_coord
     return meristem
 
 
@@ -1664,22 +1699,24 @@ def fit_paraboloid(
     if init is None:
         init = [1, 1, 1, 1, 1, 0, 0, 0]
 
-    def errfunc(p: Sequence[float], coord: NDArray[np.floating[Any]]) -> NDArray[np.floating[Any]]:
+    def errfunc(p: NDArray[np.floating[Any]], coord: NDArray[np.floating[Any]]) -> NDArray[np.floating[Any]]:
         p1, p2, p3, p4, p5, alpha, beta, gamma = p
         coord = rotate(coord, [alpha, beta, gamma])
 
         x, y, z = np.array(coord).T
-        return np.abs(p1 * x**2.0 + p2 * y**2.0 + p3 * x + p4 * y + p5 - z)
+        result: NDArray[np.floating[Any]] = np.abs(p1 * x**2.0 + p2 * y**2.0 + p3 * x + p4 * y + p5 - z)
+        return result
 
-    popt, _1, _2, _3, _4 = opt.leastsq(
+    optimal_params, _1, _2, _3, _4 = opt.leastsq(
         errfunc,
         init,
         args=(data,),
         full_output=True,
     )
+    params: NDArray[np.floating[Any]] = np.asarray(optimal_params)
     if return_success:
-        return popt, _4 in [1, 2, 3, 4]
-    return popt
+        return params, _4 in [1, 2, 3, 4]
+    return params
 
 
 def get_vertex_cycles(mesh: pv.PolyData) -> list[list[int]]:
@@ -1691,11 +1728,11 @@ def get_vertex_cycles(mesh: pv.PolyData) -> list[list[int]]:
     Returns:
         List of cycles, each cycle is a list of vertex indices.
     """
-    all_neighs = get_vertex_neighbors_all(mesh, include_self=True)
+    all_vertex_neighbors = get_vertex_neighbors_all(mesh, include_self=True)
     pairs: list[tuple[int, int]] = []
     for ii in range(mesh.n_points):
-        for pp in all_neighs[ii]:
-            pairs.append((ii, int(pp)))
+        for neighbor in all_vertex_neighbors[ii]:
+            pairs.append((ii, int(neighbor)))
     net = nx.Graph(pairs)
     cycles: list[list[int]] = nx.cycle_basis(net)
     cycles.sort(key=lambda x: len(x), reverse=True)
@@ -1712,7 +1749,7 @@ def correct_normal_orientation(mesh: pv.PolyData, relative: str = "x", inplace: 
         or (relative == "y" and normals[:, 1].sum() > 0)
         or (relative == "z" and normals[:, 2].sum() > 0)
     ):
-        mesh.flip_normals()
+        mesh.flip_normals()  # type: ignore[no-untyped-call]
 
     return None if inplace else mesh
 
@@ -1730,13 +1767,13 @@ def fit_paraboloid_mesh(
     Returns:
         Parameters for the paraboloid, and optionally the apex coordinates.
     """
-    popt = fit_paraboloid(mesh.points)
-    if isinstance(popt, tuple):
-        popt = popt[0]
+    optimal_params = fit_paraboloid(mesh.points)
+    if isinstance(optimal_params, tuple):
+        optimal_params = optimal_params[0]
     if return_coord:
-        apex = compute_paraboloid_apex(popt)
-        return popt, apex
-    return popt
+        apex = compute_paraboloid_apex(optimal_params.tolist())
+        return optimal_params, apex
+    return optimal_params
 
 
 def compute_paraboloid_apex(parameters: Sequence[float]) -> NDArray[np.floating[Any]]:
@@ -1753,7 +1790,7 @@ def compute_paraboloid_apex(parameters: Sequence[float]) -> NDArray[np.floating[
     y = -p4 / (2.0 * p2)
     z = p1 * x**2.0 + p2 * y**2.0 + p3 * x + p4 * y + p5
 
-    coords = rotate(
+    coords: NDArray[np.floating[Any]] = rotate(
         np.array(
             [
                 [x, y, z],

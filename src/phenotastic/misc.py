@@ -10,18 +10,18 @@ from numpy.typing import ArrayLike, NDArray
 from phenotastic.utils.helpers import autocrop, get_resolution  # noqa: F401
 
 
-def cut(img: NDArray[np.floating[Any]], cuts: NDArray[np.integer[Any]]) -> NDArray[np.floating[Any]]:
+def cut(image: NDArray[np.floating[Any]], cuts: NDArray[np.integer[Any]]) -> NDArray[np.floating[Any]]:
     """Slice 3D image using specified cut coordinates.
 
     Args:
-        img: 3D image array
+        image: 3D image array
         cuts: 3x2 array defining [start, end] for each dimension
 
     Returns:
         Sliced image array
     """
     # TODO this should be written for nD with advanced slicing comprehension
-    return img[cuts[0, 0] : cuts[0, 1], cuts[1, 0] : cuts[1, 1], cuts[2, 0] : cuts[2, 1]]
+    return image[cuts[0, 0] : cuts[0, 1], cuts[1, 0] : cuts[1, 1], cuts[2, 0] : cuts[2, 1]]
 
 
 def merge(lists: list[list[Any]]) -> list[set[Any]]:
@@ -89,8 +89,8 @@ def remove_empty_slices(arr: NDArray[Any], keepaxis: int = 0) -> NDArray[Any]:
         Array with empty slices removed
     """
     not_empty = np.sum(arr, axis=tuple(np.delete(list(range(arr.ndim)), keepaxis))) > 0
-    arr = arr[not_empty]
-    return arr
+    result: NDArray[Any] = arr[not_empty]
+    return result
 
 
 def reject_outliers(data: NDArray[np.floating[Any]], n: float = 2.0) -> NDArray[np.floating[Any]]:
@@ -106,7 +106,7 @@ def reject_outliers(data: NDArray[np.floating[Any]], n: float = 2.0) -> NDArray[
     d = np.abs(data - np.median(data))
     mdev = np.median(d)
     s = d / (mdev or 1.0)
-    filtered_data = data[s < n]
+    filtered_data: NDArray[np.floating[Any]] = data[s < n]
     return filtered_data
 
 
@@ -140,8 +140,8 @@ def angle_difference(ang1: ArrayLike, ang2: ArrayLike, period: float = 360) -> N
     """
     difference = np.subtract(ang1, ang2)
     angs = np.array([np.abs(np.mod(difference, period)), np.abs(np.mod(difference, -period))])
-    angs = np.min(angs, axis=0)
-    return angs
+    result: NDArray[np.floating[Any]] = np.min(angs, axis=0)
+    return result
 
 
 def divergence_angles(angles: ArrayLike, period: float = 360) -> NDArray[np.floating[Any]]:
@@ -341,7 +341,7 @@ def get_prime_factors(n: int, primelist: list[int] | None = None) -> list[tuple[
 
 def coord_array(
     arr: NDArray[Any],
-    res: tuple[float, float, float] = (1, 1, 1),
+    resolution: tuple[float, float, float] = (1, 1, 1),
     offset: tuple[float, float, float] = (0, 0, 0),
 ) -> NDArray[np.floating[Any]]:
     """Create coordinate array matching dimensions of input array.
@@ -350,16 +350,16 @@ def coord_array(
 
     Args:
         arr: 3D array defining output dimensions
-        res: Spatial resolution in XYZ dimensions
+        resolution: Spatial resolution in XYZ dimensions
         offset: Origin offset in XYZ
 
     Returns:
         3xN array of XYZ coordinates (N = arr.size)
     """
-    xv = offset[0] + np.arange(0, arr.shape[0] * res[0] - 0.000001, res[0])
-    yv = offset[1] + np.arange(0, arr.shape[1] * res[1] - 0.000001, res[1])
-    zv = offset[2] + np.arange(0, arr.shape[2] * res[2] - 0.000001, res[2])
-    grid_list: list[NDArray[np.floating[Any]]] = list(np.meshgrid(xv, yv, zv))
+    x_values = offset[0] + np.arange(0, arr.shape[0] * resolution[0] - 0.000001, resolution[0])
+    y_values = offset[1] + np.arange(0, arr.shape[1] * resolution[1] - 0.000001, resolution[1])
+    z_values = offset[2] + np.arange(0, arr.shape[2] * resolution[2] - 0.000001, resolution[2])
+    grid_list: list[NDArray[np.floating[Any]]] = list(np.meshgrid(x_values, y_values, z_values))
     grid_arr: NDArray[np.floating[Any]] = np.array(grid_list)
     grid_arr = grid_arr.transpose(0, 2, 1, 3)
     xx, yy, zz = grid_arr
@@ -495,7 +495,7 @@ def mode(x: Sequence[Any]) -> Any:
     return max(list(x), key=list(x).count)
 
 
-def car2sph(xyz: NDArray[np.floating[Any]]) -> NDArray[np.floating[Any]]:
+def cartesian_to_spherical(xyz: NDArray[np.floating[Any]]) -> NDArray[np.floating[Any]]:
     """Convert Cartesian to spherical coordinates.
 
     Converts (x, y, z) to (r, theta, phi) where theta=0 along z-axis.
@@ -510,30 +510,38 @@ def car2sph(xyz: NDArray[np.floating[Any]]) -> NDArray[np.floating[Any]]:
     y = xyz[:, 1]
     z = xyz[:, 2]
 
-    rtp = np.zeros(xyz.shape)
+    spherical_coords = np.zeros(xyz.shape)
     xy = x**2 + y**2
-    rtp[:, 0] = np.sqrt(xy + z**2)
-    rtp[:, 1] = np.arctan2(np.sqrt(xy), z)
-    rtp[:, 2] = np.arctan2(y, x)
-    return rtp
+    spherical_coords[:, 0] = np.sqrt(xy + z**2)
+    spherical_coords[:, 1] = np.arctan2(np.sqrt(xy), z)
+    spherical_coords[:, 2] = np.arctan2(y, x)
+    return spherical_coords
 
 
-def sph2car(rtp: NDArray[np.floating[Any]]) -> NDArray[np.floating[Any]]:
+# Backwards compatibility alias
+car2sph = cartesian_to_spherical
+
+
+def spherical_to_cartesian(spherical_coords: NDArray[np.floating[Any]]) -> NDArray[np.floating[Any]]:
     """Convert spherical to Cartesian coordinates.
 
     Converts (r, theta, phi) to (x, y, z) where theta=0 along z-axis.
 
     Args:
-        rtp: Nx3 array of spherical coordinates [r, theta, phi]
+        spherical_coords: Nx3 array of spherical coordinates [r, theta, phi]
 
     Returns:
         Nx3 array of Cartesian coordinates [x, y, z]
     """
-    xyz = np.zeros(rtp.shape)
-    xyz[:, 0] = rtp[:, 0] * np.sin(rtp[:, 1]) * np.cos(rtp[:, 2])
-    xyz[:, 1] = rtp[:, 0] * np.sin(rtp[:, 1]) * np.sin(rtp[:, 2])
-    xyz[:, 2] = rtp[:, 0] * np.cos(rtp[:, 1])
+    xyz = np.zeros(spherical_coords.shape)
+    xyz[:, 0] = spherical_coords[:, 0] * np.sin(spherical_coords[:, 1]) * np.cos(spherical_coords[:, 2])
+    xyz[:, 1] = spherical_coords[:, 0] * np.sin(spherical_coords[:, 1]) * np.sin(spherical_coords[:, 2])
+    xyz[:, 2] = spherical_coords[:, 0] * np.cos(spherical_coords[:, 1])
     return xyz
+
+
+# Backwards compatibility alias
+sph2car = spherical_to_cartesian
 
 
 def to_uint8(data: NDArray, normalize: bool = True) -> NDArray[np.uint8]:
@@ -551,7 +559,8 @@ def to_uint8(data: NDArray, normalize: bool = True) -> NDArray[np.uint8]:
         data_float = (data_float - np.min(data_float)) / (np.max(data_float) - np.min(data_float)) * 255
     else:
         data_float = data_float / np.max(data_float) * 255
-    return data_float.astype(np.uint8)
+    result: NDArray[np.unsignedinteger[Any]] = data_float.astype(np.uint8)
+    return result
 
 
 def matching_rows(array1: NDArray[Any], array2: NDArray[Any]) -> NDArray[np.intp]:
@@ -559,7 +568,7 @@ def matching_rows(array1: NDArray[Any], array2: NDArray[Any]) -> NDArray[np.intp
     return np.array(np.all((array1[:, None, :] == array2[None, :, :]), axis=-1).nonzero()).T
 
 
-def rand_cmap(
+def random_colormap(
     nlabels: int,
     cmap_type: str = "bright",
     first_color_black: bool = True,
@@ -633,7 +642,7 @@ def rand_cmap(
         if last_color_black:
             rand_rgb_colors[-1] = [0, 0, 0]
 
-    random_colormap = LinearSegmentedColormap.from_list("new_map", rand_rgb_colors, N=nlabels)
+    cmap = LinearSegmentedColormap.from_list("new_map", rand_rgb_colors, N=nlabels)
 
     # Display colorbar
     if verbose:
@@ -647,13 +656,17 @@ def rand_cmap(
 
         _ = colorbar.ColorbarBase(
             ax,
-            cmap=random_colormap,
+            cmap=cmap,
             norm=norm,
             spacing="proportional",
             ticks=None,
-            boundaries=bounds,
+            boundaries=bounds.tolist(),
             format="%1i",
             orientation="horizontal",
         )
 
-    return random_colormap
+    return cmap
+
+
+# Backwards compatibility alias
+rand_cmap = random_colormap

@@ -54,7 +54,7 @@ def deprecated[T: Callable[..., object]](func: T | None = None, *, use_instead: 
 
 
 @overload
-def validate_paths(inputs: PathLike | None) -> Path: ...  # type: ignore[overload-overlap]
+def validate_paths(inputs: PathLike | None) -> Path: ...
 @overload
 def validate_paths(inputs: list[PathLike | None]) -> list[Path]: ...
 def validate_paths(

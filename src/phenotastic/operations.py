@@ -20,6 +20,7 @@ from phenotastic.pipeline_decorator import generate_operation_wrappers
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    from phenotastic.phenomesh import PhenoMesh
     from phenotastic.pipeline import PipelineContext
 
 
@@ -48,10 +49,11 @@ class ParameterInfo:
 # =============================================================================
 
 
-def _validate_mesh_present(context: PipelineContext) -> None:
-    """Validate that context has a mesh."""
+def _get_mesh(context: PipelineContext) -> PhenoMesh:
+    """Validate that context has a mesh and return it (narrows type)."""
     if context.mesh is None:
         raise ConfigurationError("This operation requires a mesh in context")
+    return context.mesh
 
 
 def _extract_meristem_index(result: int | tuple[int, Any]) -> int:
@@ -150,18 +152,18 @@ def rotate_mesh(
     Returns:
         Updated context with rotated mesh
     """
-    _validate_mesh_present(context)
+    mesh = _get_mesh(context)
 
     axis = axis.lower()
     if axis not in ("x", "y", "z"):
         raise ConfigurationError(f"Invalid axis '{axis}'. Must be 'x', 'y', or 'z'")
 
     if axis == "x":
-        context.mesh = context.mesh.rotate_x(angle)
+        context.mesh = mesh.rotate_x(angle)
     elif axis == "y":
-        context.mesh = context.mesh.rotate_y(angle)
+        context.mesh = mesh.rotate_y(angle)
     else:
-        context.mesh = context.mesh.rotate_z(angle)
+        context.mesh = mesh.rotate_z(angle)
 
     context.neighbors = None
     return context
@@ -185,14 +187,14 @@ def compute_curvature(
     Returns:
         Updated context with curvature array
     """
-    _validate_mesh_present(context)
+    mesh = _get_mesh(context)
 
     valid_types = ("mean", "gaussian", "minimum", "maximum")
     if curvature_type not in valid_types:
         raise ConfigurationError(f"curvature_type must be one of {valid_types}")
 
-    context.curvature = context.mesh.compute_curvature(curvature_type=curvature_type)
-    context.mesh["curvature"] = context.curvature
+    context.curvature = mesh.compute_curvature(curvature_type=curvature_type)
+    mesh["curvature"] = context.curvature
 
     return context
 
@@ -204,32 +206,32 @@ def filter_scalars(
     iterations: int = 1,
 ) -> PipelineContext:
     """Apply filter to scalar field on mesh."""
-    _validate_mesh_present(context)
+    mesh = _get_mesh(context)
 
     if context.neighbors is None:
-        context.neighbors = context.mesh.get_all_vertex_neighbors(include_self=True)
+        context.neighbors = mesh.get_all_vertex_neighbors(include_self=True)
 
     if scalars == "curvature":
         if context.curvature is None:
-            context.curvature = context.mesh.compute_curvature(curvature_type="mean")
+            context.curvature = mesh.compute_curvature(curvature_type="mean")
         data = context.curvature
     else:
-        if scalars not in context.mesh.point_data:
+        if scalars not in mesh.point_data:
             raise ConfigurationError(f"Scalar field '{scalars}' not found")
-        data = context.mesh.point_data[scalars]
+        data = mesh.point_data[scalars]
 
     if filter_type == "median":
-        result = domains.median(data, neighs=context.neighbors, iterations=iterations)
+        result = domains.median(data, neighbors=context.neighbors, iterations=iterations)
     elif filter_type == "mean":
-        result = domains.mean(data, neighs=context.neighbors, iterations=iterations)
+        result = domains.mean(data, neighbors=context.neighbors, iterations=iterations)
     else:
         raise ConfigurationError(f"Unknown filter_type: {filter_type}")
 
     if scalars == "curvature":
         context.curvature = result
-        context.mesh["curvature"] = result
+        mesh["curvature"] = result
     else:
-        context.mesh[scalars] = result
+        mesh[scalars] = result
 
     return context
 
@@ -244,22 +246,22 @@ def segment_domains(
     curvature_type: str | None = None,
 ) -> PipelineContext:
     """Create domains via steepest ascent on curvature field."""
-    _validate_mesh_present(context)
+    mesh = _get_mesh(context)
 
     if context.curvature is None:
         curvature_type = curvature_type or "mean"
-        context.curvature = context.mesh.compute_curvature(curvature_type=curvature_type)
-        context.mesh["curvature"] = context.curvature
+        context.curvature = mesh.compute_curvature(curvature_type=curvature_type)
+        mesh["curvature"] = context.curvature
 
     if context.neighbors is None:
-        context.neighbors = context.mesh.get_all_vertex_neighbors(include_self=True)
+        context.neighbors = mesh.get_all_vertex_neighbors(include_self=True)
 
     context.domains = domains.steepest_ascent(
-        context.mesh.to_polydata(),
+        mesh.to_polydata(),
         context.curvature,
         neighbours=context.neighbors,
     )
-    context.mesh["domains"] = context.domains
+    mesh["domains"] = context.domains
 
     return context
 
@@ -270,27 +272,27 @@ def merge_by_angles(
     meristem_method: str = "center_of_mass",
 ) -> PipelineContext:
     """Merge domains within angular threshold from meristem."""
-    _validate_mesh_present(context)
+    mesh = _get_mesh(context)
 
     if context.domains is None:
         raise ConfigurationError("merge_angles requires domains in context")
 
     if context.meristem_index is None:
         result = domains.define_meristem(
-            context.mesh.to_polydata(),
+            mesh.to_polydata(),
             context.domains,
             method=meristem_method,
         )
         context.meristem_index = _extract_meristem_index(result)
 
     context.domains = domains.merge_angles(
-        context.mesh.to_polydata(),
+        mesh.to_polydata(),
         context.domains,
         context.meristem_index,
         threshold=threshold,
         method=meristem_method,
     )
-    context.mesh["domains"] = context.domains
+    mesh["domains"] = context.domains
 
     return context
 
@@ -302,24 +304,20 @@ def merge_by_distance(
     method: str = "center_of_mass",
 ) -> PipelineContext:
     """Merge domains within spatial distance threshold."""
-    _validate_mesh_present(context)
+    mesh = _get_mesh(context)
 
     if context.domains is None:
         raise ConfigurationError("merge_distance requires domains in context")
 
-    if context.neighbors is None:
-        context.neighbors = context.mesh.get_all_vertex_neighbors(include_self=True)
-
     context.domains = domains.merge_distance(
-        context.mesh.to_polydata(),
+        mesh.to_polydata(),
         context.domains,
         threshold=threshold,
         scalars=context.curvature,
         method=method,
         metric=metric,
-        neighbours=context.neighbors,
     )
-    context.mesh["domains"] = context.domains
+    mesh["domains"] = context.domains
 
     return context
 
@@ -331,23 +329,23 @@ def merge_small_domains(
     mode: str = "border",
 ) -> PipelineContext:
     """Merge small domains into neighbors."""
-    _validate_mesh_present(context)
+    mesh = _get_mesh(context)
 
     if context.domains is None:
         raise ConfigurationError("merge_small requires domains in context")
 
     if context.neighbors is None:
-        context.neighbors = context.mesh.get_all_vertex_neighbors(include_self=True)
+        context.neighbors = mesh.get_all_vertex_neighbors(include_self=True)
 
     context.domains = domains.merge_small(
-        context.mesh.to_polydata(),
+        mesh.to_polydata(),
         context.domains,
         threshold=threshold,
         metric=metric,
         mode=mode,
         neighbours=context.neighbors,
     )
-    context.mesh["domains"] = context.domains
+    mesh["domains"] = context.domains
 
     return context
 
@@ -358,21 +356,21 @@ def merge_engulfing_domains(
     method: str = "center_of_mass",
 ) -> PipelineContext:
     """Merge domains that engulf others."""
-    _validate_mesh_present(context)
+    mesh = _get_mesh(context)
 
     if context.domains is None:
         raise ConfigurationError("merge_engulfing requires domains in context")
 
     if context.neighbors is None:
-        context.neighbors = context.mesh.get_all_vertex_neighbors(include_self=True)
+        context.neighbors = mesh.get_all_vertex_neighbors(include_self=True)
 
     context.domains = domains.merge_engulfing(
-        context.mesh.to_polydata(),
+        mesh.to_polydata(),
         context.domains,
         threshold,
         neighbours=context.neighbors,
     )
-    context.mesh["domains"] = context.domains
+    mesh["domains"] = context.domains
 
     return context
 
@@ -382,22 +380,30 @@ def merge_disconnected_domains(
     method: str = "center_of_mass",
 ) -> PipelineContext:
     """Merge disconnected components of the same domain."""
-    _validate_mesh_present(context)
+    mesh = _get_mesh(context)
 
     if context.domains is None:
         raise ConfigurationError("merge_disconnected requires domains in context")
 
+    if context.meristem_index is None:
+        result = domains.define_meristem(
+            mesh.to_polydata(),
+            context.domains,
+            method=method,
+        )
+        context.meristem_index = _extract_meristem_index(result)
+
     if context.neighbors is None:
-        context.neighbors = context.mesh.get_all_vertex_neighbors(include_self=True)
+        context.neighbors = mesh.get_all_vertex_neighbors(include_self=True)
 
     context.domains = domains.merge_disconnected(
-        context.mesh.to_polydata(),
+        mesh.to_polydata(),
         context.domains,
-        scalars=context.curvature,
-        method=method,
+        context.meristem_index,
+        threshold=None,
         neighbours=context.neighbors,
     )
-    context.mesh["domains"] = context.domains
+    mesh["domains"] = context.domains
 
     return context
 
@@ -408,31 +414,25 @@ def merge_by_depth(
     method: str = "center_of_mass",
 ) -> PipelineContext:
     """Merge domains based on depth from boundary."""
-    _validate_mesh_present(context)
+    mesh = _get_mesh(context)
 
     if context.domains is None:
         raise ConfigurationError("merge_depth requires domains in context")
 
-    if context.meristem_index is None:
-        result = domains.define_meristem(
-            context.mesh.to_polydata(),
-            context.domains,
-            method=method,
-        )
-        context.meristem_index = _extract_meristem_index(result)
+    if context.curvature is None:
+        context.curvature = mesh.compute_curvature(curvature_type="mean")
 
     if context.neighbors is None:
-        context.neighbors = context.mesh.get_all_vertex_neighbors(include_self=True)
+        context.neighbors = mesh.get_all_vertex_neighbors(include_self=True)
 
     context.domains = domains.merge_depth(
-        context.mesh.to_polydata(),
+        mesh.to_polydata(),
         context.domains,
-        context.meristem_index,
+        context.curvature,
         threshold=threshold,
-        method=method,
         neighbours=context.neighbors,
     )
-    context.mesh["domains"] = context.domains
+    mesh["domains"] = context.domains
 
     return context
 
@@ -442,22 +442,22 @@ def define_meristem(
     method: str = "center_of_mass",
 ) -> PipelineContext:
     """Identify which domain corresponds to the meristem."""
-    _validate_mesh_present(context)
+    mesh = _get_mesh(context)
 
     if context.domains is None:
         raise ConfigurationError("define_meristem requires domains in context")
 
-    neighs = None
+    vertex_neighbors = None
     if method in ("n_neighs", "neighbors", "neighs", "n_neighbors"):
         if context.neighbors is None:
-            context.neighbors = context.mesh.get_all_vertex_neighbors(include_self=True)
-        neighs = context.neighbors
+            context.neighbors = mesh.get_all_vertex_neighbors(include_self=True)
+        vertex_neighbors = context.neighbors
 
     result = domains.define_meristem(
-        context.mesh.to_polydata(),
+        mesh.to_polydata(),
         context.domains,
         method=method,
-        neighs=neighs,
+        neighbors=vertex_neighbors,
     )
     context.meristem_index = _extract_meristem_index(result)
 
@@ -466,24 +466,24 @@ def define_meristem(
 
 def extract_domain_data(context: PipelineContext) -> PipelineContext:
     """Extract geometric and spatial data for each domain."""
-    _validate_mesh_present(context)
+    mesh = _get_mesh(context)
 
     if context.domains is None:
-        raise ConfigurationError("extract_domaindata requires domains in context")
+        raise ConfigurationError("extract_domain_data requires domains in context")
 
     if context.meristem_index is None:
         result = domains.define_meristem(
-            context.mesh.to_polydata(),
+            mesh.to_polydata(),
             context.domains,
         )
         context.meristem_index = _extract_meristem_index(result)
 
-    pdata = pd.DataFrame({"domain": context.domains})
-    apex = context.mesh.compute_center_of_mass()
+    point_data = pd.DataFrame({"domain": context.domains})
+    apex = mesh.compute_center_of_mass()
 
-    context.domain_data = domains.extract_domaindata(
-        pdata,
-        context.mesh.to_polydata(),
+    context.domain_data = domains.extract_domain_data(
+        point_data,
+        mesh.to_polydata(),
         apex,
         context.meristem_index,
     )
@@ -511,17 +511,17 @@ def filter_by_curvature(
     Returns:
         Updated context with filtered mesh
     """
-    _validate_mesh_present(context)
+    mesh = _get_mesh(context)
 
     if context.curvature is None:
-        context.curvature = context.mesh.compute_curvature(curvature_type=curvature_type)
+        context.curvature = mesh.compute_curvature(curvature_type=curvature_type)
 
     if isinstance(threshold, list):
         curvature_threshold = (threshold[0], threshold[1])
     else:
         curvature_threshold = (-abs(threshold), abs(threshold))
 
-    context.mesh = context.mesh.filter_by_curvature(
+    context.mesh = mesh.filter_by_curvature(
         curvature_threshold=curvature_threshold,
         curvatures=context.curvature,
     )
@@ -567,7 +567,8 @@ _MANUAL_OPERATIONS: dict[str, Callable[..., PipelineContext]] = {
     "merge_disconnected": merge_disconnected_domains,
     "merge_depth": merge_by_depth,
     "define_meristem": define_meristem,
-    "extract_domaindata": extract_domain_data,
+    "extract_domain_data": extract_domain_data,
+    "extract_domaindata": extract_domain_data,  # Backwards compatibility
 }
 
 # Combine auto-generated and manual operations

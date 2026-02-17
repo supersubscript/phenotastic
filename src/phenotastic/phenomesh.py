@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Self
+from typing import TYPE_CHECKING, Any, Self, cast
 
 import numpy as np
 import pyvista as pv
@@ -12,8 +12,8 @@ from phenotastic.mesh import (
     correct_normal_orientation,
     define_meristem,
     drop_skirt,
-    ecft,
     erode,
+    extract_clean_fill_triangulate,
     filter_by_curvature,
     fit_paraboloid_mesh,
     get_boundary_edges,
@@ -80,7 +80,7 @@ class PhenoMesh(pv.PolyData):
         **kwargs: Any,
     ) -> None:
         """Initialize PhenoMesh with optional PolyData, file, or vertex array."""
-        super().__init__(var_inp, *args, **kwargs)
+        super().__init__(var_inp, *args, **kwargs)  # type: ignore[arg-type]
         self._phenotastic_contour = contour
         self._phenotastic_resolution = resolution
 
@@ -88,7 +88,7 @@ class PhenoMesh(pv.PolyData):
     # Custom attributes
     # =========================================================================
 
-    @property
+    @property  # type: ignore[override]
     def contour(self) -> NDArray[np.bool_] | None:
         """Binary contour array the mesh was generated from."""
         return self._phenotastic_contour
@@ -461,8 +461,8 @@ class PhenoMesh(pv.PolyData):
         """
         return self._wrap_result(correct_bad_mesh(self, verbose))
 
-    @pipeline_operation(name="ecft")
-    def ecft(self, hole_edges: int = 300) -> PhenoMesh:
+    @pipeline_operation(name="extract_clean_fill_triangulate")
+    def extract_clean_fill_triangulate(self, hole_edges: int = 300) -> PhenoMesh:
         """Perform ExtractLargest, Clean, FillHoles, and TriFilter operations.
 
         Args:
@@ -471,7 +471,10 @@ class PhenoMesh(pv.PolyData):
         Returns:
             Processed PhenoMesh
         """
-        return self._wrap_result(ecft(self, hole_edges))
+        return self._wrap_result(extract_clean_fill_triangulate(self, hole_edges))
+
+    # Backwards compatibility alias
+    ecft = extract_clean_fill_triangulate
 
     # =========================================================================
     # Normal operations
@@ -521,7 +524,7 @@ class PhenoMesh(pv.PolyData):
             New PhenoMesh with flipped normals
         """
         result = self.copy()
-        super(PhenoMesh, result).flip_normals()
+        super(PhenoMesh, result).flip_normals()  # type: ignore[no-untyped-call]
         return result
 
     @pipeline_operation(name="correct_normal_orientation", invalidates_neighbors=False)
@@ -554,7 +557,8 @@ class PhenoMesh(pv.PolyData):
         Returns:
             Array of curvature values per vertex
         """
-        return self.curvature(curvature_type)
+        result: NDArray[np.floating[Any]] = self.curvature(curvature_type)
+        return result
 
     @pipeline_operation(name="filter_curvature")
     def filter_by_curvature(
@@ -578,7 +582,7 @@ class PhenoMesh(pv.PolyData):
     # Point and vertex operations
     # =========================================================================
 
-    def remove_points(self, mask: NDArray[np.bool_], keep_scalars: bool = True) -> tuple[PhenoMesh, NDArray[np.intp]]:
+    def remove_points(self, mask: NDArray[np.bool_], keep_scalars: bool = True) -> tuple[PhenoMesh, NDArray[np.intp]]:  # type: ignore[override]
         """Remove points from the mesh.
 
         Args:
@@ -701,10 +705,10 @@ class PhenoMesh(pv.PolyData):
         Returns:
             Clipped PhenoMesh
         """
-        result = super().clip(normal=normal, origin=origin, invert=invert)
+        result = super().clip(normal=normal, origin=origin, invert=invert)  # type: ignore[arg-type]
         return self._wrap_result(result)
 
-    def rotate_x(self, angle: float, inplace: bool = False) -> Self:
+    def rotate_x(self, angle: float, inplace: bool = False) -> Self:  # type: ignore[override]
         """Rotate mesh around X axis.
 
         Args:
@@ -719,9 +723,9 @@ class PhenoMesh(pv.PolyData):
             return self
         result = self.copy()
         super(PhenoMesh, result).rotate_x(angle, inplace=True)
-        return result
+        return cast("Self", result)
 
-    def rotate_y(self, angle: float, inplace: bool = False) -> Self:
+    def rotate_y(self, angle: float, inplace: bool = False) -> Self:  # type: ignore[override]
         """Rotate mesh around Y axis.
 
         Args:
@@ -736,9 +740,9 @@ class PhenoMesh(pv.PolyData):
             return self
         result = self.copy()
         super(PhenoMesh, result).rotate_y(angle, inplace=True)
-        return result
+        return cast("Self", result)
 
-    def rotate_z(self, angle: float, inplace: bool = False) -> Self:
+    def rotate_z(self, angle: float, inplace: bool = False) -> Self:  # type: ignore[override]
         """Rotate mesh around Z axis.
 
         Args:
@@ -753,7 +757,7 @@ class PhenoMesh(pv.PolyData):
             return self
         result = self.copy()
         super(PhenoMesh, result).rotate_z(angle, inplace=True)
-        return result
+        return cast("Self", result)
 
     @pipeline_operation(name="drop_skirt")
     def drop_skirt(self, max_distance: float, flip: bool = False) -> PhenoMesh:
@@ -792,7 +796,7 @@ class PhenoMesh(pv.PolyData):
         """
         return float(self.geodesic_distance(start_vertex, end_vertex))
 
-    def find_closest_point(self, point: Sequence[float]) -> int:
+    def find_closest_point(self, point: Sequence[float]) -> int:  # type: ignore[override]
         """Find the index of the closest point.
 
         Args:
@@ -801,9 +805,9 @@ class PhenoMesh(pv.PolyData):
         Returns:
             Index of the closest point
         """
-        return int(self.FindPoint(point))
+        return int(self.FindPoint(list(point)))
 
-    def ray_trace(
+    def ray_trace(  # type: ignore[override]
         self,
         origin: Sequence[float],
         end_point: Sequence[float],
@@ -981,15 +985,15 @@ class PhenoMesh(pv.PolyData):
         self,
         init: list[float] | None = None,
         return_success: bool = False,
-    ) -> NDArray[np.floating[Any]] | tuple[NDArray[np.floating[Any]], bool]:
+    ) -> NDArray[np.floating[Any]] | tuple[NDArray[np.floating[Any]], NDArray[np.floating[Any]]]:
         """Fit a paraboloid to the mesh.
 
         Args:
             init: Initial parameters for the paraboloid
-            return_success: If True, return success status as well
+            return_success: If True, return apex coordinates as well
 
         Returns:
-            Parameters for the paraboloid, and optionally success status
+            Parameters for the paraboloid, and optionally the apex coordinates
         """
         return fit_paraboloid_mesh(self, return_coord=return_success)
 

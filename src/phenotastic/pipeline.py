@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import tifffile as tiff
-import yaml  # type: ignore[import-untyped]
+import yaml
 from loguru import logger
 
 from phenotastic.exceptions import ConfigurationError, PipelineError
@@ -154,7 +154,8 @@ class OperationRegistry:
             "merge_disconnected",
             "merge_depth",
             "define_meristem",
-            "extract_domaindata",
+            "extract_domain_data",
+            "extract_domaindata",  # Backwards compatibility
         }
 
         if category == "contour":

@@ -1,6 +1,6 @@
 import copy
 from collections.abc import Callable, Sequence
-from typing import Any
+from typing import Any, Literal, overload
 
 import numpy as np
 import pandas as pd
@@ -10,20 +10,20 @@ from loguru import logger
 from numpy.typing import NDArray
 from scipy.spatial.distance import cdist
 
-import phenotastic.mesh as mp
+import phenotastic.mesh as mesh_ops
 from phenotastic.misc import flatten, merge
 
 
 def median(
     scalars: NDArray[np.floating[Any]],
-    neighs: list[NDArray[np.intp]] | None = None,
+    neighbors: list[NDArray[np.intp]] | None = None,
     iterations: int = 1,
 ) -> NDArray[np.floating[Any]]:
     """Apply median filter to mesh-based scalar arrays.
 
     Args:
         scalars: Scalar array associated with mesh vertices
-        neighs: Neighbor connectivity array for each vertex
+        neighbors: Neighbor connectivity array for each vertex
         iterations: Number of filter iterations to apply
 
     Returns:
@@ -32,20 +32,20 @@ def median(
 
     scalars = scalars.copy()
     for _ii in range(iterations):
-        scalars = filter_curvature(scalars, neighs, np.median, 1)
+        scalars = filter_curvature(scalars, neighbors, np.median, 1)
     return scalars
 
 
 def minmax(
     scalars: NDArray[np.floating[Any]],
-    neighs: list[NDArray[np.intp]] | None = None,
+    neighbors: list[NDArray[np.intp]] | None = None,
     iterations: int = 1,
 ) -> NDArray[np.floating[Any]]:
     """Apply min-max filter to mesh-based scalar arrays.
 
     Args:
         scalars: Scalar array associated with mesh vertices
-        neighs: Neighbor connectivity array for each vertex
+        neighbors: Neighbor connectivity array for each vertex
         iterations: Number of filter iterations to apply
 
     Returns:
@@ -54,21 +54,21 @@ def minmax(
 
     scalars = scalars.copy()
     for _ii in range(iterations):
-        scalars = filter_curvature(scalars, neighs, np.min, 1)
-        scalars = filter_curvature(scalars, neighs, np.max, 1)
+        scalars = filter_curvature(scalars, neighbors, np.min, 1)
+        scalars = filter_curvature(scalars, neighbors, np.max, 1)
     return scalars
 
 
 def maxmin(
     scalars: NDArray[np.floating[Any]],
-    neighs: list[NDArray[np.intp]] | None = None,
+    neighbors: list[NDArray[np.intp]] | None = None,
     iterations: int = 1,
 ) -> NDArray[np.floating[Any]]:
     """Apply max-min filter to mesh-based scalar arrays.
 
     Args:
         scalars: Scalar array associated with mesh vertices
-        neighs: Neighbor connectivity array for each vertex
+        neighbors: Neighbor connectivity array for each vertex
         iterations: Number of filter iterations to apply
 
     Returns:
@@ -77,8 +77,8 @@ def maxmin(
 
     scalars = scalars.copy()
     for _ii in range(iterations):
-        scalars = filter_curvature(scalars, neighs, np.max, 1)
-        scalars = filter_curvature(scalars, neighs, np.min, 1)
+        scalars = filter_curvature(scalars, neighbors, np.max, 1)
+        scalars = filter_curvature(scalars, neighbors, np.min, 1)
     return scalars
 
 
@@ -109,7 +109,7 @@ def steepest_ascent(
     if (len(scalars) != mesh.n_points) or scalars.ndim > 1:
         raise RuntimeError("Invalid scalar array.")
     if neighbours is None:
-        neighbours = mp.get_vertex_neighbors_all(mesh)
+        neighbours = mesh_ops.get_vertex_neighbors_all(mesh)
 
     # Get the individual connections by computing the neighbourhood gradients
     connections: list[list[Any]] = [[]] * mesh.n_points
@@ -164,9 +164,9 @@ def map_to_domains(domains: NDArray[np.integer[Any]], values: NDArray[Any]) -> N
         Array of mapped values with length matching domains
     """
 
-    doms = np.unique(domains)
+    unique_domains = np.unique(domains)
     output = np.zeros(len(domains))
-    for ii, domain_members in enumerate(doms):
+    for ii, domain_members in enumerate(unique_domains):
         output[np.isin(domains, domain_members)] = values[ii]
     return output
 
@@ -238,12 +238,12 @@ def merge_angles(
             to_merge.append([int(indices[ii - 1]), int(indices[(ii) % len(indices)])])
 
         domain_labels = merge(to_merge)
-        domain_labels_arr = np.array([np.array(list(domain_labels[ii])) for ii in range(len(domain_labels))])
+        domain_labels_list: list[list[int]] = [list(domain_labels[ii]) for ii in range(len(domain_labels))]
 
-        domains = relabel(new_domains, domain_labels_arr)
+        domains = relabel(new_domains, domain_labels_list)
         meristem_index = 0
 
-        changed = len(domain_labels_arr) < len(np.unique(new_domains))
+        changed = len(domain_labels_list) < len(np.unique(new_domains))
 
     # Set domain values
     n_domains_new = len(np.unique(new_domains))
@@ -294,13 +294,13 @@ def merge_distance(
         raise RuntimeError(f'Method "{method}" not viable without valid scalar input.')
     elif method in ["maximum", "max", "minimum", "min"] and len(scalars) == mesh.n_points:
         coords = []
-        fct: Callable[..., Any] | None = (
+        aggregation_func: Callable[..., Any] | None = (
             np.max if method in ["maximum", "max"] else np.min if method in ["minimum", "min"] else None
         )
-        if fct is None:
+        if aggregation_func is None:
             raise RuntimeError(f'Method "{method}" not valid.')
         for ii in np.unique(domains):
-            extremum = fct(scalars[domains == ii])
+            extremum = aggregation_func(scalars[domains == ii])
             index = np.where(np.logical_and(scalars == extremum, domains == ii))[0][0]
             coords.append(mesh.points[index])
     else:
@@ -323,11 +323,11 @@ def merge_distance(
     else:
         raise RuntimeError(f'Metric "{metric}" not valid.')
     groups_merged = merge(groups)
-    groups_arr = np.array([np.array(list(ii)) for ii in groups_merged])
+    groups_list: list[list[int]] = [list(ii) for ii in groups_merged]
 
     # Merge domains
-    logger.info(f"Merging {n_domains_initial} domains to {len(groups_arr)}.")
-    output = relabel(domains, groups_arr)
+    logger.info(f"Merging {n_domains_initial} domains to {len(groups_list)}.")
+    output = relabel(domains, groups_list)
 
     return output
 
@@ -344,7 +344,7 @@ def extract_domain(mesh: pv.PolyData, domains: NDArray[np.integer[Any]], index: 
         PyVista mesh containing only the specified domain
     """
 
-    extracted = mesh.remove_points(domains != index)[0]
+    extracted: pv.PolyData = mesh.remove_points(domains != index)[0]
     return extracted
 
 
@@ -372,7 +372,7 @@ def get_neighbouring_domains(
     if len(domains) != mesh.n_points or domains.ndim > 1:
         raise RuntimeError("Invalid domains array.")
     if neighbours is None:
-        neighbours = mp.get_vertex_neighbors_all(mesh)
+        neighbours = mesh_ops.get_vertex_neighbors_all(mesh)
 
     in_domain = np.where(domains == seed)[0]
 
@@ -414,7 +414,7 @@ def compute_border(
     if len(domains) != mesh.n_points or domains.ndim > 1:
         raise RuntimeError("Invalid domains array.")
     if neighbours is None:
-        neighbours = mp.get_vertex_neighbors_all(mesh)
+        neighbours = mesh_ops.get_vertex_neighbors_all(mesh)
 
     _, in_1 = get_domain_boundary(mesh, domains, index1, return_indices=True)
     _, in_2 = get_domain_boundary(mesh, domains, index2, return_indices=True)
@@ -458,7 +458,7 @@ def merge_engulfing(
     if len(domains) != mesh.n_points or domains.ndim > 1:
         raise RuntimeError("Invalid domains array.")
     if neighbours is None:
-        neighbours = mp.get_vertex_neighbors_all(mesh)
+        neighbours = mesh_ops.get_vertex_neighbors_all(mesh)
 
     domains = domains.copy()
     n_domains_initial = len(np.unique(domains))
@@ -528,7 +528,7 @@ def merge_small(
     if len(domains) != mesh.n_points or domains.ndim > 1:
         raise RuntimeError("Invalid domains array.")
     if neighbours is None:
-        neighbours = mp.get_vertex_neighbors_all(mesh)
+        neighbours = mesh_ops.get_vertex_neighbors_all(mesh)
 
     domains = domains.copy()
     n_domains_initial = len(np.unique(domains))
@@ -536,17 +536,17 @@ def merge_small(
     changed = True
     while changed:
         changed = False  # new round
-        d_labels, d_sizes = np.unique(domains, return_counts=True)
+        domain_labels, domain_sizes = np.unique(domains, return_counts=True)
         to_merge: list[list[int]] = []
 
         if metric in ["points", "p", "point", "n_points", "npoints", "np"]:
-            probes = d_labels[d_sizes < threshold]
+            probes = domain_labels[domain_sizes < threshold]
         elif metric in ["area", "a"]:
-            d_sizes = np.array([extract_domain(mesh, domains, dd).area for dd in d_labels])
-            probes = d_labels[d_sizes < threshold]
+            domain_sizes = np.array([extract_domain(mesh, domains, domain_id).area for domain_id in domain_labels])
+            probes = domain_labels[domain_sizes < threshold]
             changed = len(probes) > 0
         else:
-            probes = d_labels[d_sizes < threshold]
+            probes = domain_labels[domain_sizes < threshold]
 
         for probe in probes:
             probe_d_neighbours = get_neighbouring_domains(mesh, domains, probe, neighbours=neighbours)
@@ -561,10 +561,10 @@ def merge_small(
                 to_merge.append([probe, probe_d_neighbours[np.argmax(d_neighbour_areas)]])
 
         if changed:
-            doms = merge(to_merge)
+            merged_groups = merge(to_merge)
             domains_overwrite = domains.copy()
-            for ii in range(len(doms)):
-                domains_overwrite[np.isin(domains, list(doms[ii]))] = ii
+            for ii in range(len(merged_groups)):
+                domains_overwrite[np.isin(domains, list(merged_groups[ii]))] = ii
 
             domains = domains_overwrite
 
@@ -604,7 +604,7 @@ def merge_disconnected(
     if len(domains) != mesh.n_points or domains.ndim > 1:
         raise RuntimeError("Invalid domains array.")
     if neighbours is None:
-        neighbours = mp.get_vertex_neighbors_all(mesh)
+        neighbours = mesh_ops.get_vertex_neighbors_all(mesh)
     if threshold is None:
         return domains.astype(np.int64)
 
@@ -617,36 +617,37 @@ def merge_disconnected(
     changed = True
     while changed:
         changed = False  # new round
-        d_labels = np.unique(domains)
+        domain_labels = np.unique(domains)
 
         # Get all borders to meristem. Figure out which are disconnected
         borders = [
             compute_border(mesh, domains, meristem_idx, ii, neighbours=neighbours)
-            for ii in d_labels[d_labels != meristem_idx]
+            for ii in domain_labels[domain_labels != meristem_idx]
         ]
         mask = np.array([len(borders[ii]) for ii in range(len(borders))]) == 0
         to_merge: list[list[int]] = [[meristem_idx]] + [
-            [int(ii)] for ii in d_labels[d_labels != meristem_idx][np.logical_not(mask)]
+            [int(ii)] for ii in domain_labels[domain_labels != meristem_idx][np.logical_not(mask)]
         ]
-        probes = d_labels[d_labels != meristem_idx][mask]
+        probes = domain_labels[domain_labels != meristem_idx][mask]
         meristem_idx = 0
 
         # Merge with neighbours with most vertices in the corresponding border
         for probe in np.sort(probes):
             probe_borders = [
-                compute_border(mesh, domains, probe, jj, neighbours=neighbours) for jj in d_labels[d_labels != probe]
+                compute_border(mesh, domains, probe, jj, neighbours=neighbours)
+                for jj in domain_labels[domain_labels != probe]
             ]
             border_sizes = [len(jj) for jj in probe_borders]
-            connected_neighbour = d_labels[d_labels != probe][np.argmax(border_sizes)]
+            connected_neighbour = domain_labels[domain_labels != probe][np.argmax(border_sizes)]
 
             to_merge.append([probe, connected_neighbour])
             changed = True
 
         if changed:
-            doms = merge(to_merge)
+            merged_groups = merge(to_merge)
             domains_overwrite = domains.copy()
-            for ii in range(len(doms)):
-                domains_overwrite[np.isin(domains, list(doms[ii]))] = ii
+            for ii in range(len(merged_groups)):
+                domains_overwrite[np.isin(domains, list(merged_groups[ii]))] = ii
 
             domains = domains_overwrite
 
@@ -696,22 +697,22 @@ def merge_depth(
     if len(scalars) != mesh.n_points or scalars.ndim > 1:
         raise RuntimeError("Invalid scalar array.")
     if neighbours is None:
-        neighbours = mp.get_vertex_neighbors_all(mesh)
+        neighbours = mesh_ops.get_vertex_neighbors_all(mesh)
 
     domains = domains.copy()
     boundary = get_boundary_indices(mesh)
     n_domains_initial = np.unique(domains).shape[0]
 
-    fct_map: dict[str, Callable[..., Any]] = {"min": np.min, "median": np.median, "max": np.max}
-    fct: Callable[..., Any] = fct_map.get(mode, np.mean)
+    aggregation_map: dict[str, Callable[..., Any]] = {"min": np.min, "median": np.median, "max": np.max}
+    aggregation_func: Callable[..., Any] = aggregation_map.get(mode, np.mean)
 
     changed = True
     while changed:
         changed = False
         to_merge: list[list[int]] = []
 
-        for dom in np.unique(domains):
-            in_domain = np.where(domains == dom)[0]
+        for current_domain in np.unique(domains):
+            in_domain = np.where(domains == current_domain)[0]
             max_value: float = float(np.max(scalars[in_domain]))
 
             # get the points that are in neighbouring domains
@@ -726,13 +727,13 @@ def merge_depth(
                 in_domain_list = list(in_domain)
 
             # neighbouring domains, in order
-            neighs_doms = np.unique(domains[neighs_pts])
-            neighs_doms = np.sort(neighs_doms)
+            neighbor_domains = np.unique(domains[neighs_pts])
+            neighbor_domains = np.sort(neighbor_domains)
 
-            for neigh_dom in neighs_doms:
+            for neighbor_domain in neighbor_domains:
                 # all the points in the neighbouring domain which has a neighbour in
                 # the current domain
-                border_pts = np.where(domains == neigh_dom)[0]
+                border_pts = np.where(domains == neighbor_domain)[0]
                 border_pts_list: list[Any] = [x for x in border_pts if x in neighs_pts]
 
                 # get neighbours of the neighbour's neighbours that are in the current
@@ -748,19 +749,19 @@ def merge_depth(
                     continue
 
                 # Merge
-                border_max_value = fct(scalars[border_pts_arr])
+                border_max_value = aggregation_func(scalars[border_pts_arr])
                 if max_value - border_max_value < threshold:
-                    to_merge.append([dom, neigh_dom])
+                    to_merge.append([current_domain, neighbor_domain])
                     changed = True
                 else:
-                    to_merge.append([dom])
-                    to_merge.append([neigh_dom])
+                    to_merge.append([current_domain])
+                    to_merge.append([neighbor_domain])
 
         # Update domains
-        doms = merge(to_merge)
+        merged_groups = merge(to_merge)
         domains_overwrite = domains.copy()
-        for ii, dom in enumerate(doms):
-            domains_overwrite[np.isin(domains, list(dom))] = ii
+        for ii, merged_domain in enumerate(merged_groups):
+            domains_overwrite[np.isin(domains, list(merged_domain))] = ii
         domains = domains_overwrite
 
         if len(np.unique(domains)):
@@ -803,7 +804,7 @@ def merge_borders_by_length(
     if len(domains) != mesh.n_points or domains.ndim > 1:
         raise RuntimeError("Invalid domain array.")
     if neighbours is None:
-        neighbours = mp.get_vertex_neighbors_all(mesh)
+        neighbours = mesh_ops.get_vertex_neighbors_all(mesh)
 
     domains = domains.copy()
     n_domains_initial = np.unique(domains).shape[0]
@@ -813,21 +814,21 @@ def merge_borders_by_length(
         changed = False
         to_merge: list[list[int]] = []
 
-        for dom in np.unique(domains):
-            in_domain = np.where(domains == dom)[0]
+        for current_domain in np.unique(domains):
+            in_domain = np.where(domains == current_domain)[0]
 
             # get the points that are in neighbouring domains
             neighs_pts: list[Any] = [x for y in [neighbours[i] for i in in_domain] for x in y]
             neighs_pts = [x for x in neighs_pts if x not in in_domain]
 
             # neighbouring domains, in order
-            neighs_doms = np.unique(domains[neighs_pts])
-            neighs_doms = np.sort(neighs_doms)
+            neighbor_domains = np.unique(domains[neighs_pts])
+            neighbor_domains = np.sort(neighbor_domains)
 
-            for neigh_dom in neighs_doms:
+            for neighbor_domain in neighbor_domains:
                 # all the points in the neighbouring domain which has a neighbour in
                 # the current domain
-                border_pts = np.where(domains == neigh_dom)[0]
+                border_pts = np.where(domains == neighbor_domain)[0]
                 border_pts_list: list[Any] = [x for x in border_pts if x in neighs_pts]
 
                 # get neighbours of the neighbour's neighbours that are in the current
@@ -840,17 +841,17 @@ def merge_borders_by_length(
 
                 # Merge
                 if len(border_pts_arr) > threshold:
-                    to_merge.append([dom, neigh_dom])
+                    to_merge.append([current_domain, neighbor_domain])
                     changed = True
                 else:
-                    to_merge.append([dom])
-                    to_merge.append([neigh_dom])
+                    to_merge.append([current_domain])
+                    to_merge.append([neighbor_domain])
 
         # Update domains
-        doms = merge(to_merge)
+        merged_groups = merge(to_merge)
         domains_overwrite = domains.copy()
-        for ii, dom in enumerate(doms):
-            domains_overwrite[np.isin(domains, list(dom))] = ii
+        for ii, merged_domain in enumerate(merged_groups):
+            domains_overwrite[np.isin(domains, list(merged_domain))] = ii
         domains = domains_overwrite
 
         if len(np.unique(domains)):
@@ -918,22 +919,20 @@ def set_boundary_values(
 
 
 def filter_curvature(
-    curvs: NDArray[np.floating[Any]],
-    neighs: list[NDArray[np.intp]] | None,
-    fct: Callable[..., Any],
-    iters: int,
+    curvatures: NDArray[np.floating[Any]],
+    neighbors: list[NDArray[np.intp]] | None,
+    aggregation_func: Callable[..., Any],
+    iterations: int,
     exclude: list[int] | None = None,
-    **kwargs: Any,
 ) -> NDArray[np.floating[Any]]:
     """Filter curvature values using neighborhood aggregation.
 
     Args:
-        curvs: Curvature array to filter
-        neighs: Neighbor connectivity array for each vertex
-        fct: Aggregation function (e.g., np.mean, np.median)
-        iters: Number of filter iterations
+        curvatures: Curvature array to filter
+        neighbors: Neighbor connectivity array for each vertex
+        aggregation_func: Aggregation function (e.g., np.mean, np.median)
+        iterations: Number of filter iterations
         exclude: List of vertex indices to exclude from filtering
-        **kwargs: Additional arguments (unused)
 
     Returns:
         Filtered curvature array
@@ -941,60 +940,56 @@ def filter_curvature(
 
     if exclude is None:
         exclude = []
-    if neighs is None:
-        return curvs
-    for _ii in range(iters):
-        new_curvs = copy.deepcopy(curvs)
-        for jj in range(len(curvs)):
+    if neighbors is None:
+        return curvatures
+    for _ii in range(iterations):
+        new_curvatures = copy.deepcopy(curvatures)
+        for jj in range(len(curvatures)):
             val = np.nan
-            to_proc = curvs[[kk for kk in neighs[jj] if kk not in exclude]]
+            to_proc = curvatures[[kk for kk in neighbors[jj] if kk not in exclude]]
             if len(to_proc) > 0:
-                val = fct(to_proc)
+                val = aggregation_func(to_proc)
             if not np.isnan(val):
-                new_curvs[jj] = val
-        curvs = new_curvs
-    return curvs
+                new_curvatures[jj] = val
+        curvatures = new_curvatures
+    return curvatures
 
 
 def mean(
     scalars: NDArray[np.floating[Any]],
-    neighs: list[NDArray[np.intp]],
-    iters: int,
+    neighbors: list[NDArray[np.intp]],
+    iterations: int = 1,
     exclude: list[int] | None = None,
 ) -> NDArray[np.floating[Any]]:
     """Apply mean filter to scalar array.
 
     Args:
         scalars: Scalar array to filter
-        neighs: Neighbor connectivity array
-        iters: Number of filter iterations
+        neighbors: Neighbor connectivity array
+        iterations: Number of filter iterations
         exclude: Vertex indices to exclude from filtering
 
     Returns:
         Filtered scalar array
     """
-    if exclude is None:
-        exclude = []
-    return filter_curvature(scalars, neighs, np.mean, iters, exclude)
+    return filter_curvature(scalars, neighbors, np.mean, iterations, [] if exclude is None else exclude)
 
 
 def filter_scalars(
     scalars: NDArray[np.floating[Any]],
-    neighs: list[NDArray[np.intp]],
-    fct: Callable[..., Any],
-    iters: int,
+    neighbors: list[NDArray[np.intp]],
+    aggregation_func: Callable[..., Any],
+    iterations: int,
     exclude: list[int] | None = None,
-    **kwargs: Any,
 ) -> NDArray[np.floating[Any]]:
     """Filter scalar values using neighborhood aggregation.
 
     Args:
         scalars: Scalar array to filter
-        neighs: Neighbor connectivity array for each vertex
-        fct: Aggregation function (e.g., np.mean, np.median, np.min, np.max)
-        iters: Number of filter iterations
+        neighbors: Neighbor connectivity array for each vertex
+        aggregation_func: Aggregation function (e.g., np.mean, np.median, np.min, np.max)
+        iterations: Number of filter iterations
         exclude: List of vertex indices to exclude from filtering
-        **kwargs: Additional arguments (unused)
 
     Returns:
         Filtered scalar array
@@ -1002,25 +997,25 @@ def filter_scalars(
 
     if exclude is None:
         exclude = []
-    for _ii in range(iters):
+    for _ii in range(iterations):
         new_scalars = copy.deepcopy(scalars)
         for jj in range(len(scalars)):
-            val = np.nan
-            to_proc = scalars[[kk for kk in neighs[jj] if kk not in exclude]]
-            if len(to_proc) > 0:
-                val = fct(to_proc)
-            if not np.isnan(val):
-                new_scalars[jj] = val
+            value = np.nan
+            to_process = scalars[[kk for kk in neighbors[jj] if kk not in exclude]]
+            if len(to_process) > 0:
+                value = aggregation_func(to_process)
+            if not np.isnan(value):
+                new_scalars[jj] = value
         scalars = new_scalars
     return scalars
 
 
-def remove_size(
+def remove_small_domains(
     mesh: pv.PolyData,
     domains: NDArray[np.integer[Any]],
     threshold: float,
-    method: str = "points",
-    relative: str = "largest",
+    method: Literal["points", "area"] = "points",
+    relative: Literal["largest", "all", "absolute"] = "largest",
 ) -> pv.PolyData:
     """Remove domains smaller than threshold from mesh.
 
@@ -1046,7 +1041,7 @@ def remove_size(
         groups, sizes = np.unique(domains, return_counts=True)
     elif method in ["area", "a"]:
         groups = np.unique(domains)
-        sizes = np.array([extract_domain(mesh, domains, dd).area for dd in groups])
+        sizes = np.array([extract_domain(mesh, domains, domain_id).area for domain_id in groups])
     else:
         raise RuntimeError("Invalid method.")
 
@@ -1065,28 +1060,45 @@ def remove_size(
     to_remove = groups[to_remove]
     to_remove_mask = np.isin(domains, to_remove)
 
-    output = mesh.remove_points(to_remove_mask, keep_scalars=True)[0]
+    output: pv.PolyData = mesh.remove_points(to_remove_mask, keep_scalars=True)[0]
 
     return output
 
 
-def get_domain(mesh: pv.PolyData, pdata: pd.DataFrame, domain: int, **kwargs: Any) -> pv.PolyData:
+def get_domain(mesh: pv.PolyData, point_data: pd.DataFrame, domain: int) -> pv.PolyData:
     """Extract a single domain from labeled mesh using point data.
 
     Args:
         mesh: PyVista mesh containing all domains
-        pdata: DataFrame with domain labels in 'domain' column
+        point_data: DataFrame with domain labels in 'domain' column
         domain: Domain index to extract
-        **kwargs: Additional arguments (unused)
 
     Returns:
         PyVista mesh containing only the specified domain
     """
 
-    not_in_domain = pdata.loc[pdata.domain != domain].index.values
+    not_in_domain = point_data.loc[point_data.domain != domain].index.values
     mask = np.zeros((mesh.points.shape[0],), dtype=bool)
     mask[not_in_domain] = True
     return pv.PolyData(mesh.remove_points(mask)[0])
+
+
+@overload
+def get_domain_boundary(
+    mesh: pv.PolyData,
+    domains: NDArray[np.integer[Any]],
+    index: int,
+    return_indices: Literal[True],
+) -> tuple[pv.PolyData, NDArray[np.intp]]: ...
+
+
+@overload
+def get_domain_boundary(
+    mesh: pv.PolyData,
+    domains: NDArray[np.integer[Any]],
+    index: int,
+    return_indices: Literal[False] = ...,
+) -> pv.PolyData: ...
 
 
 def get_domain_boundary(
@@ -1124,33 +1136,33 @@ def get_domain_boundary(
 def count_domain_neighbors(
     mesh: pv.PolyData,
     domains: NDArray[np.integer[Any]],
-    neighs: list[NDArray[np.intp]],
+    neighbors: list[NDArray[np.intp]],
 ) -> list[int]:
     """Count number of neighboring domains for each domain.
 
     Args:
         mesh: PyVista mesh containing the domains
         domains: Array of domain labels
-        neighs: Neighbor connectivity array for each vertex
+        neighbors: Neighbor connectivity array for each vertex
 
     Returns:
         List of neighbor counts, one per unique domain
     """
 
-    doms = [extract_domain(mesh, domains, dd) for dd in np.unique(domains)]
-    dom_boundaries = [get_boundary_indices(dd) for dd in doms]
-    doms_orig_indices: list[list[int]] = []
-    for ii, dom in enumerate(doms):
-        orig = [mesh.FindPoint(pt) for pt in dom.points[dom_boundaries[ii]]]
-        doms_orig_indices.append(orig)
+    unique_domains = [extract_domain(mesh, domains, domain_id) for domain_id in np.unique(domains)]
+    domain_boundary_indices = [get_boundary_indices(domain_mesh) for domain_mesh in unique_domains]
+    domains_orig_indices: list[list[int]] = []
+    for ii, domain_mesh in enumerate(unique_domains):
+        orig = [mesh.FindPoint(pt) for pt in domain_mesh.points[domain_boundary_indices[ii]]]
+        domains_orig_indices.append(orig)
 
-    neighs_arr = np.array(neighs.copy(), dtype=object)
-    n_neighs: list[int] = []
-    for dom_orig_indices in doms_orig_indices:
-        dom_neighs = flatten([list(domains[dd]) for dd in neighs_arr[dom_orig_indices]])
-        dom_neighs_unique = np.unique(dom_neighs)
-        n_neighs.append(len(dom_neighs_unique) - 1)
-    return n_neighs
+    neighbors_array = np.array(neighbors.copy(), dtype=object)
+    neighbor_counts: list[int] = []
+    for domain_orig_indices in domains_orig_indices:
+        domain_neighbors = flatten([list(domains[idx]) for idx in neighbors_array[domain_orig_indices]])
+        domain_neighbors_unique = np.unique(domain_neighbors)
+        neighbor_counts.append(len(domain_neighbors_unique) - 1)
+    return neighbor_counts
 
 
 def define_meristem(
@@ -1158,7 +1170,7 @@ def define_meristem(
     domains: NDArray[np.integer[Any]],
     method: str = "center_of_mass",
     return_coordinates: bool = False,
-    neighs: list[NDArray[np.intp]] | None = None,
+    neighbors: list[NDArray[np.intp]] | None = None,
 ) -> int | tuple[int, NDArray[np.floating[Any]]]:
     """Identify which domain corresponds to the meristem.
 
@@ -1167,7 +1179,7 @@ def define_meristem(
         domains: Array of domain labels
         method: Method for meristem identification
         return_coordinates: If True, return meristem center coordinates
-        neighs: Optional neighbor connectivity array
+        neighbors: Optional neighbor connectivity array
 
     Returns:
         Meristem domain index, and optionally its center coordinates
@@ -1181,28 +1193,27 @@ def define_meristem(
     elif method in ["center", "c", "bounds"]:
         coord = np.mean(np.reshape(mesh.bounds, (3, -1)), axis=1)
     elif method in ["n_neighs", "neighbors", "neighs", "n_neighbors"]:
-        if neighs is None:
-            neighs = mp.get_vertex_neighbors_all(mesh)
-        doms = np.unique(domains)
-        n_neighs = count_domain_neighbors(mesh, domains, neighs)
-        meristem_dom = doms[np.argmax(n_neighs)]
-        coord = np.array(extract_domain(mesh, domains, meristem_dom).center_of_mass())
+        if neighbors is None:
+            neighbors = mesh_ops.get_vertex_neighbors_all(mesh)
+        unique_domains = np.unique(domains)
+        neighbor_counts = count_domain_neighbors(mesh, domains, neighbors)
+        meristem_domain = unique_domains[np.argmax(neighbor_counts)]
+        coord = np.array(extract_domain(mesh, domains, meristem_domain).center_of_mass())
     else:
         coord = np.array(mesh.center_of_mass())
 
-    meristem = int(domains[mesh.FindPoint(coord)])
+    meristem = int(domains[mesh.FindPoint(coord.tolist())])
 
     if return_coordinates:
         return meristem, coord
     return meristem
 
 
-def extract_domaindata(
-    pdata: pd.DataFrame,
+def extract_domain_data(
+    point_data: pd.DataFrame,
     mesh: pv.PolyData,
     apex: NDArray[np.floating[Any]],
     meristem: int,
-    **kwargs: Any,
 ) -> pd.DataFrame:
     """Extract geometric and spatial data for each domain.
 
@@ -1210,51 +1221,50 @@ def extract_domaindata(
     surface area, maximum diameter, and meristem flag for each domain.
 
     Args:
-        pdata: DataFrame with domain labels in 'domain' column
+        point_data: DataFrame with domain labels in 'domain' column
         mesh: PyVista mesh containing the domains
         apex: Apex coordinates as 3-element array
         meristem: Meristem domain index
-        **kwargs: Additional arguments (unused)
 
     Returns:
         DataFrame with domain measurements and properties
     """
-    domains_arr = np.unique(pdata.domain)
+    domains_arr = np.unique(point_data.domain)
     domains_arr = domains_arr[~np.isnan(domains_arr)]
-    ddata = pd.DataFrame(
+    domain_data = pd.DataFrame(
         columns=[
             "domain",
-            "dist_boundary",
-            "dist_com",
+            "distance_to_boundary",
+            "distance_to_center_of_mass",
             "angle",
             "area",
-            "maxdiam",
-            "maxdiam_xy",
-            "com",
-            "ismeristem",
+            "max_diameter",
+            "max_diameter_xy",
+            "center_of_mass",
+            "is_meristem",
         ],
         dtype=object,
     )
 
     for ii in domains_arr:
         # Get distance for closest boundary point to apex
-        dom = get_domain(mesh, pdata, int(ii))
-        dom_boundary = get_boundary_indices(dom)
-        dom_boundary_coords = dom.points[dom_boundary]
-        dom_boundary_dists = np.sqrt(np.sum((dom_boundary_coords - apex) ** 2, axis=1))
-        d2boundary: float = float(np.min(dom_boundary_dists))
+        domain_mesh = get_domain(mesh, point_data, int(ii))
+        domain_boundary = get_boundary_indices(domain_mesh)
+        domain_boundary_coords = domain_mesh.points[domain_boundary]
+        domain_boundary_dists = np.sqrt(np.sum((domain_boundary_coords - apex) ** 2, axis=1))
+        distance_to_boundary: float = float(np.min(domain_boundary_dists))
 
         # Get distance for center of mass from apex
-        center = np.array(dom.center_of_mass())
-        d2com = float(np.sqrt(np.sum((center - apex) ** 2)))
+        center = np.array(domain_mesh.center_of_mass())
+        distance_to_center_of_mass = float(np.sqrt(np.sum((center - apex) ** 2)))
 
         # Get domain size in terms of bounding boxes
-        domcoords = dom.points
+        domain_coords = domain_mesh.points
 
-        dists = cdist(domcoords, domcoords)
-        maxdiam: float = float(np.max(dists))
-        dists_xy = cdist(domcoords[:, 1:], domcoords[:, 1:])
-        maxdiam_xy: float = float(np.max(dists_xy))
+        dists = cdist(domain_coords, domain_coords)
+        max_diameter: float = float(np.max(dists))
+        dists_xy = cdist(domain_coords[:, 1:], domain_coords[:, 1:])
+        max_diameter_xy: float = float(np.max(dists_xy))
 
         # Get domain angle in relation to apex
         rel_pos = center - apex
@@ -1264,66 +1274,66 @@ def extract_domaindata(
         angle_val *= 360 / (2.0 * np.pi)
 
         # Get surface area
-        area = dom.area
+        area = domain_mesh.area
 
         # Define type
-        ismeristem = ii == meristem
-        if ismeristem:
+        is_meristem = ii == meristem
+        if is_meristem:
             angle_val = np.nan
 
         # Set data
-        ddata.loc[int(ii)] = [
+        domain_data.loc[int(ii)] = [
             int(ii),
-            d2boundary,
-            d2com,
+            distance_to_boundary,
+            distance_to_center_of_mass,
             angle_val,
             area,
-            maxdiam,
-            maxdiam_xy,
+            max_diameter,
+            max_diameter_xy,
             tuple(center),
-            ismeristem,
+            is_meristem,
         ]
-    ddata = ddata.infer_objects()
-    ddata = ddata.sort_values(["ismeristem", "area"], ascending=False)
-    return ddata
+    domain_data = domain_data.infer_objects()
+    domain_data = domain_data.sort_values(["is_meristem", "area"], ascending=False)
+    return domain_data
 
 
 def relabel_domains(
-    pdata: pd.DataFrame,
-    ddata: pd.DataFrame,
-    order: str = "area",
-    **kwargs: Any,
+    point_data: pd.DataFrame,
+    domain_data: pd.DataFrame,
+    order: Literal["area", "max_diameter", "max_diameter_xy"] = "area",
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Relabel domains based on sorting criteria.
 
     Reorders domain labels based on size metrics, keeping meristem as label 0.
 
     Args:
-        pdata: DataFrame with domain labels to update
-        ddata: DataFrame with domain measurements
-        order: Sorting metric ('area', 'maxdiam', 'maxdiam_xy')
-        **kwargs: Additional arguments (unused)
+        point_data: DataFrame with domain labels to update
+        domain_data: DataFrame with domain measurements
+        order: Sorting metric ('area', 'max_diameter', 'max_diameter_xy')
 
     Returns:
-        Tuple of (updated pdata, updated ddata) with relabeled domains
+        Tuple of (updated point_data, updated domain_data) with relabeled domains
     """
-    new_pdata = pdata.copy()
-    new_ddata = ddata.copy()
+    new_point_data = point_data.copy()
+    new_domain_data = domain_data.copy()
 
-    if order == "area":
-        new_ddata = new_ddata.sort_values(["ismeristem", "area"], ascending=False)
-    elif order == "maxdiam":
-        new_ddata = new_ddata.sort_values(["ismeristem", "maxdiam"], ascending=False)
-    elif order == "maxdiam_xy":
-        new_ddata = new_ddata.sort_values(["ismeristem", "maxdiam_xy"], ascending=False)
+    # Sort domains by the specified metric, keeping meristem first
+    sort_columns = ["is_meristem", order]
+    new_domain_data = new_domain_data.sort_values(sort_columns, ascending=False)
 
-    dmap: dict[int, int] = {}
-    for ii in range(len(new_ddata)):
-        old_dom = new_ddata.iloc[ii].domain
-        dmap[old_dom] = ii
-        new_ddata["domain"].iloc[ii] = ii
+    domain_map: dict[int, int] = {}
+    for ii in range(len(new_domain_data)):
+        old_domain = new_domain_data.iloc[ii].domain
+        domain_map[old_domain] = ii
+        new_domain_data["domain"].iloc[ii] = ii
 
-    for ii in dmap:
-        new_pdata.loc[pdata.domain == ii, "domain"] = dmap[ii]
+    for ii in domain_map:
+        new_point_data.loc[point_data.domain == ii, "domain"] = domain_map[ii]
 
-    return new_pdata, new_ddata
+    return new_point_data, new_domain_data
+
+
+# Backwards compatibility alias
+extract_domaindata = extract_domain_data
+remove_size = remove_small_domains

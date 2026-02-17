@@ -14,11 +14,11 @@ if TYPE_CHECKING:
 @overload
 def autocrop(
     array: NDArray[np.number],
-    threshold: float,
-    channel: int | list[int] | tuple[int, ...] | NDArray[np.integer],
-    min_pixels_above_threshold: int,
-    return_crop_bounds: Literal[False],
-    padding: int | NDArray[np.integer] | None,
+    threshold: float = ...,
+    channel: int | list[int] | tuple[int, ...] | NDArray[np.integer] = ...,
+    min_pixels_above_threshold: int = ...,
+    return_crop_bounds: Literal[False] = ...,
+    padding: int | NDArray[np.integer] | None = ...,
 ) -> NDArray[np.number]: ...
 
 
@@ -28,9 +28,10 @@ def autocrop(
     threshold: float = ...,
     channel: int | list[int] | tuple[int, ...] | NDArray[np.integer] = ...,
     min_pixels_above_threshold: int = ...,
-    return_crop_bounds: bool = ...,
+    *,
+    return_crop_bounds: Literal[True],
     padding: int | NDArray[np.integer] | None = ...,
-) -> NDArray[np.number] | tuple[NDArray[np.number], NDArray[np.integer]]: ...
+) -> tuple[NDArray[np.number], NDArray[np.integer]]: ...
 
 
 def autocrop(
@@ -88,15 +89,17 @@ def _reduce_channels(
     channel: int | list[int] | tuple[int, ...] | NDArray[np.integer],
 ) -> NDArray[np.number]:
     """Reduce a 4D array to 3D by combining channels."""
+    result: NDArray[np.number]
     if channel == -1:
         # Max across all channels
-        return np.max(array, axis=1)
+        result = np.max(array, axis=1)
     elif isinstance(channel, (list, tuple, np.ndarray)):
         # Max across selected channels
-        return np.max(np.take(array, channel, axis=1), axis=1)
+        result = np.max(np.take(array, channel, axis=1), axis=1)
     else:
         # Single channel
-        return array[:, channel]
+        result = array[:, channel]
+    return result
 
 
 def _find_crop_bounds(
@@ -229,7 +232,10 @@ def _get_resolution_tiff(filepath: str | Path) -> Resolution | None:
         with tiff.TiffFile(filepath) as f:
             if f.imagej_metadata is not None:
                 z = float(f.imagej_metadata.get("spacing", 1.0))
-                x_res_tag = f.pages[0].tags.get("XResolution")
+                page = f.pages[0]
+                if not hasattr(page, "tags"):
+                    return None
+                x_res_tag = page.tags.get("XResolution")
                 x = x_res_tag.value[1] / x_res_tag.value[0] if x_res_tag and x_res_tag.value[0] != 0 else 1.0
                 return (z, float(x), float(x))
 

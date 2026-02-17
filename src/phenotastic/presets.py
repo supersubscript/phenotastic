@@ -65,7 +65,7 @@ steps:
 
   - name: define_meristem
 
-  - name: extract_domaindata
+  - name: extract_domain_data
 """
 
 # =============================================================================

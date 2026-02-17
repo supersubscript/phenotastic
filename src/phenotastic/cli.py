@@ -112,6 +112,8 @@ def run(  # noqa: C901
         import pyvista as pv
 
         polydata = pv.read(str(input_path))
+        if not isinstance(polydata, pv.PolyData):
+            raise click.ClickException(f"Expected PolyData, got {type(polydata).__name__}")
         mesh_input = PhenoMesh(polydata)
         if verbose:
             click.echo(f"Loaded mesh: {mesh_input.n_points} points, {mesh_input.n_faces} faces")
@@ -311,6 +313,8 @@ def view(mesh_file: str, scalars: str | None, cmap: str) -> None:
     from phenotastic import PhenoMesh
 
     polydata = pv.read(mesh_file)
+    if not isinstance(polydata, pv.PolyData):
+        raise click.ClickException(f"Expected PolyData, got {type(polydata).__name__}")
     mesh = PhenoMesh(polydata)
 
     click.echo(f"Mesh: {mesh.n_points} points, {mesh.n_faces} faces")

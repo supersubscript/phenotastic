@@ -549,10 +549,10 @@ class PhenoMesh(pv.PolyData):
             keep_scalars: Preserve scalar data
 
         Returns:
-            Tuple of (new PhenoMesh with points removed, array of removed point indices)
+            Tuple of (new PhenoMesh with points removed, indices of removed points)
         """
         result = super().remove_points(mask, keep_scalars=keep_scalars)
-        return (self._wrap_result(result[0]), result[1])
+        return self._wrap_result(result[0]), result[1]
 
     def remove_by_normals(
         self,

@@ -181,7 +181,7 @@ def create_mesh(contour: NDArray[Any], resolution: list[float] | None = None, st
 
     if resolution is None:
         resolution = [1, 1, 1]
-    vertices, faces_arr, _, _ = marching_cubes(  # type: ignore[no-untyped-call]
+    vertices, faces_arr, _, _ = marching_cubes(
         contour,
         0,
         spacing=list(resolution),
@@ -273,7 +273,7 @@ def create_cellular_mesh(
         )
         cell_volume = np.sum(cell_img > 0) * np.prod(resolution)
 
-        vertices, faces_arr, _, _ = marching_cubes(  # type: ignore[no-untyped-call]
+        vertices, faces_arr, _, _ = marching_cubes(
             cell_img,
             0,
             allow_degenerate=False,
@@ -503,7 +503,7 @@ def contour(
         mask = to_uint8(data, False) > masking_factor * mh.otsu(to_uint8(data, False))
     else:
         mask = masking_factor
-    contour_result: NDArray[np.bool_] = morphological_chan_vese(  # type: ignore[no-untyped-call]
+    contour_result: NDArray[np.bool_] = morphological_chan_vese(
         data,
         num_iter=iterations,
         init_level_set=mask,
@@ -929,7 +929,7 @@ def repair_small_holes(mesh: pv.PolyData, max_boundary_edges: int | None = 100, 
     Returns:
         Repaired mesh.
     """
-    mfix = PyTMesh(False)
+    mfix = PyTMesh(False)  # type: ignore[too-many-positional-arguments]  # stubs incorrect
     mfix.load_array(mesh.points, mesh.faces.reshape(-1, 4)[:, 1:])
     if max_boundary_edges is None:
         max_boundary_edges = -1
@@ -1172,9 +1172,7 @@ def process(
         Processed mesh.
     """
 
-    top_cut_tuple: tuple[float, float, float] = (
-        (mesh.center[0], 0, 0) if top_cut == "center" else top_cut  # type: ignore[assignment]
-    )
+    top_cut_tuple: tuple[float, float, float] = (mesh.center[0], 0, 0) if isinstance(top_cut, str) else top_cut
 
     # Scale the mest and repair small holes
     mesh = remesh(mesh, int(mesh.n_points * downscaling), subdivisions=0)
@@ -1598,7 +1596,7 @@ def correct_normal_orientation_topcut(mesh: pv.PolyData, origin: tuple[float, fl
     """Correct normal orientation of a mesh by flipping normals if needed."""
     mesh.clear_data()
     if mesh.clip(normal="-x", origin=origin).point_normals[:, 0].sum() > 0:
-        mesh.flip_normals()  # type: ignore[no-untyped-call]
+        mesh.flip_normals()
     return mesh
 
 
@@ -1743,7 +1741,7 @@ def correct_normal_orientation(mesh: pv.PolyData, relative: str = "x", inplace: 
         or (relative == "y" and normals[:, 1].sum() > 0)
         or (relative == "z" and normals[:, 2].sum() > 0)
     ):
-        mesh.flip_normals()  # type: ignore[no-untyped-call]
+        mesh.flip_normals()
 
     return None if inplace else mesh
 

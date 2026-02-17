@@ -56,14 +56,14 @@ def pipeline_operation(
     """
 
     def decorator(method: Callable[..., Any]) -> Callable[..., Any]:
-        op_name = name or method.__name__
+        op_name = name or getattr(method, "__name__", "unknown")
         _REGISTERED_OPERATIONS[op_name] = OperationMeta(
             name=op_name,
             invalidates_neighbors=invalidates_neighbors,
             requires_mesh=requires_mesh,
             category=category,
             validators=validators or {},
-            description=description or method.__doc__ or "",
+            description=description or getattr(method, "__doc__", "") or "",
         )
         method._pipeline_operation = op_name  # type: ignore[attr-defined]
         return method

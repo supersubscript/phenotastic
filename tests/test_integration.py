@@ -263,6 +263,7 @@ class TestContextPersistence:
         ctx = smooth_mesh(ctx, iterations=5)
         assert ctx.neighbors is None
 
+        assert ctx.mesh is not None
         ctx.neighbors = ctx.mesh.vertex_neighbors_all(include_self=True)
         ctx = remesh(ctx, n_clusters=300)
         assert ctx.neighbors is None

@@ -80,7 +80,7 @@ class PhenoMesh(pv.PolyData):
         **kwargs: Any,
     ) -> None:
         """Initialize PhenoMesh with optional PolyData, file, or vertex array."""
-        super().__init__(var_inp, *args, **kwargs)  # type: ignore[arg-type]
+        super().__init__(var_inp, *args, **kwargs)
         self._phenotastic_contour = contour
         self._phenotastic_resolution = resolution
 
@@ -88,7 +88,7 @@ class PhenoMesh(pv.PolyData):
     # Custom attributes
     # =========================================================================
 
-    @property  # type: ignore[override]
+    @property
     def contour(self) -> NDArray[np.bool_] | None:
         """Binary contour array the mesh was generated from."""
         return self._phenotastic_contour
@@ -524,7 +524,7 @@ class PhenoMesh(pv.PolyData):
             New PhenoMesh with flipped normals
         """
         result = self.copy()
-        super(PhenoMesh, result).flip_normals()  # type: ignore[no-untyped-call]
+        super(PhenoMesh, result).flip_normals()
         return result
 
     @pipeline_operation(name="correct_normal_orientation", invalidates_neighbors=False)
@@ -707,10 +707,10 @@ class PhenoMesh(pv.PolyData):
         Returns:
             Clipped PhenoMesh
         """
-        result = super().clip(normal=normal, origin=origin, invert=invert)  # type: ignore[arg-type]
+        result = super().clip(normal=normal, origin=origin, invert=invert)
         return self._wrap_result(result)
 
-    def rotate_x(self, angle: float, inplace: bool = False) -> Self:  # type: ignore[override]
+    def rotate_x(self, angle: float, inplace: bool = False) -> Self:
         """Rotate mesh around X axis.
 
         Args:
@@ -727,7 +727,7 @@ class PhenoMesh(pv.PolyData):
         super(PhenoMesh, result).rotate_x(angle, inplace=True)
         return cast("Self", result)
 
-    def rotate_y(self, angle: float, inplace: bool = False) -> Self:  # type: ignore[override]
+    def rotate_y(self, angle: float, inplace: bool = False) -> Self:
         """Rotate mesh around Y axis.
 
         Args:
@@ -744,7 +744,7 @@ class PhenoMesh(pv.PolyData):
         super(PhenoMesh, result).rotate_y(angle, inplace=True)
         return cast("Self", result)
 
-    def rotate_z(self, angle: float, inplace: bool = False) -> Self:  # type: ignore[override]
+    def rotate_z(self, angle: float, inplace: bool = False) -> Self:
         """Rotate mesh around Z axis.
 
         Args:
@@ -1051,12 +1051,10 @@ class PhenoMesh(pv.PolyData):
     # Magic methods
     # =========================================================================
 
-    def __add__(self, other: PhenoMesh | pv.PolyData) -> PhenoMesh:
+    def __add__(self, dataset: pv.PolyData) -> PhenoMesh:
         """Concatenate meshes."""
-        if isinstance(other, pv.PolyData):
-            result = super().__add__(other)
-            return self._wrap_result(result)
-        raise TypeError(f"Cannot add PhenoMesh and {type(other).__name__}")
+        result = super().__add__(dataset)
+        return self._wrap_result(result)
 
     def __repr__(self) -> str:
         """Return string representation."""

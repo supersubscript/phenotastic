@@ -305,7 +305,7 @@ def merge_distance(
     groups: list[list[int]]
     if metric == "euclidean":
         tree = scipy.spatial.cKDTree(coords_arr)
-        groups = tree.query_ball_point(coords_arr, threshold)
+        groups = tree.query_ball_point(coords_arr, threshold)  # type: ignore[invalid-assignment]  # scipy stubs
     elif metric == "geodesic":
         indices = np.array([mesh.FindPoint(pt) for pt in coords_arr])
         groups = []
@@ -996,8 +996,8 @@ def remove_small_domains(
     mesh: pv.PolyData,
     domains: NDArray[np.integer[Any]],
     threshold: float,
-    method: Literal["points", "area"] = "points",
-    relative: Literal["largest", "all", "absolute"] = "largest",
+    method: str = "points",
+    relative: str = "largest",
 ) -> pv.PolyData:
     """Remove domains smaller than threshold from mesh.
 
@@ -1261,7 +1261,7 @@ def extract_domain_data(
             angle_val = np.nan
 
         # Set data
-        domain_data.loc[domain_id] = [
+        domain_data.loc[domain_id] = [  # type: ignore[invalid-assignment]  # pandas stubs
             int(domain_id),
             distance_to_boundary,
             distance_to_center_of_mass,

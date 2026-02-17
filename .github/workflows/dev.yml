@@ -75,8 +75,8 @@ jobs:
       - name: Run ruff formatter check
         run: uv run ruff format --check src/ tests/
 
-      - name: Run mypy type checker
-        run: uv run mypy -p phenotastic
+      - name: Run ty type checker
+        run: uv run ty check
 
   tests:
     needs: build-image

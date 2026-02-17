@@ -295,7 +295,7 @@ class Pipeline:
             context.mesh = input_data
         elif isinstance(input_data, np.ndarray):
             if input_data.dtype == bool:
-                context.contour = input_data
+                context.contour = np.asarray(input_data, dtype=np.bool_)
             else:
                 context.image = input_data
         elif isinstance(input_data, (str, Path)):

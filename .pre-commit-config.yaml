@@ -36,12 +36,12 @@ repos:
       - id: requirements-txt-fixer
       - id: trailing-whitespace
 
-  # Type checking with mypy (local hook to use the project environment)
+  # Type checking with ty (local hook to use the project environment)
   - repo: local
     hooks:
-      - id: mypy
-        name: mypy
-        entry: uv run mypy src/phenotastic/
+      - id: ty
+        name: ty
+        entry: uv run ty check
         language: system
         types: [python]
         pass_filenames: false

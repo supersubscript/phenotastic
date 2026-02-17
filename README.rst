@@ -225,7 +225,7 @@ Development
     uv run pytest
 
     # Type checking
-    uv run mypy -p phenotastic
+    uv run ty check
 
     # Linting
     uv run ruff check src/phenotastic/

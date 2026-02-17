@@ -122,6 +122,7 @@ class TestPresetExecution:
                 StepConfig("smooth", {"iterations": 5}),
             ]
         )
+        assert ctx.mesh is not None
         result = pipeline.run(ctx.mesh, verbose=False)
 
         assert result.mesh is not None

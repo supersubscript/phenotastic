@@ -19,7 +19,7 @@ DOCKER_RUN_FLAGS ?= --rm --shm-size=1024m
 
 UV      := uv run
 RUFF    := $(UV) ruff
-MYPY    := $(UV) mypy
+TY      := $(UV) ty
 PYTEST  := $(UV) pytest
 PRECOMMIT := $(UV) pre-commit
 
@@ -50,7 +50,7 @@ help:
 	@echo "  test               Run tests with coverage"
 	@echo "  format             Format code with ruff"
 	@echo "  lint               Run linter checks"
-	@echo "  type-check         Run mypy type checker"
+	@echo "  type-check         Run ty type checker"
 	@echo "  pre-commit         Run all pre-commit hooks"
 	@echo ""
 	@echo "Build & Publish:"
@@ -117,7 +117,7 @@ lint:
 	$(RUFF) check $(SOURCES) $(TESTS)
 
 type-check:
-	$(MYPY) $(SOURCES)
+	$(TY) check
 
 pre-commit:
 	$(PRECOMMIT) run --all-files
@@ -169,7 +169,7 @@ clean:
 				-name "*.egg-info" -o \
 				-name ".eggs" -o \
 				-name ".pytest_cache" -o \
-				-name ".mypy_cache" -o \
+				-name ".ty_cache" -o \
 				-name ".ruff_cache" -o \
 				-name ".tox" -o \
 				-name ".nox" -o \

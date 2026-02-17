@@ -49,7 +49,7 @@ docs = ["sphinx>=9.0", "furo", "sphinx-autodoc-typehints"]
 dev = [
     "ipython>=8.26,<9.0",
     "ipykernel>=7.0",
-    "mypy>=1.10,<2.0",
+    "ty>=0.0.1a11",
     "pre-commit>=3.7,<4.0",
     "pytest>=8.2,<9.0",
     "pytest-cov>=5.0,<6.0",
@@ -89,41 +89,24 @@ packages = ["src/phenotastic"]
 pythonpath = "."
 testpaths = ["tests"]
 
-[tool.mypy]
-python_version = "3.12"
-mypy_path = "src"
-allow_redefinition = true
-cache_dir = ".mypy_cache"
-check_untyped_defs = true
-disallow_incomplete_defs = true
-disallow_untyped_calls = true
-disallow_untyped_decorators = false
-disallow_untyped_defs = true
-explicit_package_bases = true
-follow_imports = "normal"
-ignore_missing_imports = false
-incremental = false
-namespace_packages = true
-strict_equality = true
-strict_optional = true
-warn_redundant_casts = true
-warn_return_any = true
-warn_unused_configs = true
-warn_unused_ignores = true
+[tool.ty.environment]
+python-version = "3.12"
 
-[[tool.mypy.overrides]]
-module = [
-    "mahotas",
-    "pymeshfix",
-    "pymeshfix._meshfix",
+[tool.ty.rules]
+possibly-missing-attribute = "ignore"  # Too noisy for untyped third-party modules
+
+[tool.ty.analysis]
+allowed-unresolved-imports = [
+    "mahotas.**",
+    "pymeshfix.**",
     "vtk",
     "clahe",
-    "pyacvd",
+    "pyacvd.**",
     "pystackreg",
     "czifile",
     "read_lif",
+    "git.**",
 ]
-ignore_missing_imports = true
 
 [tool.ruff]
 target-version = "py312"

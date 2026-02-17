@@ -1,6 +1,6 @@
 [project]
 name = "phenotastic"
-version = "0.3.1"
+version = "0.4.0"
 description = "3D plant phenotyping."
 readme = "README.rst"
 requires-python = ">=3.12,<4.0.0"

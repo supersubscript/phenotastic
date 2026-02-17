@@ -669,7 +669,7 @@ name = "imagecodecs"
 version = "2026.1.14"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "numpy" },
+    { name = "numpy", marker = "sys_platform == 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/af/75/cedaa3dba300df85712515b9c9e13d848ea9557b796b6c44b50bd361571e/imagecodecs-2026.1.14.tar.gz", hash = "sha256:e37ef5116d41ba90b1c9d1d7121846671fd65c271f0c15ef24208353fa79b283", size = 9527808, upload-time = "2026-01-14T04:24:31.234Z" }
 wheels = [
@@ -701,18 +701,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/a7/84/62473fb57d61e31fef6e36d64a179c8781605429fd927b5dd608c997be31/imagesize-1.4.1.tar.gz", hash = "sha256:69150444affb9cb0d5cc5a92b3676f0b2fb7cd9ae39e947a5e11a36b4497cd4a", size = 1280026, upload-time = "2022-07-01T12:21:05.687Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ff/62/85c4c919272577931d407be5ba5d71c20f0b616d31a0befe0ae45bb79abd/imagesize-1.4.1-py2.py3-none-any.whl", hash = "sha256:0d8d18d08f840c19d0ee7ca1fd82490fdc3729b7ac93f49870406ddde8ef8d8b", size = 8769, upload-time = "2022-07-01T12:21:02.467Z" },
-]
-
-[[package]]
-name = "imgmisc"
-version = "0.2.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "click" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/46/cd/d9e0a18411e61c5c854467d03d83050197118684c0602d72a562f1acb41f/imgmisc-0.2.2.tar.gz", hash = "sha256:ac9cc3a983c1001325d0c1371be2ee69764dfc1ef21a7165dfc00f342933dabf", size = 27159, upload-time = "2023-06-01T08:58:49.603Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/88/2a/f1c0f5fc4e18ee41c003ec4db3fb5d3facfc02400d8313c2d4d3d87c0283/imgmisc-0.2.2-py2.py3-none-any.whl", hash = "sha256:3653d582714fa1e0ec551c154c1b5ed3d6baf2e3757c3b3984aa3eaaef8ac552", size = 21023, upload-time = "2023-06-01T08:58:46.716Z" },
 ]
 
 [[package]]
@@ -1487,13 +1475,12 @@ wheels = [
 
 [[package]]
 name = "phenotastic"
-version = "0.3.1"
+version = "0.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "clahe" },
     { name = "click" },
     { name = "czifile" },
-    { name = "imgmisc" },
     { name = "loguru" },
     { name = "mahotas" },
     { name = "networkx" },
@@ -1541,7 +1528,6 @@ requires-dist = [
     { name = "clahe", specifier = ">=0.1" },
     { name = "click", specifier = ">=8.1" },
     { name = "czifile", specifier = ">=2019.7" },
-    { name = "imgmisc", specifier = ">=0.2" },
     { name = "loguru", specifier = ">=0.7" },
     { name = "mahotas", specifier = ">=1.4" },
     { name = "networkx", specifier = ">=3.0" },

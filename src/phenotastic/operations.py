@@ -308,7 +308,7 @@ def remesh(
     if n_clusters <= 0:
         raise ConfigurationError("n_clusters must be positive")
 
-    context.mesh = context.mesh.remesh(n=n_clusters, sub=subdivisions)
+    context.mesh = context.mesh.remesh(n_clusters=n_clusters, subdivisions=subdivisions)
     context.neighbors = None
 
     return context
@@ -782,7 +782,7 @@ def compute_curvature(
     if curvature_type not in valid_types:
         raise ConfigurationError(f"curvature_type must be one of {valid_types}")
 
-    context.curvature = context.mesh.curvature(curv_type=curvature_type)
+    context.curvature = context.mesh.compute_curvature(curvature_type=curvature_type)
     context.mesh["curvature"] = context.curvature
 
     return context
@@ -844,11 +844,11 @@ def segment_domains(
 
     if context.curvature is None:
         curvature_type = curvature_type or "mean"
-        context.curvature = context.mesh.curvature(curv_type=curvature_type)
+        context.curvature = context.mesh.compute_curvature(curvature_type=curvature_type)
         context.mesh["curvature"] = context.curvature
 
     if context.neighbors is None:
-        context.neighbors = context.mesh.vertex_neighbors_all(include_self=True)
+        context.neighbors = context.mesh.get_all_vertex_neighbors(include_self=True)
 
     context.domains = domains.steepest_ascent(
         context.mesh.to_polydata(),

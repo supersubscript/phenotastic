@@ -10,7 +10,7 @@ import scipy.optimize as opt
 import tifffile as tiff
 import vtk
 from clahe import clahe
-from imgmisc import autocrop, cut, get_resolution, to_uint8
+from imgmisc import get_resolution
 from loguru import logger
 from numpy.typing import NDArray
 from pyacvd import clustering
@@ -22,7 +22,7 @@ from scipy.spatial import cKDTree
 from skimage.measure import marching_cubes
 from skimage.segmentation import morphological_chan_vese
 
-from phenotastic.misc import car2sph, coord_array, rotate
+from phenotastic.misc import autocrop, car2sph, coord_array, cut, rotate, to_uint8
 
 if TYPE_CHECKING:
     from phenotastic.phenomesh import PhenoMesh
@@ -192,7 +192,7 @@ def create_mesh(contour: NDArray[Any], resolution: list[float] | None = None, st
     return PhenoMesh(mesh)
 
 
-def filter_curvature(
+def filter_by_curvature(
     mesh: pv.PolyData,
     curvature_threshold: tuple[float, float] | float,
     curvatures: NDArray[np.floating[Any]] | None = None,
@@ -639,7 +639,7 @@ def fill_contour(
     return None if inplace else new_contour
 
 
-def label_mesh(
+def label_from_image(
     mesh: pv.PolyData,
     segm_img: NDArray[np.integer[Any]],
     resolution: list[float] | None = None,
@@ -712,7 +712,7 @@ def label_mesh(
     return values
 
 
-def project2surface(
+def project_to_surface(
     mesh: pv.PolyData,
     int_img: NDArray[Any],
     distance_threshold: float,
@@ -885,7 +885,7 @@ def fill_inland(contour: NDArray[np.bool_], threshold_distance: int = 0) -> NDAr
     return filled
 
 
-def repair_small(mesh: pv.PolyData, nbe: int | None = 100, refine: bool = True) -> pv.PolyData:
+def repair_small_holes(mesh: pv.PolyData, nbe: int | None = 100, refine: bool = True) -> pv.PolyData:
     """Repair small holes in a mesh based on the number of edges.
 
     Args:
@@ -1008,7 +1008,7 @@ def remove_bridges(mesh: pv.PolyData, verbose: bool = True) -> pv.PolyData:
     return new_mesh
 
 
-def remove_normals(
+def remove_by_normals(
     mesh: pv.PolyData,
     threshold_angle: float = 0,
     flip: bool = False,
@@ -1110,7 +1110,7 @@ def smooth_boundary(
     return None if inplace else mesh
 
 
-def process_mesh(
+def process(
     mesh: pv.PolyData,
     hole_repair_threshold: int = 100,
     downscaling: float = 0.01,
@@ -1152,12 +1152,12 @@ def process_mesh(
 
     # Scale the mest and repair small holes
     mesh = remesh(mesh, int(mesh.n_points * downscaling), sub=0)
-    mesh = repair_small(mesh, hole_repair_threshold)
+    mesh = repair_small_holes(mesh, hole_repair_threshold)
 
     # Remove vertices based on the vertex normal angle
     if threshold_angle:
         mesh.rotate_y(-90)
-        mesh = remove_normals(
+        mesh = remove_by_normals(
             mesh,
             threshold_angle=threshold_angle,
             angle="polar",
@@ -1172,7 +1172,7 @@ def process_mesh(
     if inland_threshold is not None and contour is not None:
         mesh = remove_inland_under(mesh, contour, threshold=int(inland_threshold))
         mesh = mesh.extract_largest()
-        mesh = repair_small(mesh, hole_repair_threshold)
+        mesh = repair_small_holes(mesh, hole_repair_threshold)
     mesh = ecft(mesh, hole_repair_threshold)
 
     # Remove "tongues" from the mesh
@@ -1186,7 +1186,7 @@ def process_mesh(
 
     # General post-processing. Smooth the mesh, remove small holes, and regularise the faces.
     mesh = mesh.extract_largest()
-    mesh = repair_small(mesh, hole_repair_threshold)
+    mesh = repair_small_holes(mesh, hole_repair_threshold)
     mesh = mesh.smooth(smooth_iter, smooth_relax)
     mesh = remesh(mesh, int(upscaling * mesh.n_points))
     result = smooth_boundary(mesh, smooth_iter, smooth_relax)
@@ -1332,7 +1332,7 @@ def remove_tongues(
 
         # Remove points and do some cleanup
         mesh = mesh.remove_points(to_remove_arr, keep_scalars=False)[0]
-        mesh = repair_small(mesh, hole_edges)
+        mesh = repair_small_holes(mesh, hole_edges)
         mesh = make_manifold(mesh, hole_edges)
         mesh = ecft(mesh, hole_edges)
 
@@ -1380,7 +1380,7 @@ def make_manifold(mesh: pv.PolyData, hole_edges: int = 300) -> pv.PolyData:
         logger.info(f"Removing {len(to_remove)} points")
         mesh = mesh.remove_points(to_remove)[0]
         mesh = mesh.extract_largest()
-        mesh = repair_small(mesh, nbe=hole_edges)
+        mesh = repair_small_holes(mesh, nbe=hole_edges)
         mesh = mesh.clean()
         edges = mesh.extract_feature_edges(
             boundary_edges=False,
@@ -1588,7 +1588,7 @@ def ecft(mesh: pv.PolyData, hole_edges: int = 300, inplace: bool = False) -> pv.
 
     new_mesh = new_mesh.extract_largest()
     new_mesh = new_mesh.clean()
-    new_mesh = repair_small(mesh, nbe=hole_edges)
+    new_mesh = repair_small_holes(mesh, nbe=hole_edges)
     new_mesh = new_mesh.triangulate()
     new_mesh.clean()
 
@@ -1765,3 +1765,15 @@ def compute_paraboloid_apex(parameters: Sequence[float]) -> NDArray[np.floating[
     )[0]
 
     return coords
+
+
+# =========================================================================
+# Backwards compatibility aliases
+# =========================================================================
+
+repair_small = repair_small_holes
+filter_curvature = filter_by_curvature
+remove_normals = remove_by_normals
+label_mesh = label_from_image
+project2surface = project_to_surface
+process_mesh = process

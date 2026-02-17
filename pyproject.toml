@@ -24,7 +24,6 @@ dependencies = [
     "click>=8.1",
     "clahe>=0.1",
     "czifile>=2019.7",
-    "imgmisc>=0.2",
     "loguru>=0.7",
     "mahotas>=1.4",
     "networkx>=3.0",

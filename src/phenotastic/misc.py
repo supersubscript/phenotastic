@@ -6,6 +6,9 @@ import numpy as np
 from loguru import logger
 from numpy.typing import ArrayLike, NDArray
 
+# Re-export from helpers for backwards compatibility
+from phenotastic.utils.helpers import autocrop  # noqa: F401
+
 
 def cut(img: NDArray[np.floating[Any]], cuts: NDArray[np.integer[Any]]) -> NDArray[np.floating[Any]]:
     """Slice 3D image using specified cut coordinates.
@@ -51,18 +54,28 @@ def merge(lists: list[list[Any]]) -> list[set[Any]]:
     return sets
 
 
-def flatten(arr: list[list[Any]]) -> list[Any]:
-    """Flatten nested list into single-level list.
+def flatten(nested: list[Any]) -> list[Any]:
+    """Recursively flatten arbitrarily nested lists into a single-level list.
 
     Args:
-        arr: Nested list
+        nested: A list that may contain other lists at any depth.
 
     Returns:
-        Flattened list
-    """
-    import itertools
+        A flat list containing all non-list elements from the input.
 
-    return list(itertools.chain.from_iterable(arr))
+    Example:
+        >>> flatten([1, [2, 3], [[4, 5], 6]])
+        [1, 2, 3, 4, 5, 6]
+        >>> flatten([[1, 2], [3, [4, [5]]]])
+        [1, 2, 3, 4, 5]
+    """
+    result: list[Any] = []
+    for item in nested:
+        if isinstance(item, list):
+            result.extend(flatten(item))
+        else:
+            result.append(item)
+    return result
 
 
 def remove_empty_slices(arr: NDArray[Any], keepaxis: int = 0) -> NDArray[Any]:

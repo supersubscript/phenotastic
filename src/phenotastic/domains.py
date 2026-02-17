@@ -6,12 +6,12 @@ import numpy as np
 import pandas as pd
 import pyvista as pv
 import scipy
-from imgmisc import flatten, merge
 from loguru import logger
 from numpy.typing import NDArray
 from scipy.spatial.distance import cdist
 
 import phenotastic.mesh as mp
+from phenotastic.misc import flatten, merge
 
 
 def median(

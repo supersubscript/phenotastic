@@ -6,7 +6,7 @@ default_stages: [commit]
 repos:
   # Ruff - Python linting and formatting (replaces flake8, black, isort, etc.)
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.4
+    rev: v0.15.1
     hooks:
       - id: ruff
         name: ruff-check
@@ -17,12 +17,6 @@ repos:
         args: [--fix, --unsafe-fixes]
         stages: [manual]
       - id: ruff-format
-
-  # UV - Fast Python package manager
-  - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.9.9
-    hooks:
-      - id: uv-lock
 
   # Standard pre-commit hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -44,7 +38,7 @@ repos:
 
   # Type checking with mypy
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.18.2
+    rev: v1.19.1
     hooks:
       - id: mypy
         additional_dependencies: [types-PyYAML]
@@ -67,3 +61,9 @@ repos:
       - id: conventional-pre-commit
         stages: [commit-msg]
         args: [build, chore, ci, docs, feat, fix, perf, refactor, style, test, wip]
+
+  # UV - Fast Python package manager
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.10.3
+    hooks:
+      - id: uv-lock

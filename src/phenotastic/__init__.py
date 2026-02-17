@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 from phenotastic.utils.project import dev_root
 
-__version__ = "0.4.1"
+__version__ = "0.5.0"
 
 if (dev_root() / ".env").exists():
     load_dotenv(dev_root() / ".env")

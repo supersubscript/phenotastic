@@ -2,6 +2,8 @@
 Phenotastic
 ===========
 
+| `Documentation <https://supersubscript.github.io/phenotastic/>`_
+
 3D plant phenotyping package for segmentation of early flower organs (primordia)
 from shoot apical meristems in 3D images.
 

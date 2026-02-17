@@ -38,6 +38,7 @@ from phenotastic.mesh import (
     repair_small_holes,
     smooth_boundary,
 )
+from phenotastic.pipeline_decorator import pipeline_operation
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
@@ -171,6 +172,13 @@ class PhenoMesh(pv.PolyData):
     # Smoothing operations
     # =========================================================================
 
+    @pipeline_operation(
+        name="smooth",
+        validators={
+            "iterations": lambda x: x >= 0,
+            "relaxation_factor": lambda x: 0 <= x <= 1,
+        },
+    )
     def smooth(
         self,
         iterations: int = 100,
@@ -203,6 +211,10 @@ class PhenoMesh(pv.PolyData):
         )
         return self._wrap_result(result)
 
+    @pipeline_operation(
+        name="smooth_taubin",
+        validators={"iterations": lambda x: x >= 0},
+    )
     def smooth_taubin(
         self,
         iterations: int = 100,
@@ -243,6 +255,7 @@ class PhenoMesh(pv.PolyData):
         )
         return self._wrap_result(result)
 
+    @pipeline_operation(name="smooth_boundary")
     def smooth_boundary(self, iterations: int = 20, sigma: float = 0.1) -> PhenoMesh:
         """Smooth the boundary of the mesh using Laplacian smoothing.
 
@@ -260,6 +273,10 @@ class PhenoMesh(pv.PolyData):
     # Mesh simplification and refinement
     # =========================================================================
 
+    @pipeline_operation(
+        name="decimate",
+        validators={"target_reduction": lambda x: 0 <= x < 1},
+    )
     def decimate(self, target_reduction: float = 0.5, volume_preservation: bool = True) -> PhenoMesh:
         """Reduce mesh complexity by decimating faces.
 
@@ -276,6 +293,10 @@ class PhenoMesh(pv.PolyData):
         )
         return self._wrap_result(result)
 
+    @pipeline_operation(
+        name="subdivide",
+        validators={"n_subdivisions": lambda x: x >= 0},
+    )
     def subdivide(self, n_subdivisions: int = 1, subfilter: str = "linear") -> PhenoMesh:
         """Subdivide mesh faces to increase resolution.
 
@@ -289,6 +310,10 @@ class PhenoMesh(pv.PolyData):
         result = super().subdivide(n_subdivisions, subfilter)
         return self._wrap_result(result)
 
+    @pipeline_operation(
+        name="remesh",
+        validators={"n_clusters": lambda x: x > 0},
+    )
     def remesh(self, n_clusters: int, subdivisions: int = 3) -> PhenoMesh:
         """Regularise the mesh faces using the ACVD algorithm.
 
@@ -325,6 +350,7 @@ class PhenoMesh(pv.PolyData):
     # Mesh cleanup and repair
     # =========================================================================
 
+    @pipeline_operation(name="triangulate")
     def triangulate(self) -> PhenoMesh:
         """Convert all faces to triangles.
 
@@ -334,6 +360,7 @@ class PhenoMesh(pv.PolyData):
         result = super().triangulate()
         return self._wrap_result(result)
 
+    @pipeline_operation(name="clean")
     def clean(
         self,
         point_merging: bool = True,
@@ -366,6 +393,7 @@ class PhenoMesh(pv.PolyData):
         )
         return self._wrap_result(result)
 
+    @pipeline_operation(name="extract_largest")
     def extract_largest(self) -> PhenoMesh:
         """Extract the largest connected component.
 
@@ -375,6 +403,7 @@ class PhenoMesh(pv.PolyData):
         result = super().extract_largest()
         return self._wrap_result(result)
 
+    @pipeline_operation(name="fill_holes")
     def fill_holes(self, hole_size: float = 1000.0) -> PhenoMesh:
         """Fill holes in the mesh.
 
@@ -387,6 +416,7 @@ class PhenoMesh(pv.PolyData):
         result = super().fill_holes(hole_size)
         return self._wrap_result(result)
 
+    @pipeline_operation(name="repair")
     def repair(self) -> PhenoMesh:
         """Repair the mesh using MeshFix.
 
@@ -395,6 +425,7 @@ class PhenoMesh(pv.PolyData):
         """
         return self._wrap_result(repair(self))
 
+    @pipeline_operation(name="repair_holes")
     def repair_small_holes(self, max_hole_edges: int | None = 100, refine: bool = True) -> PhenoMesh:
         """Repair small holes in the mesh based on the number of edges.
 
@@ -407,6 +438,7 @@ class PhenoMesh(pv.PolyData):
         """
         return self._wrap_result(repair_small_holes(self, max_hole_edges, refine))
 
+    @pipeline_operation(name="make_manifold")
     def make_manifold(self, hole_edges: int = 300) -> PhenoMesh:
         """Make the mesh manifold by removing non-manifold edges.
 
@@ -429,6 +461,7 @@ class PhenoMesh(pv.PolyData):
         """
         return self._wrap_result(correct_bad_mesh(self, verbose))
 
+    @pipeline_operation(name="ecft")
     def ecft(self, hole_edges: int = 300) -> PhenoMesh:
         """Perform ExtractLargest, Clean, FillHoles, and TriFilter operations.
 
@@ -444,6 +477,7 @@ class PhenoMesh(pv.PolyData):
     # Normal operations
     # =========================================================================
 
+    @pipeline_operation(name="compute_normals", invalidates_neighbors=False)
     def compute_normals(
         self,
         cell_normals: bool = True,
@@ -479,6 +513,7 @@ class PhenoMesh(pv.PolyData):
         )
         return self._wrap_result(result)
 
+    @pipeline_operation(name="flip_normals", invalidates_neighbors=False)
     def flip_normals(self) -> PhenoMesh:
         """Flip all surface normals.
 
@@ -489,6 +524,7 @@ class PhenoMesh(pv.PolyData):
         super(PhenoMesh, result).flip_normals()
         return result
 
+    @pipeline_operation(name="correct_normal_orientation", invalidates_neighbors=False)
     def correct_normal_orientation(self, relative: str = "x", inplace: bool = False) -> PhenoMesh | None:
         """Correct the orientation of the normals.
 
@@ -520,6 +556,7 @@ class PhenoMesh(pv.PolyData):
         """
         return self.curvature(curvature_type)
 
+    @pipeline_operation(name="filter_curvature")
     def filter_by_curvature(
         self,
         curvature_threshold: tuple[float, float] | float,
@@ -554,6 +591,7 @@ class PhenoMesh(pv.PolyData):
         result = super().remove_points(mask, keep_scalars=keep_scalars)
         return self._wrap_result(result[0]), result[1]
 
+    @pipeline_operation(name="remove_normals")
     def remove_by_normals(
         self,
         threshold_angle: float = 0,
@@ -572,6 +610,7 @@ class PhenoMesh(pv.PolyData):
         """
         return self._wrap_result(remove_by_normals(self, threshold_angle, flip, angle_type))
 
+    @pipeline_operation(name="erode")
     def erode(self, iterations: int = 1) -> PhenoMesh:
         """Erode the mesh by removing boundary points iteratively.
 
@@ -587,6 +626,7 @@ class PhenoMesh(pv.PolyData):
     # Artifact removal
     # =========================================================================
 
+    @pipeline_operation(name="remove_bridges")
     def remove_bridges(self, verbose: bool = True) -> PhenoMesh:
         """Remove triangles where all vertices are part of the mesh boundary.
 
@@ -598,6 +638,7 @@ class PhenoMesh(pv.PolyData):
         """
         return self._wrap_result(remove_bridges(self, verbose))
 
+    @pipeline_operation(name="remove_tongues")
     def remove_tongues(
         self,
         radius: float,
@@ -642,6 +683,7 @@ class PhenoMesh(pv.PolyData):
     # Geometric operations
     # =========================================================================
 
+    @pipeline_operation(name="clip")
     def clip(
         self,
         normal: str | Sequence[float] = "x",
@@ -713,6 +755,7 @@ class PhenoMesh(pv.PolyData):
         super(PhenoMesh, result).rotate_z(angle, inplace=True)
         return result
 
+    @pipeline_operation(name="drop_skirt")
     def drop_skirt(self, max_distance: float, flip: bool = False) -> PhenoMesh:
         """Downprojects the boundary to the lowest point in the z-direction.
 

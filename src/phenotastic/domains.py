@@ -1182,7 +1182,7 @@ def define_meristem(
         coord = np.mean(np.reshape(mesh.bounds, (3, -1)), axis=1)
     elif method in ["n_neighs", "neighbors", "neighs", "n_neighbors"]:
         if neighs is None:
-            neighs = mp.vertex_neighbors_all(mesh)
+            neighs = mp.get_vertex_neighbors_all(mesh)
         doms = np.unique(domains)
         n_neighs = count_domain_neighbors(mesh, domains, neighs)
         meristem_dom = doms[np.argmax(n_neighs)]

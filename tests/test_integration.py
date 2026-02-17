@@ -9,7 +9,9 @@ import numpy as np
 import pytest
 
 from phenotastic import PhenoMesh, Pipeline, PipelineContext, StepConfig
-from phenotastic.operations import smooth_mesh
+from phenotastic.operations import OPERATIONS
+
+smooth_mesh = OPERATIONS["smooth"]
 
 
 class TestMeshProcessingWorkflow:
@@ -115,7 +117,10 @@ class TestContourToMeshWorkflow:
 
     def test_contour_to_mesh(self, tiny_contour: np.ndarray) -> None:
         """Basic contour to mesh workflow."""
-        from phenotastic.operations import create_mesh_from_contour, smooth_mesh
+        from phenotastic.operations import OPERATIONS
+
+        create_mesh_from_contour = OPERATIONS["create_mesh"]
+        smooth_mesh = OPERATIONS["smooth"]
 
         # Start with contour
         ctx = PipelineContext(contour=tiny_contour, resolution=[1.0, 1.0, 1.0])
@@ -130,13 +135,13 @@ class TestContourToMeshWorkflow:
 
     def test_full_pipeline_from_contour(self, tiny_contour: np.ndarray) -> None:
         """Full pipeline starting from contour."""
-        from phenotastic.operations import (
-            clean_mesh,
-            compute_curvature,
-            create_mesh_from_contour,
-            remesh,
-            smooth_mesh,
-        )
+        from phenotastic.operations import OPERATIONS
+
+        create_mesh_from_contour = OPERATIONS["create_mesh"]
+        clean_mesh = OPERATIONS["clean"]
+        smooth_mesh = OPERATIONS["smooth"]
+        remesh = OPERATIONS["remesh"]
+        compute_curvature = OPERATIONS["compute_curvature"]
 
         ctx = PipelineContext(contour=tiny_contour, resolution=[1.0, 1.0, 1.0])
 
@@ -248,7 +253,10 @@ class TestContextPersistence:
 
     def test_neighbors_cleared_after_remesh(self, sphere_mesh: PhenoMesh) -> None:
         """Neighbors should be cleared after operations that change topology."""
-        from phenotastic.operations import remesh, smooth_mesh
+        from phenotastic.operations import OPERATIONS
+
+        smooth_mesh = OPERATIONS["smooth"]
+        remesh = OPERATIONS["remesh"]
 
         ctx = PipelineContext(mesh=sphere_mesh)
 

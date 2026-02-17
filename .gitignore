@@ -50,6 +50,10 @@ Thumbs.db
 ##############
 *~
 
+# Documentation build #
+#######################
+docs/_build/
+
 # Other files #
 ###############
 .project

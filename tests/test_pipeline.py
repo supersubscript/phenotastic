@@ -267,8 +267,10 @@ class TestPipelineRunWithDifferentInputs:
         )
 
         ctx = PipelineContext(contour=synthetic_contour, resolution=[1.0, 1.0, 1.0])
-        from phenotastic.operations import create_mesh_from_contour, smooth_mesh
+        from phenotastic.operations import OPERATIONS
 
+        create_mesh_from_contour = OPERATIONS["create_mesh"]
+        smooth_mesh = OPERATIONS["smooth"]
         ctx = create_mesh_from_contour(ctx)
         ctx = smooth_mesh(ctx, iterations=5)
 

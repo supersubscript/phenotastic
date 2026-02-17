@@ -1,9 +1,14 @@
 """Helper utility functions for phenotastic."""
 
-from typing import Literal, overload
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Literal, overload
 
 import numpy as np
+from lxml import objectify as xml_objectify
 from numpy.typing import NDArray
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 @overload
@@ -162,3 +167,107 @@ def _crop_array(
         array = np.moveaxis(array, -1, 1)
 
     return array
+
+
+Resolution = tuple[float, float, float]  # type alias for voxel resolution
+DEFAULT_RESOLUTION: Resolution = (1.0, 1.0, 1.0)
+
+
+def _xml_to_dict(xml_object: object) -> Any:
+    """Recursively convert lxml objectified XML to a nested dictionary."""
+    dict_object = xml_object.__dict__
+    if not dict_object:
+        return xml_object
+    for key, value in dict_object.items():
+        dict_object[key] = _xml_to_dict(value)
+    return dict_object
+
+
+def _get_resolution_czi(filepath: str | Path) -> Resolution | None:
+    """Extract resolution from CZI (Zeiss) file metadata."""
+    try:
+        import czifile as czi
+
+        with czi.CziFile(filepath) as f:
+            metadata = _xml_to_dict(xml_objectify.fromstring(f.metadata()))
+            acq_meta = metadata["Metadata"]["Experiment"]["ExperimentBlocks"]["AcquisitionBlock"][
+                "AcquisitionModeSetup"
+            ]
+            return (
+                float(acq_meta.get("ScalingZ", 1.0)),
+                float(acq_meta.get("ScalingY", 1.0)),
+                float(acq_meta.get("ScalingX", 1.0)),
+            )
+    except (ImportError, KeyError, AttributeError, TypeError):
+        return None
+
+
+def _get_resolution_lif(filepath: str | Path) -> Resolution | None:
+    """Extract resolution from LIF (Leica) file metadata."""
+    try:
+        import read_lif as lif
+
+        reader = lif.Reader(filepath)
+        series = reader.getSeries()
+        if not series:
+            return None
+        metadata = series[0].getMetadata()
+        return (
+            float(metadata.get("voxel_size_z", 1.0)),
+            float(metadata.get("voxel_size_y", 1.0)),
+            float(metadata.get("voxel_size_x", 1.0)),
+        )
+    except (ImportError, IndexError, KeyError, AttributeError, TypeError):
+        return None
+
+
+def _get_resolution_tiff(filepath: str | Path) -> Resolution | None:
+    """Extract resolution from TIFF file metadata (ImageJ or LSM)."""
+    try:
+        import tifffile as tiff
+
+        with tiff.TiffFile(filepath) as f:
+            if f.imagej_metadata is not None:
+                z = float(f.imagej_metadata.get("spacing", 1.0))
+                x_res_tag = f.pages[0].tags.get("XResolution")
+                x = x_res_tag.value[1] / x_res_tag.value[0] if x_res_tag and x_res_tag.value[0] != 0 else 1.0
+                return (z, float(x), float(x))
+
+            if f.lsm_metadata is not None:
+                return (
+                    float(f.lsm_metadata.get("VoxelSizeZ", 1.0)),
+                    float(f.lsm_metadata.get("VoxelSizeY", 1.0)),
+                    float(f.lsm_metadata.get("VoxelSizeX", 1.0)),
+                )
+    except (ImportError, KeyError, AttributeError, TypeError, ZeroDivisionError):
+        pass
+    return None
+
+
+def get_resolution(filepath: Path | str) -> Resolution:
+    """Extract voxel resolution from image file metadata.
+
+    Supports CZI (Zeiss), LIF (Leica), and TIFF (ImageJ/LSM) formats.
+    Returns default resolution (1.0, 1.0, 1.0) if metadata cannot be extracted.
+
+    Args:
+        filepath: Path to image file
+
+    Returns:
+        Tuple of (z, y, x) resolution values in micrometers
+    """
+    ext = Path(filepath).suffix.lower()
+
+    # Format-specific handlers
+    handlers: dict[str, Callable[[str | Path], Resolution | None]] = {
+        ".czi": _get_resolution_czi,
+        ".lif": _get_resolution_lif,
+    }
+
+    if ext in handlers:
+        result = handlers[ext](filepath)
+        return result if result is not None else DEFAULT_RESOLUTION
+
+    # Default to TIFF handling for other extensions
+    result = _get_resolution_tiff(filepath)
+    return result if result is not None else DEFAULT_RESOLUTION

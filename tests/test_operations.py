@@ -5,20 +5,21 @@ import pytest
 
 from phenotastic import PhenoMesh, PipelineContext
 from phenotastic.exceptions import ConfigurationError
-from phenotastic.operations import (
-    clean_mesh,
-    compute_curvature,
-    decimate_mesh,
-    extract_largest,
-    filter_by_curvature,
-    remesh,
-    rotate_mesh,
-    smooth_boundary,
-    smooth_mesh,
-    smooth_mesh_taubin,
-    subdivide_mesh,
-    triangulate_mesh,
-)
+from phenotastic.operations import OPERATIONS
+
+# Get operations from the registry
+smooth_mesh = OPERATIONS["smooth"]
+smooth_mesh_taubin = OPERATIONS["smooth_taubin"]
+smooth_boundary = OPERATIONS["smooth_boundary"]
+remesh = OPERATIONS["remesh"]
+decimate_mesh = OPERATIONS["decimate"]
+subdivide_mesh = OPERATIONS["subdivide"]
+extract_largest = OPERATIONS["extract_largest"]
+clean_mesh = OPERATIONS["clean"]
+triangulate_mesh = OPERATIONS["triangulate"]
+compute_curvature = OPERATIONS["compute_curvature"]
+filter_by_curvature = OPERATIONS["filter_curvature"]
+rotate_mesh = OPERATIONS["rotate"]
 
 
 class TestSmoothOperation:
@@ -59,7 +60,7 @@ class TestSmoothOperation:
         """Negative iterations should raise ConfigurationError."""
         ctx = PipelineContext(mesh=sphere_mesh)
 
-        with pytest.raises(ConfigurationError, match="iterations must be non-negative"):
+        with pytest.raises(ConfigurationError, match="Invalid value for parameter 'iterations'"):
             smooth_mesh(ctx, iterations=-5)
 
     def test_smooth_invalid_relaxation_raises(self, sphere_mesh: PhenoMesh) -> None:
@@ -116,7 +117,7 @@ class TestRemeshOperation:
         """Invalid n_clusters should raise ConfigurationError."""
         ctx = PipelineContext(mesh=sphere_mesh)
 
-        with pytest.raises(ConfigurationError, match="n_clusters must be positive"):
+        with pytest.raises(ConfigurationError, match="Invalid value for parameter 'n_clusters'"):
             remesh(ctx, n_clusters=0)
 
 

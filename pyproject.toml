@@ -25,11 +25,11 @@ dependencies = [
     "clahe>=0.1",
     "czifile>=2019.7",
     "loguru>=0.7",
+    "lxml>=5.0",
     "mahotas>=1.4",
     "networkx>=3.0",
     "numpy>=2.0",
     "pandas>=2.2",
-    "psf>=2024.1",
     "pyacvd>=0.3",
     "pymeshfix>=0.17",
     "pystackreg>=0.2",
@@ -37,14 +37,13 @@ dependencies = [
     "pyvista>=0.47",
     "pyyaml>=6.0",
     "scikit-image>=0.24",
-    "scikit-learn>=1.6",
     "scipy>=1.14",
     "tifffile>=2024.12",
     "vtk>=9.6",
 ]
 
 [project.optional-dependencies]
-docs = ["sphinx>=9.0"]
+docs = ["sphinx>=9.0", "furo", "sphinx-autodoc-typehints"]
 
 [dependency-groups]
 dev = [
@@ -69,7 +68,7 @@ phenotastic = "phenotastic.cli:main"
 
 [project.urls]
 homepage = "https://github.com/supersubscript/phenotastic"
-documentation = "https://phenotastic.readthedocs.io"
+documentation = "https://supersubscript.github.io/phenotastic"
 repository = "https://github.com/supersubscript/phenotastic"
 
 [tool.uv]

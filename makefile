@@ -151,7 +151,7 @@ publish-pypi: build
 # ------------------------------------------------------------------------------
 
 docs:
-	$(UV) --extra docs sphinx-build -b html $(DOCS_DIR) $(DOCS_DIR)/_build/html
+	uv run --extra docs sphinx-build -b html $(DOCS_DIR) $(DOCS_DIR)/_build/html
 
 # ------------------------------------------------------------------------------
 # Cleanup

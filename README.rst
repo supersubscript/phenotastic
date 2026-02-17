@@ -24,7 +24,7 @@ Or install from source:
 
 .. code-block:: bash
 
-    git clone https://github.com/superWhsubscript/phenotastic.git
+    git clone https://github.com/supersubscript/phenotastic.git
     cd phenotastic
     uv pip install -e ".[dev]"
 
@@ -68,8 +68,14 @@ Using the CLI
     # List available operations
     phenotastic list-operations
 
+    # List available presets
+    phenotastic list-presets
+
     # Validate configuration
     phenotastic validate my_pipeline.yaml
+
+    # View a mesh interactively
+    phenotastic view mesh.vtk --scalars curvature
 
 Pipeline Configuration
 ----------------------
@@ -130,56 +136,58 @@ Available Operations
 Image/Contour Operations
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-- ``contour``: Generate binary contour from 3D image
+- ``contour``: Generate binary contour from 3D image using morphological active contours
 - ``create_mesh``: Create mesh from contour using marching cubes
-- ``create_cellular_mesh``: Create mesh from segmented image
+- ``create_cellular_mesh``: Create mesh from segmented image (one mesh per cell)
 
 Mesh Processing Operations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - ``smooth``: Laplacian smoothing
-- ``smooth_taubin``: Taubin smoothing (less shrinkage)
-- ``smooth_boundary``: Smooth boundary edges only
-- ``remesh``: Regularize faces with ACVD
-- ``decimate``: Reduce mesh complexity
-- ``subdivide``: Increase mesh resolution
-- ``repair_holes``: Fill small holes
-- ``repair``: Full mesh repair
+- ``smooth_taubin``: Taubin smoothing (less shrinkage than Laplacian)
+- ``smooth_boundary``: Smooth only boundary edges
+- ``remesh``: Regularize faces using ACVD algorithm
+- ``decimate``: Reduce mesh complexity by removing faces
+- ``subdivide``: Increase mesh resolution by subdividing faces
+- ``repair_holes``: Fill small holes in the mesh
+- ``repair``: Full mesh repair using MeshFix
 - ``make_manifold``: Remove non-manifold edges
-- ``filter_curvature``: Remove vertices outside curvature range
+- ``filter_curvature``: Remove vertices outside curvature threshold range
 - ``remove_normals``: Remove vertices based on normal angle
-- ``remove_bridges``: Remove bridge triangles
+- ``remove_bridges``: Remove triangles where all vertices are on the boundary
 - ``remove_tongues``: Remove tongue-like artifacts
-- ``extract_largest``: Keep largest connected component
+- ``extract_largest``: Keep only the largest connected component
 - ``clean``: Remove degenerate cells
-- ``triangulate``: Convert to triangles
+- ``triangulate``: Convert all faces to triangles
 - ``compute_normals``: Compute surface normals
-- ``flip_normals``: Flip normal direction
-- ``rotate``: Rotate around axis
-- ``clip``: Clip with plane
-- ``erode``: Remove boundary points
-- ``ecft``: ExtractLargest, Clean, FillHoles, Triangulate
+- ``flip_normals``: Flip all surface normals
+- ``correct_normal_orientation``: Correct normal orientation relative to an axis
+- ``rotate``: Rotate mesh around an axis
+- ``clip``: Clip mesh with a plane
+- ``erode``: Erode mesh by removing boundary points
+- ``ecft``: ExtractLargest, Clean, FillHoles, Triangulate (combined operation)
 
 Domain Operations
 ~~~~~~~~~~~~~~~~~
 
-- ``compute_curvature``: Compute mesh curvature
-- ``filter_scalars``: Apply filter to curvature field
-- ``segment_domains``: Steepest ascent segmentation
-- ``merge_angles``: Merge domains within angular threshold
-- ``merge_distance``: Merge domains within distance threshold
-- ``merge_small``: Merge small domains
-- ``merge_engulfing``: Merge encircled domains
-- ``merge_disconnected``: Connect isolated domains
-- ``merge_depth``: Merge domains with similar depth
-- ``define_meristem``: Identify meristem domain
-- ``extract_domaindata``: Extract domain measurements
+- ``compute_curvature``: Compute mesh curvature (mean, gaussian, minimum, maximum)
+- ``filter_scalars``: Apply filter to curvature field (median, mean, minmax, maxmin)
+- ``segment_domains``: Create domains via steepest ascent on curvature field
+- ``merge_angles``: Merge domains within angular threshold from meristem
+- ``merge_distance``: Merge domains within spatial distance threshold
+- ``merge_small``: Merge small domains to their largest neighbor
+- ``merge_engulfing``: Merge domains mostly encircled by a neighbor
+- ``merge_disconnected``: Connect domains isolated from meristem
+- ``merge_depth``: Merge domains with similar depth values
+- ``define_meristem``: Identify the meristem domain
+- ``extract_domaindata``: Extract geometric measurements for each domain
 
 PhenoMesh Class
 ---------------
 
-``PhenoMesh`` is a wrapper around PyVista's ``PolyData`` that provides
-convenient methods for mesh processing.
+``PhenoMesh`` extends PyVista's ``PolyData`` class, adding convenient methods
+for 3D plant phenotyping workflows. It can be used anywhere a ``PolyData`` is
+expected.
 
 .. code-block:: python
 
@@ -189,15 +197,18 @@ convenient methods for mesh processing.
     # Create from PyVista mesh
     mesh = PhenoMesh(pv.Sphere())
 
+    # PhenoMesh is a PolyData
+    isinstance(mesh, pv.PolyData)  # True
+
     # Process
-    mesh = mesh.smoothen(iterations=100)
-    mesh = mesh.remesh(n=5000)
-    curvature = mesh.curvature(curv_type="mean")
+    mesh = mesh.smooth(iterations=100)
+    mesh = mesh.remesh(n_clusters=5000)
+    curvature = mesh.compute_curvature(curvature_type="mean")
 
     # Visualize
     mesh.plot(scalars=curvature, cmap="coolwarm")
 
-    # Convert back to PyVista
+    # Convert to plain PyVista PolyData if needed
     polydata = mesh.to_polydata()
 
 Development
@@ -206,16 +217,16 @@ Development
 .. code-block:: bash
 
     # Install development dependencies
-    uv pip install -e ".[dev]"
+    uv sync --group dev
 
     # Run tests
     uv run pytest
 
     # Type checking
-    uv run mypy phenotastic/
+    uv run mypy src/phenotastic/
 
     # Linting
-    uv run ruff check phenotastic/
+    uv run ruff check src/phenotastic/
 
     # Pre-commit hooks
     uv run pre-commit run --all-files

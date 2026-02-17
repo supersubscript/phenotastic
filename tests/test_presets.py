@@ -107,7 +107,9 @@ class TestPresetExecution:
         """Default preset mesh steps should execute successfully."""
         # Create mesh from contour first
         from phenotastic import PipelineContext, StepConfig
-        from phenotastic.operations import create_mesh_from_contour
+        from phenotastic.operations import OPERATIONS
+
+        create_mesh_from_contour = OPERATIONS["create_mesh"]
 
         ctx = PipelineContext(contour=tiny_contour, resolution=[1.0, 1.0, 1.0])
         ctx = create_mesh_from_contour(ctx)

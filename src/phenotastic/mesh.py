@@ -10,7 +10,6 @@ import scipy.optimize as opt
 import tifffile as tiff
 import vtk
 from clahe import clahe
-from imgmisc import get_resolution
 from loguru import logger
 from numpy.typing import NDArray
 from pyacvd import clustering
@@ -22,7 +21,7 @@ from scipy.spatial import cKDTree
 from skimage.measure import marching_cubes
 from skimage.segmentation import morphological_chan_vese
 
-from phenotastic.misc import autocrop, car2sph, coord_array, cut, rotate, to_uint8
+from phenotastic.misc import autocrop, car2sph, coord_array, cut, get_resolution, rotate, to_uint8
 
 if TYPE_CHECKING:
     from phenotastic.phenomesh import PhenoMesh
@@ -484,7 +483,7 @@ def contour(
     for _ii in range(gaussian_iterations):
         if verbose:
             logger.info(f"Smoothing out {image} with gaussian smoothing")
-            data = gaussian_filter(data, sigma=gaussian_sigma)
+        data = gaussian_filter(data, sigma=gaussian_sigma)
 
     # Perform morphological chan-vese
     if verbose:

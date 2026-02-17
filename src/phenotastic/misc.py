@@ -7,7 +7,7 @@ from loguru import logger
 from numpy.typing import ArrayLike, NDArray
 
 # Re-export from helpers for backwards compatibility
-from phenotastic.utils.helpers import autocrop  # noqa: F401
+from phenotastic.utils.helpers import autocrop, get_resolution  # noqa: F401
 
 
 def cut(img: NDArray[np.floating[Any]], cuts: NDArray[np.integer[Any]]) -> NDArray[np.floating[Any]]:
@@ -370,50 +370,6 @@ def coord_array(
     # Make compatible lists
     coords = np.vstack((xx.ravel(), yy.ravel(), zz.ravel()))
     return coords
-
-
-def rot_matrix_44(angles: Sequence[float], invert: bool = False) -> NDArray[np.floating[Any]]:
-    """Generate 4x4 homogeneous rotation matrix.
-
-    Args:
-        angles: Rotation angles [alpha, beta, gamma] in radians
-        invert: If True, return inverse rotation matrix
-
-    Returns:
-        4x4 rotation matrix
-    """
-    alpha, beta, gamma = angles
-    rot_x = np.array(
-        [
-            [1, 0, 0, 0],
-            [0, np.cos(alpha), -np.sin(alpha), 0],
-            [0, np.sin(alpha), np.cos(alpha), 0],
-            [0, 0, 0, 1],
-        ],
-    )
-    rot_y = np.array(
-        [
-            [np.cos(beta), 0, np.sin(beta), 0],
-            [0, 1, 0, 0],
-            [-np.sin(beta), 0, np.cos(beta), 0],
-            [0, 0, 0, 1],
-        ],
-    )
-    rot_z = np.array(
-        [
-            [np.cos(gamma), -np.sin(gamma), 0, 0],
-            [np.sin(gamma), np.cos(gamma), 0, 0],
-            [0, 0, 1, 0],
-            [0, 0, 0, 1],
-        ],
-    )
-
-    if invert:
-        rot_matrix = np.linalg.inv(np.matmul(np.matmul(rot_z, rot_y), rot_x))
-    else:
-        rot_matrix = np.matmul(np.matmul(rot_z, rot_y), rot_x)
-
-    return rot_matrix
 
 
 def rotate(

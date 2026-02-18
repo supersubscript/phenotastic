@@ -31,7 +31,7 @@ DOCS_DIR      ?= docs
 # Phony targets
 # ------------------------------------------------------------------------------
 
-.PHONY: help install test format lint type-check \
+.PHONY: help activate install test format lint type-check \
         docker_build docker_dev docker_release \
         pre-commit clean docs build publish-testpypi publish-pypi
 
@@ -45,6 +45,7 @@ help:
 	@echo ""
 	@echo "Setup:"
 	@echo "  install            Install dependencies with uv"
+	@echo "  activate           Activate the virtual environment"
 	@echo ""
 	@echo "Code Quality:"
 	@echo "  test               Run tests with coverage"
@@ -75,6 +76,9 @@ help:
 
 install:
 	uv sync --group dev
+
+activate:
+	source .venv/bin/activate
 
 # ------------------------------------------------------------------------------
 # Docker

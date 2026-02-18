@@ -63,6 +63,28 @@ Documentation
 
    api/index
 
+Citation
+--------
+
+If you use Phenotastic in your research, please cite:
+
+    Åhl, H., Zhang, Y., & Jönsson, H. (2022). High-throughput 3D phenotyping of plant shoot
+    apical meristems from tissue-resolution data. *Frontiers in Plant Science*, 13, 827147.
+
+BibTeX:
+
+.. code-block:: bibtex
+
+    @article{aahl2022high,
+      title={High-throughput 3d phenotyping of plant shoot apical meristems from tissue-resolution data},
+      author={{\AA}hl, Henrik and Zhang, Yi and J{\"o}nsson, Henrik},
+      journal={Frontiers in Plant Science},
+      volume={13},
+      pages={827147},
+      year={2022},
+      publisher={Frontiers Media SA}
+    }
+
 Indices and tables
 ------------------
 
